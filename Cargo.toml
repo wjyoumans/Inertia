@@ -1,0 +1,15 @@
+[package]
+name = "inertia"
+version = "0.1.0"
+edition = "2021"
+authors = ["William Youmans <wyoumans@usf.edu>"]
+description = "Inertia"
+homepage = "https://github.com/wjyoumans/inertia"
+repository = "https://github.com/wjyoumans/inertia"
+license = "MIT OR Apache-2.0" 
+keywords = ["flint", "real", "complex", "number-theory", "math"]
+categories = ["algorithms", "external-ffi-bindings", "mathematics"]
+readme = "README.md"
+
+[dependencies]
+flint-sys = "0.4"
