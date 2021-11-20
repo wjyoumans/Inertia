@@ -1,4 +1,4 @@
-#Inertia
+# Inertia
 
 Inertia is a computational mathematics library for Rust designed for performance and usability. Wherever performance and usability clash we try to provide options for both.
 
