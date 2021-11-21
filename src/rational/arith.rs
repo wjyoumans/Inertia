@@ -15,15 +15,77 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::cmp::Ordering::{self, Less, Greater, Equal};
 use std::mem::MaybeUninit;
 use std::ops::*;
-use libc::{c_long, c_ulong};
+use libc::{c_int, c_long, c_ulong};
 
 use rug::ops::*;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
+
+
+impl_cmp_unsafe! {
+    eq
+    Rational
+    flint_sys::fmpq::fmpq_equal
+}
+
+impl_cmp_unsafe! {
+    ord
+    Rational
+    flint_sys::fmpq::fmpq_cmp
+}
+
+impl_cmp_unsafe! {
+    eq
+    Rational, Integer
+    flint_sys::fmpq::fmpq_cmp_fmpz
+}
+
+impl_cmp_unsafe! {
+    ord
+    Rational, Integer
+    flint_sys::fmpq::fmpq_cmp_fmpz
+}
+
+impl_cmp_unsafe! {
+    eq
+    Integer, Rational
+    fmpq_fmpz_cmp
+}
+
+impl_cmp_unsafe! {
+    ord
+    Integer, Rational
+    fmpq_fmpz_cmp
+}
+
+impl_cmp_unsafe! {
+    eq
+    Rational, u64 {u64 u32 u16 u8}
+    flint_sys::fmpq::fmpq_cmp_ui
+}
+
+impl_cmp_unsafe! {
+    ord
+    Rational, u64 {u64 u32 u16 u8}
+    flint_sys::fmpq::fmpq_cmp_ui
+}
+
+impl_cmp_unsafe! {
+    eq
+    Rational, i64 {i64 i32 i16 i8}
+    flint_sys::fmpq::fmpq_cmp_si
+}
+
+impl_cmp_unsafe! {
+    ord
+    Rational, i64 {i64 i32 i16 i8}
+    flint_sys::fmpq::fmpq_cmp_si
+}
 
 impl_unop_unsafe! {
     Integer, Rational
@@ -257,6 +319,13 @@ unsafe fn fmpq_inv_fmpz(
     flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
     flint_sys::fmpq::fmpq_set_fmpz_den1(z.as_mut_ptr(), f);
     flint_sys::fmpq::fmpq_inv(res, z.as_ptr());
+}
+
+#[inline]
+unsafe fn fmpq_fmpz_cmp(
+    f: *const flint_sys::fmpz::fmpz,
+    g: *const flint_sys::fmpq::fmpq) -> c_int {
+    -flint_sys::fmpq::fmpq_cmp_fmpz(g, f)
 }
 
 #[inline]

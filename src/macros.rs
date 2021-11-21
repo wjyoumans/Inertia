@@ -104,6 +104,45 @@ macro_rules! impl_cmp {
         }
     };
     // a = b
+    (
+        eq
+        $t1:ident, $t2:ident
+        {
+            $($code:tt)*
+        }
+    ) => {
+        impl PartialEq<$t2> for $t1 {
+            #[inline]
+            $($code)*
+        }
+
+        impl PartialEq<&$t2> for $t1 {
+            #[inline]
+            fn eq(&self, rhs: &&$t2) -> bool {
+                (&self).eq(rhs)
+            }
+        }
+        
+        impl PartialEq<$t2> for &$t1 {
+            #[inline]
+            fn eq(&self, rhs: &$t2) -> bool {
+                self.eq(&rhs)
+            }
+        }
+    };
+    // a > b
+    (
+        ord
+        $t1:ident, $t2:ident
+        {
+            $($code:tt)*
+        }
+    ) => {
+        impl PartialOrd<$t2> for $t1 {
+            #[inline]
+            $($code)*
+        }
+    };
 
 }
 
@@ -118,11 +157,41 @@ macro_rules! impl_cmp_unsafe {
             $t
             {
                 fn eq(&self, rhs: &$t) -> bool {
-                    unsafe { $func(self.as_ptr(), rhs.as_ptr()) == 1 }
+                    unsafe { $func(self.as_ptr(), rhs.as_ptr()) != 0 }
                 }
             }
         }
     };
+    (
+        eq
+        $t1:ident, $t2:ident
+        $func:path
+    ) => {
+        impl_cmp! {
+            eq
+            $t1, $t2
+            {
+                fn eq(&self, rhs: &$t2) -> bool {
+                    unsafe { $func(self.as_ptr(), rhs.as_ptr()) != 0 }
+                }
+            }
+        }
+    };
+    (
+        eq
+        $t1:ident, $cast:ident {$($t2:ident)+}
+        $func:path
+    ) => ($(
+        impl_cmp! {
+            eq
+            $t1, $t2
+            {
+                fn eq(&self, rhs: &$t2) -> bool {
+                    unsafe { $func(self.as_ptr(), *rhs as $cast) != 0 }
+                }
+            }
+        }
+    )+);
     (
         ord
         $t:ident
@@ -144,7 +213,51 @@ macro_rules! impl_cmp_unsafe {
                 }
             }
         }
-    }
+    };
+    (
+        ord
+        $t1:ident, $t2:ident
+        $func:path
+    ) => {
+        impl_cmp! {
+            ord
+            $t1, $t2
+            {
+                fn partial_cmp(&self, rhs: &$t2) -> Option<Ordering> {
+                    let cmp = unsafe { $func(self.as_ptr(), rhs.as_ptr()) };
+                    if cmp == 0 {
+                        Some(Equal)
+                    } else if cmp < 0 {
+                        Some(Less)
+                    } else {
+                        Some(Greater)
+                    }
+                }
+            }
+        }
+    };
+    (
+        ord
+        $t1:ident, $cast:ident {$($t2:ident)+}
+        $func:path
+    ) => ($(
+        impl_cmp! {
+            ord
+            $t1, $t2
+            {
+                fn partial_cmp(&self, rhs: &$t2) -> Option<Ordering> {
+                    let cmp = unsafe { $func(self.as_ptr(), *rhs as $cast) };
+                    if cmp == 0 {
+                        Some(Equal)
+                    } else if cmp < 0 {
+                        Some(Less)
+                    } else {
+                        Some(Greater)
+                    }
+                }
+            }
+        }
+    )+)
 }
 
 macro_rules! op_guard {

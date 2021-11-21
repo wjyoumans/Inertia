@@ -37,6 +37,30 @@ impl_cmp_unsafe! {
     flint_sys::fmpz::fmpz_cmp
 }
 
+impl_cmp_unsafe! {
+    eq
+    Integer, u64 {u64 u32 u16 u8}
+    flint_sys::fmpz::fmpz_equal_ui
+}
+
+impl_cmp_unsafe! {
+    ord
+    Integer, u64 {u64 u32 u16 u8}
+    flint_sys::fmpz::fmpz_cmp_ui
+}
+
+impl_cmp_unsafe! {
+    eq
+    Integer, i64 {i64 i32 i16 i8}
+    flint_sys::fmpz::fmpz_equal_si
+}
+
+impl_cmp_unsafe! {
+    ord
+    Integer, i64 {i64 i32 i16 i8}
+    flint_sys::fmpz::fmpz_cmp_si
+}
+
 impl_unop_unsafe! {
     Integer
     Neg {neg}

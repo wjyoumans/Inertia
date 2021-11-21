@@ -70,12 +70,4 @@ impl Drop for Rational {
     }
 }
 
-
-impl Eq for Rational {}
-impl PartialEq for Rational {
-    fn eq(&self, rhs: &Rational) -> bool {
-        unsafe { flint_sys::fmpq::fmpq_equal(self.as_ptr(), rhs.as_ptr()) == 1}
-    }
-}
-
 // Hash

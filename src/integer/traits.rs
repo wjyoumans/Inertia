@@ -75,22 +75,4 @@ impl Drop for Integer {
     }
 }
 
-macro_rules! impl_eq {
-    ($func:path; $cast:ident {$($t:ty)*}) => ($(
-        impl PartialEq<$t> for Integer {
-            fn eq(&self, rhs: &$t) -> bool {
-                unsafe { $func(self.as_ptr(), *rhs as $cast) == 1}
-            }
-        }
-        impl PartialEq<Integer> for $t {
-            fn eq(&self, rhs: &Integer) -> bool {
-                unsafe { $func(rhs.as_ptr(), *self as $cast) == 1}
-            }
-        }
-    )*)
-}
-
-impl_eq! { flint_sys::fmpz::fmpz_equal_ui; u64 { usize u64 u32 u16 u8 }}
-impl_eq! { flint_sys::fmpz::fmpz_equal_si; i64 { isize i64 i32 i16 i8 }}
-
 // Hash
