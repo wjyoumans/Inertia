@@ -5,18 +5,18 @@ use rug::ops::*;
 use libc::{c_long, c_ulong};
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
+use crate::ratpol::src::RatPol;
 
 
 impl_unop_unsafe! {
-    IntPol
+    RatPol
     Neg {neg}
     NegAssign {neg_assign}
     flint_sys::fmpz_poly::fmpz_poly_neg
 }
 
 impl_binop_unsafe! {
-    IntPol, IntPol, IntPol
+    RatPol, RatPol, RatPol
     
     Add {add}
     AddAssign {add_assign}
@@ -45,7 +45,7 @@ impl_binop_unsafe! {
 
 impl_binop_unsafe! {
     op_assign
-    IntPol, Integer, IntPol
+    RatPol, Integer, RatPol
    
     Add {add}
     AddAssign {add_assign}
@@ -70,7 +70,7 @@ impl_binop_unsafe! {
 
 impl_binop_unsafe! {
     op_from
-    Integer, IntPol, IntPol
+    Integer, RatPol, RatPol
    
     Add {add}
     AddFrom {add_from}
@@ -95,7 +95,7 @@ impl_binop_unsafe! {
 
 impl_binop_unsafe! {
     op_assign
-    IntPol, u64 {u64 u32 u16 u8}, IntPol
+    RatPol, u64 {u64 u32 u16 u8}, RatPol
    
     Add {add}
     AddAssign {add_assign}
@@ -120,7 +120,7 @@ impl_binop_unsafe! {
 
 impl_binop_unsafe! {
     op_assign
-    IntPol, i64 {i64 i32 i16 i8}, IntPol
+    RatPol, i64 {i64 i32 i16 i8}, RatPol
    
     Add {add}
     AddAssign {add_assign}
@@ -145,7 +145,7 @@ impl_binop_unsafe! {
 
 impl_binop_unsafe! {
     op_from
-    u64 {u64 u32 u16 u8}, IntPol, IntPol
+    u64 {u64 u32 u16 u8}, RatPol, RatPol
    
     Add {add}
     AddFrom {add_from}
@@ -170,7 +170,7 @@ impl_binop_unsafe! {
 
 impl_binop_unsafe! {
     op_from
-    i64 {i64 i32 i16 i8}, IntPol, IntPol
+    i64 {i64 i32 i16 i8}, RatPol, RatPol
    
     Add {add}
     AddFrom {add_from}

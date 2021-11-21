@@ -21,3 +21,7 @@ pub use crate::rational::macros::*;
 pub mod intpol;
 pub use crate::intpol::src::*;
 pub use crate::intpol::macros::*;
+
+pub mod ratpol;
+pub use crate::ratpol::src::*;
+//pub use crate::ratpol::macros::*;

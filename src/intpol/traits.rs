@@ -15,7 +15,7 @@ impl Parent for IntPolRing {
     type Element = IntPol;
 }
 
-// Integer //
+// IntPol //
 
 impl Element for IntPol {
     type Data = fmpz_poly_struct;
