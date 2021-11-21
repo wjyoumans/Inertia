@@ -58,13 +58,6 @@ impl Drop for Integer {
     }
 }
 
-impl Eq for Integer {}
-impl PartialEq for Integer {
-    fn eq(&self, rhs: &Integer) -> bool {
-        unsafe { flint_sys::fmpz::fmpz_equal(self.as_ptr(), rhs.as_ptr()) == 1}
-    }
-}
-
 macro_rules! impl_eq {
     ($func:path; $cast:ident {$($t:ty)*}) => ($(
         impl PartialEq<$t> for Integer {
