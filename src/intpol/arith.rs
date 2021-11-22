@@ -18,11 +18,35 @@
 use std::mem::MaybeUninit;
 use std::ops::*;
 use rug::ops::*;
-use libc::{c_long, c_ulong};
+use libc::{c_int, c_long, c_ulong};
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
 
+
+impl_cmp_unsafe! {
+    eq
+    IntPol
+    flint_sys::fmpz_poly::fmpz_poly_equal
+}
+
+impl_cmp_unsafe! {
+    eq
+    IntPol, Integer
+    flint_sys::fmpz_poly::fmpz_poly_equal_fmpz
+}
+
+impl_cmp_unsafe! {
+    eq
+    IntPol, u64 {u64 u32 u16 u8}
+    fmpz_poly_equal_ui
+}
+
+impl_cmp_unsafe! {
+    eq
+    IntPol, i64 {i64 i32 i16 i8}
+    fmpz_poly_equal_si
+}
 
 impl_unop_unsafe! {
     IntPol
@@ -209,6 +233,26 @@ impl_binop_unsafe! {
     fmpz_poly_si_scalar_mod;
 }
 
+
+unsafe fn fmpz_poly_equal_ui(
+    f: *const flint_sys::fmpz_poly::fmpz_poly_struct,
+    x: c_ulong,
+    ) -> c_int
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), x);
+    flint_sys::fmpz_poly::fmpz_poly_equal_fmpz(f, z.as_ptr())
+}
+
+unsafe fn fmpz_poly_equal_si(
+    f: *const flint_sys::fmpz_poly::fmpz_poly_struct,
+    x: c_long,
+    ) -> c_int
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), x);
+    flint_sys::fmpz_poly::fmpz_poly_equal_fmpz(f, z.as_ptr())
+}
 
 unsafe fn fmpz_poly_add_ui(
     res: *mut flint_sys::fmpz_poly::fmpz_poly_struct,

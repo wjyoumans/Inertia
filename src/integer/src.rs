@@ -15,6 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::ops::Rem;
 
 use flint_sys::flint::{flint_rand_s, flint_bitcnt_t};
 use flint_sys::fmpz::fmpz;
@@ -457,10 +458,9 @@ impl Integer {
         unsafe { flint_sys::fmpz::fmpz_is_square(self.as_ptr()) != 0}
     }
 
-    /*
     #[inline]
     pub fn sqrt(&self) -> Integer {
-        assert!(self > 0);
+        assert!(self > &0);
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_sqrt(res.as_mut_ptr(), self.as_ptr());}
         res
@@ -497,7 +497,7 @@ impl Integer {
     
     #[inline]
     pub fn fibonacci(&self) -> Integer {
-        assert!(self > 0);
+        assert!(self > &0);
         assert!(self.abs_fits_ui());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_fib_ui(res.as_mut_ptr(), self.get_ui().unwrap());}
@@ -506,7 +506,7 @@ impl Integer {
     
     #[inline]
     pub fn binomial(&self, k: c_ulong) -> Integer {
-        assert!(self > 0);
+        assert!(self > &0);
         assert!(self.abs_fits_ui());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_bin_uiui(res.as_mut_ptr(), self.get_ui().unwrap(), k);}
@@ -515,7 +515,7 @@ impl Integer {
     
     #[inline]
     pub fn factorial(&self) -> Integer {
-        assert!(self > 0);
+        assert!(self > &0);
         assert!(self.abs_fits_ui());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_fac_ui(res.as_mut_ptr(), self.get_ui().unwrap());}
@@ -524,7 +524,7 @@ impl Integer {
 
     #[inline]
     pub fn rising_factorial(&self, k: c_ulong) -> Integer {
-        assert!(self > 0);
+        assert!(self > &0);
         assert!(self.abs_fits_ui());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_rfac_uiui(res.as_mut_ptr(), self.get_ui().unwrap(), k);}
@@ -746,5 +746,5 @@ impl Integer {
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_divisor_sigma(res.as_mut_ptr(), self.as_ptr(), k);}
         res
-    }*/
+    }
 }

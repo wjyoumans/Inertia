@@ -73,13 +73,6 @@ impl Drop for RatPol {
     }
 }
 
-impl Eq for RatPol {}
-impl PartialEq for RatPol {
-    fn eq(&self, rhs: &RatPol) -> bool {
-        unsafe { flint_sys::fmpq_poly::fmpq_poly_equal(self.as_ptr(), rhs.as_ptr()) == 1}
-    }
-}
-
 // Hash
 
 impl Assign for RatPol {

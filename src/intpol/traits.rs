@@ -71,13 +71,6 @@ impl Drop for IntPol {
     }
 }
 
-impl Eq for IntPol {}
-impl PartialEq for IntPol {
-    fn eq(&self, rhs: &IntPol) -> bool {
-        unsafe { flint_sys::fmpz_poly::fmpz_poly_equal(self.as_ptr(), rhs.as_ptr()) == 1}
-    }
-}
-
 // Hash
 
 impl Assign for IntPol {

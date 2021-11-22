@@ -16,8 +16,8 @@
  */
 
 #[macro_export]
-macro_rules! intpol {
+macro_rules! ratpol {
     ($($coeff:expr),+) => (
-        IntPol::from(vec![$($coeff),+].as_slice())
+        RatPol::from(vec![$($coeff),+].as_slice())
     )
 }

@@ -30,7 +30,7 @@ impl RationalField {
         RationalField {}
     }
     
-    pub fn new<T: Into<Integer>>(&self, n: T, d: T) -> Rational {
+    pub fn new<'a, T: Into<&'a Integer>>(&self, n: T, d: T) -> Rational {
         let mut z = Rational::default();
         unsafe {
             flint_sys::fmpq::fmpq_set_fmpz_frac(z.as_mut_ptr(), n.into().as_ptr(), d.into().as_ptr());
@@ -68,4 +68,83 @@ impl Rational {
             data: self.data.num
         }
     }
+
+    #[inline]
+    pub fn floor(&self) -> Integer {
+        Integer::fdiv(&self.numerator(), &self.denominator())
+    }
+
+    #[inline]
+    pub fn ceil(&self) -> Integer {
+        Integer::cdiv(&self.numerator(), &self.denominator())
+    }
+    
+    #[inline]
+    pub fn round(&self) -> Integer {
+        Integer::tdiv(&self.numerator(), &self.denominator())
+    }
+    
+    
+    #[inline]
+    fn sign(&self) -> i32 {
+        unsafe {
+            flint_sys::fmpq::fmpq_sgn(self.as_ptr())
+        }
+    }
+
+    #[inline]
+    pub fn abs(&self) -> Rational {
+        unsafe {
+            let mut res = Rational::default();
+            flint_sys::fmpq::fmpq_abs(res.as_mut_ptr(), self.as_ptr());
+            res
+        }
+    }
+
+    #[inline]
+    pub fn height(&self) -> Integer {
+        unsafe {
+            let mut res = Integer::default();
+            flint_sys::fmpq::fmpq_height(res.as_mut_ptr(), self.as_ptr());
+            res
+        }
+    }
+    
+    #[inline]
+    pub fn inv(&self) -> Rational {
+        unsafe {
+            let mut res = Rational::default();
+            flint_sys::fmpq::fmpq_inv(res.as_mut_ptr(), self.as_ptr());
+            res
+        }
+    }
+
+/*
+    // TODO: RANDOM GENERATION
+
+    #[inline]
+    pub fn gcd(&self, other: &Rational) -> Rational {
+        unsafe {
+            let mut res = Rational::default();
+            flint_sys::fmpq::fmpq_gcd(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+            res
+        }
+    }
+
+    #[inline]
+    pub fn xgcd(&self, other: &Rational) -> (Rational, Integer, Integer) {
+        unsafe {
+            let mut d = Rational::default();
+            let mut a = Integer::default();
+            let mut b = Integer::default();
+            flint_sys::fmpq::fmpq_gcd_cofactors(
+                d.as_mut_ptr(), 
+                a.as_mut_ptr(), 
+                b.as_mut_ptr(),
+                self.as_ptr(), 
+                other.as_ptr());
+            (d, a, b)
+        }
+    }
+    */
 }
