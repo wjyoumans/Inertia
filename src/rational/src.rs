@@ -15,9 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use flint_sys::fmpz::fmpz;
 use flint_sys::fmpq::fmpq;
-
 use crate::integer::src::Integer;
 
 // RationalField //
@@ -39,6 +37,7 @@ impl RationalField {
     }
 }
 
+#[derive(Debug)]
 #[repr(transparent)]
 pub struct Rational {
     pub data: fmpq,
@@ -86,7 +85,7 @@ impl Rational {
     
     
     #[inline]
-    fn sign(&self) -> i32 {
+    pub fn sign(&self) -> i32 {
         unsafe {
             flint_sys::fmpq::fmpq_sgn(self.as_ptr())
         }

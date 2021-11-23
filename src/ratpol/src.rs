@@ -17,6 +17,7 @@
 
 use flint_sys::fmpq_poly::fmpq_poly_struct;
 use libc::c_long;
+
 use crate::traits::Element;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;

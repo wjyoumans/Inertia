@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt::{self, Debug};
+use std::fmt;
 use std::mem::{self, MaybeUninit};
 
 use flint_sys::fmpz_poly::fmpz_poly_struct;

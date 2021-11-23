@@ -16,8 +16,8 @@
  */
 
 use std::fmt::Debug;
+
 use crate::integer::src::Integer;
-use crate::rational::src::Rational;
 use crate::intpol::src::IntPol;
 
 

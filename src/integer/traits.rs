@@ -16,7 +16,7 @@
  */
 
 
-use std::fmt::{self, Debug};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz::fmpz as fmpz;
@@ -47,11 +47,6 @@ impl Clone for Integer {
         }
     }
 }
-
-/*
-impl Debug for Integer {
-
-}*/
 
 impl Default for Integer {
     fn default() -> Self {

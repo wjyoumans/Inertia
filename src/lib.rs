@@ -26,7 +26,6 @@ pub(crate) mod macros;
 extern crate quickcheck_macros;
 
 pub mod traits;
-//pub use rug::Assign;
 
 pub mod integer;
 pub use crate::integer::src::*;

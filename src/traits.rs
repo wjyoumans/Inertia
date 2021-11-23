@@ -17,6 +17,7 @@
 
 use std::sync::Arc;
 
+/*
 pub trait Assign<T> {
     fn assign(&mut self, src: T);
 
@@ -31,7 +32,7 @@ impl<T> Assign<T> for T {
     fn assign(&mut self, src: T) {
         drop(std::mem::replace(self, src));
     }
-}
+}*/
 
 pub trait AssignAdd<T, U> {
     fn assign_add(&mut self, lhs: T, rhs: U);

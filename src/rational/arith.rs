@@ -18,8 +18,8 @@
 use std::cmp::Ordering::{self, Less, Greater, Equal};
 use std::mem::MaybeUninit;
 use std::ops::*;
-use libc::{c_int, c_long, c_ulong};
 
+use libc::{c_int, c_long, c_ulong};
 use rug::ops::*;
 
 use crate::traits::*;

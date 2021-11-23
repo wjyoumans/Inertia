@@ -16,14 +16,13 @@
  */
 
 
-use std::fmt::{self, Debug};
+use std::fmt;
 use std::mem::{self, MaybeUninit};
 
 use flint_sys::fmpq_poly::fmpq_poly_struct;
 use rug::Assign;
 
 use crate::traits::*;
-use crate::intpol::src::IntPol;
 use crate::ratpol::src::{RatPol, RatPolRing};
 
 // RatPolRing //

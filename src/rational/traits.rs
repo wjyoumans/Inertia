@@ -15,13 +15,11 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt::Debug;
-use std::mem::{self, MaybeUninit};
+use std::mem::MaybeUninit;
 
 use flint_sys::fmpz::fmpz as fmpq;
 
 use crate::traits::*;
-use crate::integer::src::Integer;
 use crate::rational::src::{Rational, RationalField};
 
 // RationalField //

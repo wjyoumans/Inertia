@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::traits::Assign;
 use crate::integer::src::Integer;
 
 
@@ -48,10 +47,3 @@ impl From<&Integer> for String {
         format!("{}", &x.to_str_radix(10))
     }
 }
-
-impl Assign<&Integer> for Integer {
-    fn assign(&mut self, other: &Integer) {
-        unsafe { flint_sys::fmpz::fmpz_set(self.as_mut_ptr(), other.as_ptr()); }
-    }
-}
-

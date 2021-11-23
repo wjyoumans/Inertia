@@ -15,8 +15,11 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#![allow(non_snake_case)]
+
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
+
 use crate::traits::Element;
 use crate::integer::src::Integer;
 
@@ -55,18 +58,18 @@ impl IntPol {
     }
 
     #[inline]
-    fn is_zero(&self) -> bool {
+    pub fn is_zero(&self) -> bool {
         *self == 0
     }
 
     #[inline]
-    fn is_one(&self) -> bool {
+    pub fn is_one(&self) -> bool {
         unsafe {flint_sys::fmpz_poly::fmpz_poly_is_one(self.as_ptr()) == 1}
     }
 
     // NOTE: we mean invertible in Q(x) here (to guarantee division is possible)
     #[inline]
-    fn is_invertible(&self) -> bool {
+    pub fn is_invertible(&self) -> bool {
         !self.is_zero()
     }
 

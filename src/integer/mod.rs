@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod src;
-pub mod macros;
-pub mod traits;
-pub mod conv;
 pub mod arith;
+pub mod conv;
+pub mod macros;
+pub mod src;
+pub mod traits;

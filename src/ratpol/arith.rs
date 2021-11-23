@@ -17,8 +17,10 @@
 
 use std::mem::MaybeUninit;
 use std::ops::*;
-use rug::ops::*;
+
 use libc::{c_int, c_long, c_ulong};
+use rug::ops::*;
+
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::ratpol::src::RatPol;
