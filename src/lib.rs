@@ -71,19 +71,26 @@ extern crate quickcheck_macros;
 
 pub mod traits;
 pub mod product;
-
 pub mod integer;
-pub use crate::integer::src::*;
-pub use crate::integer::macros::*;
-
 pub mod rational;
-pub use crate::rational::src::*;
-pub use crate::rational::macros::*;
-
 pub mod intpol;
-pub use crate::intpol::src::*;
-pub use crate::intpol::macros::*;
-
 pub mod ratpol;
-pub use crate::ratpol::src::*;
-pub use crate::ratpol::macros::*;
+
+pub mod prelude { 
+    pub use rug::ops::*;
+    pub use crate::traits::*;
+
+    pub use crate::integer::src::*;
+    pub use super::int;
+
+    pub use crate::rational::src::*;
+    pub use super::rat;
+
+    pub use crate::intpol::src::*;
+    pub use super::intpol;
+
+    pub use crate::ratpol::src::*;
+    pub use super::ratpol;
+}
+
+pub use prelude::*;
