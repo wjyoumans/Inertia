@@ -15,6 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::mem::MaybeUninit;
 use std::ops::Rem;
 
 use flint_sys::flint::{flint_rand_s, flint_bitcnt_t};
@@ -62,7 +63,7 @@ impl Integer {
     pub fn as_mut_ptr(&mut self) -> &mut fmpz {
         &mut self.data
     }
-    
+
     /// Convert the `Integer` to a string in base `base`.
     pub fn to_str_radix(&self, base: u8) -> String {
         unsafe {
@@ -197,6 +198,28 @@ impl Integer {
             }
         } else {
             None
+        }
+    }
+
+    /// Return a vector of unsigned longs (a_0, ..., a_{n-1}) such that the original integer can be
+    /// written as a_0 + a_1*x + ... + a_{n-1}x^{n-1} where x = 2^FLINT_BITS.
+    #[inline]
+    pub fn get_ui_vector(&self) -> Vec<c_ulong> {
+        assert!(self > &0);
+
+        let n = self.size();
+        let mut out = Vec::<c_ulong>::with_capacity(n as usize);
+        unsafe {
+            flint_sys::fmpz::fmpz_get_ui_array(out.as_mut_ptr(), n, self.as_ptr());
+            out.set_len(n as usize);
+        }
+        out
+    }
+    
+    #[inline]
+    pub fn set_ui_vector(&mut self, vec: Vec<c_ulong>) {
+        unsafe {
+            flint_sys::fmpz::fmpz_set_ui_array(self.as_mut_ptr(), vec.as_ptr(), vec.len() as c_long);
         }
     }
 
