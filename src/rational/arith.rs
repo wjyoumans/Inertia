@@ -26,6 +26,23 @@ use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 
+// Integer
+
+impl_unop_unsafe! {
+    Integer, Rational
+    Inv {inv}
+    fmpq_inv_fmpz
+}
+
+impl_binop_unsafe! {
+    Integer, Integer, Rational
+
+    Pow {pow}
+    AssignPow {assign_pow}
+    fmpz_pow_fmpz;
+}
+
+// Rational
 
 impl_cmp_unsafe! {
     eq
@@ -85,12 +102,6 @@ impl_cmp_unsafe! {
     ord
     Rational, i64 {i64 i32 i16 i8}
     flint_sys::fmpq::fmpq_cmp_si
-}
-
-impl_unop_unsafe! {
-    Integer, Rational
-    Inv {inv}
-    fmpq_inv_fmpz
 }
 
 impl_unop_unsafe! {
@@ -319,6 +330,7 @@ unsafe fn fmpq_inv_fmpz(
     flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
     flint_sys::fmpq::fmpq_set_fmpz_den1(z.as_mut_ptr(), f);
     flint_sys::fmpq::fmpq_inv(res, z.as_ptr());
+    flint_sys::fmpq::fmpq_clear(z.as_mut_ptr());
 }
 
 #[inline]
@@ -435,6 +447,7 @@ unsafe fn fmpq_div_ui(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), g);
     flint_sys::fmpq::fmpq_div_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
 #[inline]
@@ -447,6 +460,7 @@ unsafe fn fmpq_div_si(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), g);
     flint_sys::fmpq::fmpq_div_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
 #[inline]
@@ -459,6 +473,7 @@ unsafe fn fmpq_ui_div(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), f);
     fmpq_fmpz_div(res, z.as_ptr(), g);
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
 #[inline]
@@ -471,6 +486,7 @@ unsafe fn fmpq_si_div(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), f);
     fmpq_fmpz_div(res, z.as_ptr(), g);
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
 #[inline]
@@ -483,6 +499,7 @@ unsafe fn fmpq_mod_ui(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), g);
     flint_sys::fmpq::fmpq_mod_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
 #[inline]
@@ -495,4 +512,19 @@ unsafe fn fmpq_mod_si(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), g);
     flint_sys::fmpq::fmpq_mod_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_pow_fmpz(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: *const flint_sys::fmpz::fmpz,
+    g: *const flint_sys::fmpz::fmpz,
+    )
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
+    flint_sys::fmpq::fmpq_set_fmpz_den1(z.as_mut_ptr(), f);
+    flint_sys::fmpq::fmpq_pow_fmpz(res, z.as_ptr(), g);
+    flint_sys::fmpq::fmpq_clear(z.as_mut_ptr());
 }
