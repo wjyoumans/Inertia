@@ -127,6 +127,11 @@ impl_binop_unsafe! {
     RemAssign {rem_assign}
     AssignRem {assign_rem}
     fmpz_tdiv_r_ui;
+    
+    Pow {pow}
+    PowAssign {pow_assign}
+    AssignPow {assign_pow}
+    flint_sys::fmpz::fmpz_pow_ui;
 }
 
 impl_binop_unsafe! {
@@ -177,6 +182,11 @@ impl_binop_unsafe! {
     RemFrom {rem_from}
     AssignRem {assign_rem}
     fmpz_ui_tdiv_r;
+    
+    Pow {pow}
+    PowFrom {pow_from}
+    AssignPow {assign_pow}
+    fmpz_ui_pow;
 }
 
 impl_binop_unsafe! {
@@ -291,6 +301,7 @@ unsafe fn fmpz_ui_tdiv_r(
     let mut tmp = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
     flint_sys::fmpz::fmpz_tdiv_r(f, tmp.as_ptr(), h);
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
 }
 
 #[inline]
@@ -302,4 +313,18 @@ unsafe fn fmpz_si_tdiv_r(
     let mut tmp = MaybeUninit::uninit();
     flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
     flint_sys::fmpz::fmpz_tdiv_r(f, tmp.as_ptr(), h);
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_ui_pow(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: c_ulong,
+    g: *const flint_sys::fmpz::fmpz,
+    )
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), f);
+    flint_sys::fmpz::fmpz_pow_fmpz(res, tmp.as_ptr(), g);
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
 }
