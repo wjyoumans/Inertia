@@ -17,53 +17,46 @@
 
 use std::sync::Arc;
 
-/*
-pub trait Assign<T> {
-    fn assign(&mut self, src: T);
 
-    // alias for assign
-    #[inline]
-    fn set(&mut self, src: T) {
-        self.assign(src)
-    }
-}
-
-impl<T> Assign<T> for T {
-    fn assign(&mut self, src: T) {
-        drop(std::mem::replace(self, src));
-    }
-}*/
-
+/// Addition of two items with assignment into a third.
 pub trait AssignAdd<T, U> {
     fn assign_add(&mut self, lhs: T, rhs: U);
 }
 
+/// Subtraction of two items with assignment into a third.
 pub trait AssignSub<T, U> {
     fn assign_sub(&mut self, lhs: T, rhs: U);
 }
 
+/// Multiplication of two items with assignment into a third.
 pub trait AssignMul<T, U> {
     fn assign_mul(&mut self, lhs: T, rhs: U);
 }
 
+/// Division of two items with assignment into a third.
 pub trait AssignDiv<T, U> {
     fn assign_div(&mut self, lhs: T, rhs: U);
 }
 
+/// Modulo of two items with assignment into a third.
 pub trait AssignRem<T, U> {
     fn assign_rem(&mut self, lhs: T, rhs: U);
 }
 
+/// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
     type Data;
     type Element: Element;
 }
 
+/// An generic element of a `Parent`.
 pub trait Element {
     type Data;
     type Parent: Parent;
 }
 
+#[doc(hidden)]
+/// A wrapper for structs coming from FFI bindings.
 pub struct Wrap<T> {
     pub wrap: T,
 }
@@ -72,6 +65,8 @@ impl<T> Drop for Wrap<T> {
     default fn drop(&mut self) {}
 }
 
+/// An element of a `Parent`. We use the thread-safe [Arc] reference counter to avoid cleaning up
+/// the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
     pub ctx: Arc<T::Data>,
     pub data: <T::Element as Element>::Data,
@@ -81,11 +76,49 @@ impl<T: Parent> Drop for Elem<T> {
     default fn drop(&mut self) {}
 }
 
+/// Inverse as a unary operation.
 pub trait Inv {
     type Output;
     fn inv(self) -> Self::Output;
 }
 
+/// Inverse with assignment.
 pub trait InvAssign {
     fn inv_assign(&mut self);
+}
+
+/// Exponentiation.
+pub trait Pow<T> {
+    type Output;
+    fn pow(&self, exp: T) -> Self::Output;
+}
+
+/// Modular exponentiation.
+pub trait Powm<T, U> {
+    type Output;
+    fn powm(&self, exp: T, modulus: U) -> Self::Output;
+}
+
+/// Evaluation of an expression at `x`.
+pub trait Evaluate<T> {
+    type Output;
+    fn evaluate(&self, x: T) -> Self::Output;
+}
+
+/// Modular evaluation of an expression at `x`.
+pub trait EvaluateMod<T, U> {
+    type Output;
+    fn evaluate_mod(&self, x: T, modulus: U) -> Self::Output;
+}
+
+/// Evaluation of a `Product`.
+pub trait EvaluateProduct {
+    type Output;
+    fn evaluate(&self) -> Self::Output;
+}
+
+/// Modular evaluation of a `Product`.
+pub trait EvaluateFacMod<T> {
+    type Output;
+    fn evaluate_mod(&self, modulus: T) -> Self::Output;
 }
