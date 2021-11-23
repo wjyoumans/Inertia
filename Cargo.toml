@@ -13,7 +13,7 @@ readme = "README.md"
 
 [dependencies]
 flint-sys = "0.4"
-//flint-sys = { path = "../flint-rs/flint-sys" }
+#flint-sys = { path = "../flint-rs/flint-sys" }
 num-traits = "0.2" 
 libc = "0.2" 
 
