@@ -18,6 +18,50 @@
 use std::sync::Arc;
 
 
+/// Inverse as a unary operation.
+pub trait Inv {
+    type Output;
+    fn inv(self) -> Self::Output;
+}
+
+/// Inverse with assignment.
+pub trait InvAssign {
+    fn inv_assign(&mut self);
+}
+
+/*
+/// Exponentiation.
+pub trait Pow<T> {
+    type Output;
+    fn pow(&self, exp: T) -> Self::Output;
+}
+
+/// Exponentiation with assignment.
+pub trait PowAssign<T> {
+    fn pow_assign(&mut self, exp: T);
+}
+
+/// Exponentiation from with assignment.
+pub trait PowFrom<T> {
+    fn pow_from(&mut self, base: T);
+}*/
+
+/// Modular exponentiation.
+pub trait Powm<T, U> {
+    type Output;
+    fn powm(&self, exp: T, modulus: U) -> Self::Output;
+}
+
+/// Modular exponentiation with assignment.
+pub trait PowmAssign<T, U> {
+    fn powm_assign(&mut self, exp: T, modulus: U);
+}
+
+/// Modular exponentiation from with assignment.
+pub trait PowmFrom<T, U> {
+    fn powm_from(&mut self, base: T, modulus: U);
+}
+
 /// Addition of two items with assignment into a third.
 pub trait AssignAdd<T, U> {
     fn assign_add(&mut self, lhs: T, rhs: U);
@@ -38,10 +82,45 @@ pub trait AssignDiv<T, U> {
     fn assign_div(&mut self, lhs: T, rhs: U);
 }
 
-/// Modulo of two items with assignment into a third.
+/// Exponentiation of two items with assignment into a third.
+pub trait AssignPow<T, U> {
+    fn assign_pow(&mut self, lhs: T, rhs: U);
+}
+
+/// Modular exponentiation of two items with assignment into a third.
+pub trait AssignPowm<T, U, M> {
+    fn assign_powm(&mut self, lhs: T, rhs: U, modulus: M);
+}
+
+/// Remainder of two items with assignment into a third.
 pub trait AssignRem<T, U> {
     fn assign_rem(&mut self, lhs: T, rhs: U);
 }
+
+/// Evaluation of an expression at `x`.
+pub trait Evaluate<T> {
+    type Output;
+    fn evaluate(&self, x: T) -> Self::Output;
+}
+
+/// Modular evaluation of an expression at `x`.
+pub trait EvaluateMod<T, U> {
+    type Output;
+    fn evaluate_mod(&self, x: T, modulus: U) -> Self::Output;
+}
+
+/// Evaluation of a `Product`.
+pub trait EvaluateProduct {
+    type Output;
+    fn evaluate(&self) -> Self::Output;
+}
+
+/// Modular evaluation of a `Product`.
+pub trait EvaluateProductMod<T> {
+    type Output;
+    fn evaluate_mod(&self, modulus: T) -> Self::Output;
+}
+
 
 /// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
@@ -74,51 +153,4 @@ pub struct Elem<T: Parent> {
 
 impl<T: Parent> Drop for Elem<T> {
     default fn drop(&mut self) {}
-}
-
-/// Inverse as a unary operation.
-pub trait Inv {
-    type Output;
-    fn inv(self) -> Self::Output;
-}
-
-/// Inverse with assignment.
-pub trait InvAssign {
-    fn inv_assign(&mut self);
-}
-
-/// Exponentiation.
-pub trait Pow<T> {
-    type Output;
-    fn pow(&self, exp: T) -> Self::Output;
-}
-
-/// Modular exponentiation.
-pub trait Powm<T, U> {
-    type Output;
-    fn powm(&self, exp: T, modulus: U) -> Self::Output;
-}
-
-/// Evaluation of an expression at `x`.
-pub trait Evaluate<T> {
-    type Output;
-    fn evaluate(&self, x: T) -> Self::Output;
-}
-
-/// Modular evaluation of an expression at `x`.
-pub trait EvaluateMod<T, U> {
-    type Output;
-    fn evaluate_mod(&self, x: T, modulus: U) -> Self::Output;
-}
-
-/// Evaluation of a `Product`.
-pub trait EvaluateProduct {
-    type Output;
-    fn evaluate(&self) -> Self::Output;
-}
-
-/// Modular evaluation of a `Product`.
-pub trait EvaluateFacMod<T> {
-    type Output;
-    fn evaluate_mod(&self, modulus: T) -> Self::Output;
 }
