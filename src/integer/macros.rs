@@ -17,6 +17,9 @@
 
 #[macro_export]
 macro_rules! int {
+    () => {
+        Integer::from(0)
+    };
     ($arg:expr) => {
         Integer::from($arg)
     }

@@ -17,7 +17,13 @@
 
 #[macro_export]
 macro_rules! intpol {
+    () => (
+        IntPol::from(0)
+    );
+    ($coeff:expr) => (
+        IntPol::from($coeff)
+    );
     ($($coeff:expr),+) => (
         IntPol::from(vec![$($coeff),+].as_slice())
-    )
+    );
 }

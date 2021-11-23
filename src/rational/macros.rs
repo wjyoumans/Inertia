@@ -18,10 +18,13 @@
 
 #[macro_export]
 macro_rules! rat {
-    ($arg:expr) => {
+    () => (
+        Rational::from(0)
+    );
+    ($arg:expr) => (
         Rational::from($arg)
-    };
-    ($num:expr, $den:expr) => {
+    );
+    ($num:expr, $den:expr) => (
         Rational::from(vec![$num, $den].as_slice())
-    }
+    )
 }

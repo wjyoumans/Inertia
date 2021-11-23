@@ -17,7 +17,14 @@
 
 #[macro_export]
 macro_rules! ratpol {
+    () => (
+        RatPol::from(0)
+    );
+    ($coeff:expr) => (
+        RatPol::from($coeff)
+    );
     ($($coeff:expr),+) => (
         RatPol::from(vec![$($coeff),+].as_slice())
-    )
+    );
 }
+
