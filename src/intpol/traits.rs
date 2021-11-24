@@ -16,6 +16,7 @@
  */
 
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::mem::{self, MaybeUninit};
 
 use flint_sys::fmpz_poly::fmpz_poly_struct;
@@ -71,20 +72,9 @@ impl Drop for IntPol {
     }
 }
 
-// Hash
-
-impl Assign for IntPol {
-    #[inline]
-    fn assign(&mut self, src: IntPol) {
-        drop(mem::replace(self, src));
+impl Hash for IntPol {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.coefficients().hash(state);
     }
 }
-
-impl Assign<&IntPol> for IntPol {
-    #[inline]
-    fn assign(&mut self, src: &IntPol) {
-        unsafe { flint_sys::fmpz_poly::fmpz_poly_set(self.as_mut_ptr(), src.as_ptr()); }
-    }
-}
-
 

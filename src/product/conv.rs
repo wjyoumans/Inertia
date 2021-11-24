@@ -16,16 +16,17 @@
  */
 
 use std::hash::Hash;
-use std::collections::HashMap;
+
+use rustc_hash::FxHashMap;
 
 use crate::integer::src::Integer;
 use crate::product::src::Product;
 
 
-impl<T> From<HashMap<T, Integer>> for Product<T> where
+impl<T> From<FxHashMap<T, Integer>> for Product<T> where
     T: Eq + Hash
 {
-    fn from(other: HashMap<T, Integer>) -> Product<T> {
+    fn from(other: FxHashMap<T, Integer>) -> Product<T> {
         Product { hashmap: other}
     }
 
@@ -35,7 +36,7 @@ impl<T> From<T> for Product<T> where
     T: Eq + Hash,
 {
     fn from(other: T) -> Product<T> {
-        let mut hashmap = HashMap::<T, Integer>::new();
+        let mut hashmap = FxHashMap::<T, Integer>::default();
         hashmap.insert(other, Integer::from(1));
         Product { hashmap: hashmap}
     }

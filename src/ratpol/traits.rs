@@ -17,6 +17,7 @@
 
 
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::mem::{self, MaybeUninit};
 
 use flint_sys::fmpq_poly::fmpq_poly_struct;
@@ -72,20 +73,9 @@ impl Drop for RatPol {
     }
 }
 
-// Hash
-
-impl Assign for RatPol {
-    #[inline]
-    fn assign(&mut self, src: RatPol) {
-        drop(mem::replace(self, src));
+impl Hash for RatPol {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.coefficients().hash(state);
     }
 }
-
-impl Assign<&RatPol> for RatPol {
-    #[inline]
-    fn assign(&mut self, src: &RatPol) {
-        unsafe { flint_sys::fmpq_poly::fmpq_poly_set(self.as_mut_ptr(), src.as_ptr()); }
-    }
-}
-
 

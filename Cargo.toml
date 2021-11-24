@@ -12,10 +12,11 @@ categories = ["algorithms", "external-ffi-bindings", "mathematics"]
 readme = "README.md"
 
 [dependencies]
-flint-sys = "0.4"
-#flint-sys = { path = "../flint-rs/flint-sys" }
+rustc-hash = "1.0"
 num-traits = "0.2" 
 libc = "0.2" 
+flint-sys = { path = "../flint-rs/flint-sys" }
+#flint-sys = "0.4"
 
 # Only Assign trait and traits in rug::ops provided
 [dependencies.rug]

@@ -15,20 +15,19 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::collections::HashMap;
 use std::hash::Hash;
-
+use rustc_hash::FxHashMap;
 use crate::integer::src::Integer;
 
 #[derive(Default, Debug, Clone)]
 pub struct Product<T: Hash> {
-    pub hashmap: HashMap<T, Integer>,
+    pub hashmap: FxHashMap<T, Integer>,
 }
 
 impl<T> Product<T> where T: Eq + Hash
 {
     pub fn new(p: T, k: Integer) -> Self {
-        let mut fac = HashMap::<T, Integer>::new();
+        let mut fac = FxHashMap::<T, Integer>::default();
         fac.insert(p, k);
         Product { hashmap: fac}
     }

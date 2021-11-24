@@ -15,6 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz::fmpz as fmpq;
@@ -68,4 +69,9 @@ impl Drop for Rational {
     }
 }
 
-// Hash
+impl Hash for Rational {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.numerator().hash(state);
+        self.denominator().hash(state);
+    }
+}

@@ -17,6 +17,7 @@
 
 
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz::fmpz as fmpz;
@@ -70,4 +71,9 @@ impl Drop for Integer {
     }
 }
 
-// Hash
+impl Hash for Integer {
+    #[inline]
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.get_ui_vector().hash(state);
+    }
+}
