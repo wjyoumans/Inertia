@@ -20,14 +20,18 @@ use crate::integer::src::Integer;
 
 // RationalField //
 
+/// A rational field.
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RationalField {}
 
 impl RationalField {
+    /// Construct a rational field. No initialization is needed so this is equivalent to 
+    /// `RationalField {}`
     pub fn init() -> Self {
         RationalField {}
     }
     
+    /// Create a new [Rational]. 
     pub fn new<'a, T: Into<&'a Integer>>(&self, n: T, d: T) -> Rational {
         let mut z = Rational::default();
         unsafe {

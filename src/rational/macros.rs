@@ -25,6 +25,6 @@ macro_rules! rat {
         Rational::from($arg)
     );
     ($num:expr, $den:expr) => (
-        Rational::from(vec![$num, $den].as_slice())
+        Rational::from([$num, $den])
     )
 }

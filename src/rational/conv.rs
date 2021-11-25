@@ -18,6 +18,8 @@
 use std::fmt::Debug;
 use std::ffi::CString;
 
+use num_traits::PrimInt;
+
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 
@@ -56,19 +58,25 @@ impl_from! {
     }
 }
 
-impl<'a, T: Debug> From<&'a [T]> for Rational where &'a T: Into<Integer> {
-    fn from(src: &'a [T]) -> Rational {
-        assert_eq!(2, src.len());
-       
-        let den: Integer = (&src[1]).into();
-        assert!(!den.is_zero());
+impl<T> From<[T; 2]> for Rational where
+    T: PrimInt + Into<Integer>
+{
+    #[inline]
+    fn from(src: [T; 2]) -> Rational {
+        Rational::from([&src[0].into(), &src[1].into()])
+    }
+}
 
+impl From<[&Integer; 2]> for Rational {
+    #[inline]
+    fn from(src: [&Integer; 2]) -> Rational {
+        assert!(!src[1].is_zero());
         let mut res = Rational::default();
         unsafe { 
             flint_sys::fmpq::fmpq_set_fmpz_frac(
                 res.as_mut_ptr(), 
-                (&src[0]).into().as_ptr(),
-                den.as_ptr()
+                src[0].as_ptr(),
+                src[1].as_ptr()
             ); 
         }
         res
