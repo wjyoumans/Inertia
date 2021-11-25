@@ -15,8 +15,14 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//! Unevaluated power products.
 
+/// Implementations of arithmetic operations.
 pub mod arith;
+
+/// Conversion implementations.
 pub mod conv;
+
+/// Definition and general implementation.
 pub mod src;
 //pub mod traits;

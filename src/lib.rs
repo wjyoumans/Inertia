@@ -69,7 +69,9 @@ pub(crate) mod macros;
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
 
+/// Trait definitions for operations and algebraic structures.
 pub mod traits;
+
 pub mod product;
 pub mod integer;
 pub mod rational;
@@ -77,6 +79,8 @@ pub mod intpol;
 pub mod ratpol;
 
 pub mod prelude { 
+    //! A prelude for glob importing.
+    
     pub use rug::ops::*;
     pub use crate::traits::*;
 

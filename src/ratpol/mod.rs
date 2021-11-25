@@ -15,8 +15,19 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//! Polynomials with [Rational][crate::rational::src::Rational] coefficients.
+
+/// Implementations of arithmetic operations.
 pub mod arith;
+
+/// Conversion implementations.
 pub mod conv;
+
+/// Constructor macros.
 pub mod macros;
+
+/// Definition and general implementation.
 pub mod src;
+
+/// Implementation of traits not involving operations.
 pub mod traits;

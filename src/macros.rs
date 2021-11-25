@@ -15,6 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/// Macros for bulk implementing traits.
+
 /*
 macro_rules! op_guard {
     (Add, matrix, $lhs: expr, $rhs: expr) => {

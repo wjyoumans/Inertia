@@ -15,6 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/// Traits for operations and algebraic structures.
+
 use std::sync::Arc;
 
 
