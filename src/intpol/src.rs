@@ -18,6 +18,7 @@
 #![allow(non_snake_case)]
 
 use std::ffi::{CStr, CString};
+use std::ops::Rem;
 
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
@@ -221,16 +222,22 @@ impl IntPol {
         self.len() <= 1
     }
 
+    /// Returns the maximum number of limbs required to store the absolute value of the
+    /// coefficients of an integer polynomial.
     #[inline]
     pub fn max_limbs(&self) -> c_ulong {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_max_limbs(self.as_ptr())}
     }
     
+    /// Computes the maximum number of bits required to store the absolute value of the
+    /// coefficients of an integer polynomial.
     #[inline]
     pub fn max_bits(&self) -> c_long {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_max_bits(self.as_ptr())}
     }
 
+    /// Return the polynomial whose coefficients are the absolute value of the coefficients of the
+    /// input polynomial.
     #[inline]
     pub fn abs(&self) -> IntPol {
         unsafe {
@@ -240,6 +247,8 @@ impl IntPol {
         }
     }
 
+    /// Computes the height of an integer polynomial, defined as the largest of the absolute value
+    /// of its coefficients. Equivalently, this gives the infinity norm of the coefficients.
     #[inline]
     pub fn height(&self) -> Integer {
         let mut res = Integer::default();
@@ -249,6 +258,7 @@ impl IntPol {
         res
     }
 
+    /// Return the l2-norm of the coefficients of an integer polynomial.
     #[inline]
     pub fn l2_norm(&self) -> Integer {
         let mut res = Integer::default();
@@ -258,6 +268,7 @@ impl IntPol {
         res
     }
     
+    /// Returns the discriminant of the polynomial.
     #[inline]
     pub fn discriminant(&self) -> Integer {
         let mut res = Integer::default();
@@ -267,6 +278,7 @@ impl IntPol {
         res
     }
     
+    /// Returns the content of the polynomial.
     #[inline]
     pub fn content(&self) -> Integer {
         let mut res = Integer::default();
@@ -276,6 +288,8 @@ impl IntPol {
         res
     }
     
+    /// Returns the primitive part of the polynomial, equivalent to dividing the polynomial by its
+    /// content, normalized to have non-negative leading coefficient.
     #[inline]
     pub fn primitive_part(&self) -> IntPol {
         let mut res = IntPol::default();
@@ -285,6 +299,7 @@ impl IntPol {
         res
     }
     
+    /// Reverse the polynomial, so the coefficients are in reverse order.
     #[inline]
     pub fn reverse(&mut self) {
         unsafe {
@@ -292,6 +307,7 @@ impl IntPol {
         }
     }
     
+    /// Truncate the polynomial to have length `n`.
     #[inline]
     pub fn truncate(&mut self, n: c_long) {
         unsafe {
@@ -301,6 +317,8 @@ impl IntPol {
     
     // no cdiv in flint
 
+    /// Return the polynomial whose coefficients are the coefficients of the input polynomial
+    /// divided by `other` rounded down.
     #[inline]
     pub fn fdiv(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
@@ -315,6 +333,8 @@ impl IntPol {
         }
     }
     
+    /// Return the polynomial whose coefficients are the coefficients of the input polynomial
+    /// divided by `other` and truncated.
     #[inline]
     pub fn tdiv(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
@@ -329,13 +349,17 @@ impl IntPol {
         }
     }
  
+    /// Return the polynomial whose coefficients are the coefficients of the input polynomial
+    /// divided by `other` exactly. If the division isn't exact an [Err] is returned.
     #[inline]
-    pub fn divexact(&self, other: &Integer) -> IntPol {
+    pub fn divexact(&self, other: &Integer) -> Result<IntPol, ()> {
         assert!(!other.is_zero());
         
         let coeffs = self.coefficients();
         for coeff in coeffs {
-            assert!(other.divides(&coeff));
+            if coeff.rem(other) != 0 {
+                return Err(());
+            }
         }
 
         let mut res = IntPol::default();
@@ -345,10 +369,12 @@ impl IntPol {
                 self.as_ptr(), 
                 other.as_ptr()
             );
-            res
+            Ok(res)
         }
     }
-    
+   
+    /// Compute the polynomial whose coefficients are the symmetric remainder of the input
+    /// polynomial coefficients modulo `other`.
     #[inline]
     pub fn srem(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
@@ -363,6 +389,7 @@ impl IntPol {
         }
     }
     
+    /// Return the quotient and remainder of division of an integer polynomial by `other`.
     #[inline]
     pub fn divrem(&self, other: &IntPol) -> (IntPol, IntPol) {
         assert!(!other.is_zero());
@@ -378,8 +405,8 @@ impl IntPol {
             (q, r)
         }
     }
-   
-    // is this more efficient than multiplication?
+  
+    /// Square an integer polynomial.
     #[inline]
     pub fn square(&self) -> IntPol {
         let mut res = IntPol::default();
@@ -389,16 +416,19 @@ impl IntPol {
         }
     }
     
+    /// Return the polynomial with coefficients of the input polynomial shifted left by `n` terms.
     #[inline]
     pub fn shift_left(&mut self, n: c_long) {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_shift_left(self.as_mut_ptr(), self.as_ptr(), n);}
     }
     
+    /// Return the polynomial with coefficients of the input polynomial shifted right by `n` terms.
     #[inline]
     pub fn shift_right(&mut self, n: c_long) {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_shift_right(self.as_mut_ptr(), self.as_ptr(), n);}
     }
 
+    /// Return the greatest common divisor of two integer polynomials.
     #[inline]
     pub fn gcd(&self, other: &IntPol) -> IntPol {
         let mut res = IntPol::default();
@@ -408,6 +438,7 @@ impl IntPol {
         }
     }
 
+    /// Returns the least common multiple of two integer polynomials.
     #[inline]
     pub fn lcm(&self, other: &IntPol) -> IntPol {
         let mut res = IntPol::default();
@@ -417,6 +448,8 @@ impl IntPol {
         }
     }
 
+    /// Computes the extended gcd of two integer polynomials `f` and `g`. We return `(d, a, b)` where 
+    /// `gcd(f, g) = d` and `d = a*f + b*g`.
     #[inline]
     pub fn xgcd(&self, other: &IntPol) -> (Integer, IntPol, IntPol) {
         unsafe {
@@ -433,7 +466,8 @@ impl IntPol {
             (d, a, b)
         }
     }
-    
+   
+    /// Return the resultant of two integer polynomials.
     #[inline]
     pub fn resultant(&self, other: &IntPol) -> Integer {
         let mut res = Integer::default();
@@ -447,7 +481,6 @@ impl IntPol {
         }
     }
     
-    // unoptimized per flint doc
     #[inline]
     pub fn divides(&self, other: &IntPol) -> bool {
         let mut res = IntPol::default();
