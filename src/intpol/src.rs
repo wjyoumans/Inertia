@@ -17,8 +17,11 @@
 
 #![allow(non_snake_case)]
 
+use std::ffi::{CStr, CString};
+
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
+use num_traits::{Signed, Unsigned};
 
 use crate::traits::Element;
 use crate::integer::src::Integer;
@@ -43,7 +46,7 @@ impl IntPolRing {
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct IntPol {
-    pub data: <Self as Element>::Data,
+    pub data: fmpz_poly_struct,
 }
 
 impl IntPol {
@@ -55,6 +58,29 @@ impl IntPol {
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_poly_struct {
         &mut self.data
+    }
+
+    #[inline]
+    pub fn get_str(&self) -> String {
+        unsafe {
+            let s = flint_sys::fmpz_poly::fmpz_poly_get_str(self.as_ptr());
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
+    }
+    
+    #[inline]
+    pub fn get_str_pretty(&self, var: &str) -> String {
+        let v = CString::new(var).unwrap();
+        unsafe {
+            let s = flint_sys::fmpz_poly::fmpz_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
     }
 
     #[inline]
@@ -93,12 +119,38 @@ impl IntPol {
     }
     
     #[inline]
-    pub fn set_coeff<T>(&mut self, i: usize, coeff: T) where T: Into<Integer> {
+    pub fn set_coeff(&mut self, i: usize, coeff: &Integer) {
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_set_coeff_fmpz(
                 self.as_mut_ptr(), 
                 i as c_long, 
-                coeff.into().as_ptr()
+                coeff.as_ptr()
+            );
+        }
+    }
+    
+    #[inline]
+    pub fn set_coeff_ui<T>(&mut self, i: usize, coeff: T) where 
+        T: Into<c_ulong> 
+    {
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_set_coeff_ui(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.into()
+            );
+        }
+    }
+    
+    #[inline]
+    pub fn set_coeff_si<T>(&mut self, i: usize, coeff: T) where 
+        T: Into<c_long> 
+    {
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_set_coeff_si(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.into()
             );
         }
     }
@@ -220,36 +272,35 @@ impl IntPol {
     // no cdiv in flint
 
     #[inline]
-    pub fn fdiv<T>(&self, other: T) -> IntPol where T: Into<Integer> {
-        let other = other.into();
+    pub fn fdiv(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
         let mut res = IntPol::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_scalar_fdiv_fmpz(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                other.as_ptr());
+                other.as_ptr()
+            );
             res
         }
     }
     
     #[inline]
-    pub fn tdiv<T>(&self, other: T) -> IntPol where T: Into<Integer> {
-        let other = other.into();
+    pub fn tdiv(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
         let mut res = IntPol::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_scalar_tdiv_fmpz(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                other.as_ptr());
+                other.as_ptr()
+            );
             res
         }
     }
  
     #[inline]
-    pub fn divexact<T>(&self, other: T) -> IntPol where T: Into<Integer> {
-        let other = other.into();
+    pub fn divexact(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
         
         let coeffs = self.coefficients();
@@ -262,28 +313,28 @@ impl IntPol {
             flint_sys::fmpz_poly::fmpz_poly_scalar_divexact_fmpz(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                other.as_ptr());
+                other.as_ptr()
+            );
             res
         }
     }
     
     #[inline]
-    pub fn srem<T>(&self, other: T) -> IntPol where T: Into<Integer> {
-        let other = other.into();
+    pub fn srem(&self, other: &Integer) -> IntPol {
         assert!(!other.is_zero());
         let mut res = IntPol::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_scalar_smod_fmpz(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                other.as_ptr());
+                other.as_ptr()
+            );
             res
         }
     }
     
     #[inline]
-    pub fn divrem<T>(&self, other: T) -> (IntPol, IntPol) where T: Into<IntPol> {
-        let other = other.into();
+    pub fn divrem(&self, other: &IntPol) -> (IntPol, IntPol) {
         assert!(!other.is_zero());
         let mut q = IntPol::default();
         let mut r = IntPol::default();
@@ -292,7 +343,8 @@ impl IntPol {
                 q.as_mut_ptr(), 
                 r.as_mut_ptr(), 
                 self.as_ptr(), 
-                other.as_ptr());
+                other.as_ptr()
+            );
             (q, r)
         }
     }
@@ -318,25 +370,25 @@ impl IntPol {
     }
 
     #[inline]
-    pub fn gcd<T>(&self, other: T) -> IntPol where T: Into<IntPol> {
+    pub fn gcd(&self, other: &IntPol) -> IntPol {
         let mut res = IntPol::default();
         unsafe {
-            flint_sys::fmpz_poly::fmpz_poly_gcd(res.as_mut_ptr(), self.as_ptr(), other.into().as_ptr());
+            flint_sys::fmpz_poly::fmpz_poly_gcd(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
             res
         }
     }
 
     #[inline]
-    pub fn lcm<T>(&self, other: T) -> IntPol where T: Into<IntPol> {
+    pub fn lcm(&self, other: &IntPol) -> IntPol {
         let mut res = IntPol::default();
         unsafe {
-            flint_sys::fmpz_poly::fmpz_poly_lcm(res.as_mut_ptr(), self.as_ptr(), other.into().as_ptr());
+            flint_sys::fmpz_poly::fmpz_poly_lcm(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
             res
         }
     }
 
     #[inline]
-    pub fn xgcd<T>(&self, other: T) -> (Integer, IntPol, IntPol) where T: Into<IntPol> {
+    pub fn xgcd(&self, other: &IntPol) -> (Integer, IntPol, IntPol) {
         unsafe {
             let mut d = Integer::default();
             let mut a = IntPol::default();
@@ -346,20 +398,20 @@ impl IntPol {
                 a.as_mut_ptr(), 
                 b.as_mut_ptr(),
                 self.as_ptr(), 
-                other.into().as_ptr()
+                other.as_ptr()
             );
             (d, a, b)
         }
     }
     
     #[inline]
-    pub fn resultant<T>(&self, other: T) -> Integer where T: Into<IntPol> {
+    pub fn resultant(&self, other: &IntPol) -> Integer {
         let mut res = Integer::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_resultant(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                other.into().as_ptr()
+                other.as_ptr()
             );
             res
         }
@@ -367,18 +419,17 @@ impl IntPol {
     
     // unoptimized per flint doc
     #[inline]
-    pub fn divides<T>(&self, other: T) -> bool where T: Into<IntPol> {
+    pub fn divides(&self, other: &IntPol) -> bool {
         let mut res = IntPol::default();
         unsafe { flint_sys::fmpz_poly::fmpz_poly_divides(
             res.as_mut_ptr(), 
-            other.into().as_ptr(), 
+            other.as_ptr(), 
             self.as_ptr()) == 1 
         }
     }
     
     #[inline]
-    pub fn remove<T>(&mut self, other: T) -> c_int where T: Into<IntPol> {
-        let other = other.into();
+    pub fn remove(&mut self, other: &IntPol) -> c_int {
         assert!(!other.is_zero());
         assert!(other.abs() != 1);
         unsafe {
@@ -402,8 +453,7 @@ impl IntPol {
     }
     
     #[inline]
-    pub fn div_series<T>(&self, other: T, n: c_long) -> IntPol where T: Into<IntPol> {
-        let other = other.into();
+    pub fn div_series(&self, other: &IntPol, n: c_long) -> IntPol {
         assert!(other.get_coeff(0).abs() == 1);
         assert!(n >= 1);
 
@@ -427,16 +477,12 @@ impl IntPol {
 
     // TODO: Flint inexact error thrown if output is rational polynomial (use RatPol::interpolate).
     #[inline]
-    pub fn interpolate<'b, T>(x: &'b [T], y: &'b [T]) -> IntPol where &'b T: Into<Integer> {
+    pub fn interpolate(x: &[Integer], y: &[Integer]) -> IntPol {
         assert_eq!(x.len(), y.len());
         let n = x.len();
 
-        // TODO: check x has no repeated elements?
-        //let mut set: HashSet<&Integer> = HashSet::from_iter(x.iter().clone());
-        //assert_eq!(set.len(), n);
-
-        let vx = Vec::from_iter(x.iter().map(|x| x.into().as_ptr().clone()));
-        let vy = Vec::from_iter(y.iter().map(|y| y.into().as_ptr().clone()));
+        let vx = Vec::from_iter(x.iter().map(|x| x.as_ptr().clone()));
+        let vy = Vec::from_iter(y.iter().map(|y| y.as_ptr().clone()));
 
         let mut res = IntPol::default();
         unsafe { 
@@ -451,10 +497,10 @@ impl IntPol {
     }
 
     #[inline]
-    pub fn compose<T>(&self, other: T) -> IntPol where T: Into<IntPol> {
+    pub fn compose(&self, other: &IntPol) -> IntPol {
         let mut res = IntPol::default();
         unsafe {
-            flint_sys::fmpz_poly::fmpz_poly_compose(res.as_mut_ptr(), self.as_ptr(), other.into().as_ptr());
+            flint_sys::fmpz_poly::fmpz_poly_compose(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
         }
         res
     }
@@ -479,26 +525,26 @@ impl IntPol {
     }
 
     #[inline]
-    pub fn taylor_shift<T>(&self, c: T) -> IntPol where T: Into<Integer> {
+    pub fn taylor_shift(&self, c: &Integer) -> IntPol {
         let mut res = IntPol::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_taylor_shift(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                c.into().as_ptr()
+                c.as_ptr()
             );
         }
         res
     }
     
     #[inline]
-    pub fn compose_series<T>(&self, other: T, n: c_long) -> IntPol where T: Into<IntPol> {
+    pub fn compose_series(&self, other: &IntPol, n: c_long) -> IntPol {
         let mut res = IntPol::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_compose_series(
                 res.as_mut_ptr(), 
                 self.as_ptr(),
-                other.into().as_ptr(),
+                other.as_ptr(),
                 n
             );
         }
@@ -588,19 +634,16 @@ impl IntPol {
     }
 
     #[inline]
-    pub fn hensel_lift<'b, 'c, S, T>(
+    pub fn hensel_lift(
         &self, 
-        g: &'b S, 
-        h: &'b S, 
-        a: &'b S, 
-        b: &'b S, 
-        p: &'c T, 
-        p1: &'c T
-    ) -> (IntPol, IntPol, IntPol, IntPol) where 
-        &'b S: Into<IntPol>,
-        &'c T: Into<Integer>
-{
-
+        g: &IntPol, 
+        h: &IntPol, 
+        a: &IntPol, 
+        b: &IntPol, 
+        p: &Integer, 
+        p1: &Integer
+    ) -> (IntPol, IntPol, IntPol, IntPol) 
+    {
         let mut G = IntPol::default();
         let mut H = IntPol::default();
         let mut A = IntPol::default();
@@ -612,59 +655,53 @@ impl IntPol {
                 A.as_mut_ptr(),
                 B.as_mut_ptr(),
                 self.as_ptr(),
-                g.into().as_ptr(),
-                h.into().as_ptr(),
-                a.into().as_ptr(),
-                b.into().as_ptr(),
-                p.into().as_ptr(),
-                p1.into().as_ptr());
+                g.as_ptr(),
+                h.as_ptr(),
+                a.as_ptr(),
+                b.as_ptr(),
+                p.as_ptr(),
+                p1.as_ptr());
         }
         (G, H, A, B)
     }
     
     #[inline]
-    pub fn hensel_lift_only_inv<'b, 'c, S, T>(
-        G: &'b S, 
-        H: &'b S, 
-        a: &'b S, 
-        b: &'b S, 
-        p: &'c T, 
-        p1: &'c T
-    ) -> (IntPol, IntPol) where 
-        &'b S: Into<IntPol>,
-        &'c T: Into<Integer>
+    pub fn hensel_lift_only_inv(
+        G: &IntPol,
+        H: &IntPol,
+        a: &IntPol, 
+        b: &IntPol, 
+        p: &Integer, 
+        p1: &Integer
+    ) -> (IntPol, IntPol)
 {
-
         let mut A = IntPol::default();
         let mut B = IntPol::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_hensel_lift_only_inverse(
                 A.as_mut_ptr(),
                 B.as_mut_ptr(),
-                G.into().as_ptr(),
-                H.into().as_ptr(),
-                a.into().as_ptr(),
-                b.into().as_ptr(),
-                p.into().as_ptr(),
-                p1.into().as_ptr());
+                G.as_ptr(),
+                H.as_ptr(),
+                a.as_ptr(),
+                b.as_ptr(),
+                p.as_ptr(),
+                p1.as_ptr());
         }
         (A, B)
     }
     
     #[inline]
-    pub fn hensel_lift_no_inv<'b, 'c, S, T>(
+    pub fn hensel_lift_no_inv(
         &self,
-        g: &'b S, 
-        h: &'b S, 
-        a: &'b S, 
-        b: &'b S, 
-        p: &'c T, 
-        p1: &'c T
+        g: &IntPol,
+        h: &IntPol, 
+        a: &IntPol, 
+        b: &IntPol, 
+        p: &Integer, 
+        p1: &Integer
     ) -> (IntPol, IntPol) where
-        &'b S: Into<IntPol>,
-        &'c T: Into<Integer>
 {
-
         let mut G = IntPol::default();
         let mut H = IntPol::default();
         unsafe {
@@ -672,12 +709,12 @@ impl IntPol {
                 G.as_mut_ptr(),
                 H.as_mut_ptr(),
                 self.as_ptr(),
-                g.into().as_ptr(),
-                h.into().as_ptr(),
-                a.into().as_ptr(),
-                b.into().as_ptr(),
-                p.into().as_ptr(),
-                p1.into().as_ptr());
+                g.as_ptr(),
+                h.as_ptr(),
+                a.as_ptr(),
+                b.as_ptr(),
+                p.as_ptr(),
+                p1.as_ptr());
         }
         (G, H)
     }
