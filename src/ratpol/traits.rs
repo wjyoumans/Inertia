@@ -21,7 +21,6 @@ use std::hash::{Hash, Hasher};
 use std::mem::{self, MaybeUninit};
 
 use flint_sys::fmpq_poly::fmpq_poly_struct;
-use rug::Assign;
 
 use crate::traits::*;
 use crate::ratpol::src::{RatPol, RatPolRing};
