@@ -70,8 +70,8 @@ impl_from! {
     }
 }
 
-impl<'a, T: Debug> From<&'a [T]> for RatPol where &'a T: Into<Rational> {
-    fn from(src: &'a [T]) -> RatPol {
+impl From<&[Rational]> for RatPol {
+    fn from(src: &[Rational]) -> RatPol {
         let mut res = RatPol::default();
         for (i, x) in src.iter().enumerate() {
             res.set_coeff(i, x);
@@ -80,9 +80,20 @@ impl<'a, T: Debug> From<&'a [T]> for RatPol where &'a T: Into<Rational> {
     }
 }
 
+impl<'a, T> From<&'a [T]> for RatPol where &'a T: Into<Rational>
+{
+    fn from(src: &'a [T]) -> RatPol {
+        let mut res = RatPol::default();
+        for (i, x) in src.iter().enumerate() {
+            res.set_coeff(i, &x.into());
+        }
+        res
+    }
+}
+
 impl From<&RatPol> for String {
     fn from(x: &RatPol) -> String {
-        format!("({})/{}", x.numerator(), x.denominator())
+        x.get_str_pretty("x")
     }
 }
 

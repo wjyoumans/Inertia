@@ -15,8 +15,11 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+use std::ffi::{CStr, CString};
+
 use flint_sys::fmpq_poly::fmpq_poly_struct;
-use libc::c_long;
+use libc::{c_long, c_ulong};
 
 use crate::traits::Element;
 use crate::integer::src::Integer;
@@ -55,6 +58,29 @@ impl RatPol {
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_poly_struct {
         &mut self.data
+    }
+    
+    #[inline]
+    pub fn get_str(&self) -> String {
+        unsafe {
+            let s = flint_sys::fmpq_poly::fmpq_poly_get_str(self.as_ptr());
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
+    }
+    
+    #[inline]
+    pub fn get_str_pretty(&self, var: &str) -> String {
+        let v = CString::new(var).unwrap();
+        unsafe {
+            let s = flint_sys::fmpq_poly::fmpq_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
     }
 
     #[inline]
@@ -95,12 +121,38 @@ impl RatPol {
     }
     
     #[inline]
-    pub fn set_coeff<T>(&mut self, i: usize, coeff: T) where T: Into<Rational> {
+    pub fn set_coeff(&mut self, i: usize, coeff: &Rational) {
         unsafe {
             flint_sys::fmpq_poly::fmpq_poly_set_coeff_fmpq(
                 self.as_mut_ptr(), 
                 i as c_long, 
-                coeff.into().as_ptr()
+                coeff.as_ptr()
+            );
+        }
+    }
+    
+    #[inline]
+    pub fn set_coeff_ui<T>(&mut self, i: usize, coeff: T) where
+        T: Into<c_ulong>
+    {
+        unsafe {
+            flint_sys::fmpq_poly::fmpq_poly_set_coeff_ui(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.into()
+            );
+        }
+    }
+    
+    #[inline]
+    pub fn set_coeff_si<T>(&mut self, i: usize, coeff: T) where
+        T: Into<c_long>
+    {
+        unsafe {
+            flint_sys::fmpq_poly::fmpq_poly_set_coeff_si(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.into()
             );
         }
     }
