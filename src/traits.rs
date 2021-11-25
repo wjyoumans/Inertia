@@ -29,37 +29,19 @@ pub trait InvAssign {
     fn inv_assign(&mut self);
 }
 
-/*
-/// Exponentiation.
-pub trait Pow<T> {
-    type Output;
-    fn pow(&self, exp: T) -> Self::Output;
+/// Bitwise `and` of two items with assignment into a third.
+pub trait AssignBitAnd<T, U> {
+    fn assign_bitand(&mut self, lhs: T, rhs: U);
 }
 
-/// Exponentiation with assignment.
-pub trait PowAssign<T> {
-    fn pow_assign(&mut self, exp: T);
+/// Bitwise `or` of two items with assignment into a third.
+pub trait AssignBitOr<T, U> {
+    fn assign_bitor(&mut self, lhs: T, rhs: U);
 }
 
-/// Exponentiation from with assignment.
-pub trait PowFrom<T> {
-    fn pow_from(&mut self, base: T);
-}*/
-
-/// Modular exponentiation.
-pub trait Powm<T, U> {
-    type Output;
-    fn powm(&self, exp: T, modulus: U) -> Self::Output;
-}
-
-/// Modular exponentiation with assignment.
-pub trait PowmAssign<T, U> {
-    fn powm_assign(&mut self, exp: T, modulus: U);
-}
-
-/// Modular exponentiation from with assignment.
-pub trait PowmFrom<T, U> {
-    fn powm_from(&mut self, base: T, modulus: U);
+/// Bitwise `xor` of two items with assignment into a third.
+pub trait AssignBitXor<T, U> {
+    fn assign_bitxor(&mut self, lhs: T, rhs: U);
 }
 
 /// Addition of two items with assignment into a third.
@@ -85,11 +67,6 @@ pub trait AssignDiv<T, U> {
 /// Exponentiation of two items with assignment into a third.
 pub trait AssignPow<T, U> {
     fn assign_pow(&mut self, lhs: T, rhs: U);
-}
-
-/// Modular exponentiation of two items with assignment into a third.
-pub trait AssignPowm<T, U, M> {
-    fn assign_powm(&mut self, lhs: T, rhs: U, modulus: M);
 }
 
 /// Remainder of two items with assignment into a third.
@@ -121,6 +98,11 @@ pub trait EvaluateProductMod<T> {
     fn evaluate_mod(&self, modulus: T) -> Self::Output;
 }
 
+/// Factorization.
+pub trait Factorizable {
+    type Output;
+    fn factor(&self) -> Self::Output;
+}
 
 /// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
@@ -153,4 +135,12 @@ pub struct Elem<T: Parent> {
 
 impl<T: Parent> Drop for Elem<T> {
     default fn drop(&mut self) {}
+}
+
+pub trait Zero: Parent {
+    fn zero(&self) -> Self::Element;
+}
+
+pub trait One: Parent {
+    fn one(&self) -> Self::Element;
 }

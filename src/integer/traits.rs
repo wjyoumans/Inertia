@@ -21,9 +21,13 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz::fmpz as fmpz;
+use rug::ops::Pow;
+use rustc_hash::FxHashMap;
 
 use crate::traits::*;
+use crate::product::src::Product;
 use crate::integer::src::{Integer, IntegerRing};
+use crate::rational::src::Rational;
 
 // IntegerRing //
 
@@ -31,6 +35,19 @@ impl Parent for IntegerRing {
     type Data = ();
     type Element = Integer;
 }
+
+impl Zero for IntegerRing {
+    fn zero(&self) -> Integer {
+        Integer::from(0)
+    }
+}
+
+impl One for IntegerRing {
+    fn one(&self) -> Integer {
+        Integer::from(1)
+    }
+}
+
 
 // Integer //
 
@@ -77,3 +94,67 @@ impl Hash for Integer {
         self.get_ui_vector().hash(state);
     }
 }
+
+impl Factorizable for Integer {
+    type Output = Product<Integer>;
+    fn factor(&self) -> Self::Output {
+        if self.is_zero() {
+            return Product::<Integer>::new(Integer::from(0), Integer::from(1))
+        } else if self.is_one() {
+            return Product::<Integer>::new(Integer::from(1), Integer::from(1))
+        };
+       
+        let mut fac = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_factor::fmpz_factor_init(fac.as_mut_ptr());
+            let mut fac = fac.assume_init();
+            
+            flint_sys::fmpz_factor::fmpz_factor(&mut fac, self.as_ptr());
+
+            let n = fac.num as usize;
+            let base = std::slice::from_raw_parts(fac.p, n);
+            let exp = std::slice::from_raw_parts(fac.exp, n);
+            
+            let mut hashmap = FxHashMap::<Integer, Integer>::default();
+            for (p, k) in base.iter().zip(exp) {
+                hashmap.insert(Integer { data: p.clone() }, Integer::from(k));
+            }
+            
+            flint_sys::fmpz_factor::fmpz_factor_clear(&mut fac);
+            let fac = Product::<Integer>::from(hashmap);
+            fac
+        }
+    }
+}
+
+/*
+impl EvaluateProduct for Product<Integer> {
+    type Output = Rational;
+    fn evaluate(&self) -> Rational {
+        let mut x = Rational::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.pow(k);
+        }
+        x
+    }
+}
+
+impl EvaluateProductMod<&Integer> for Product<Integer> {
+    type Output = Integer;
+    fn evaluate_mod(&self, modulus: &Integer) -> Result<Integer, Err> {
+        let mut x = Integer::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.powm(k, modulus);
+            x %= modulus;
+        }
+        x
+    }
+}*/
+
+/*
+impl<'a> EvaluateProductMod<Integer> for Fac<'a, Integer> {
+    type Output = Integer;
+    fn evaluate_mod(&self, modulus: Integer) -> Integer {
+        self.evaluate_mod(&modulus)
+    }
+}*/
