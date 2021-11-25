@@ -20,13 +20,13 @@ use crate::integer::src::Integer;
 
 // RationalField //
 
-/// A rational field.
+/// A rational field that can be used as a [Rational] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RationalField {}
 
 impl RationalField {
     /// Construct a rational field. No initialization is needed so this is equivalent to 
-    /// `RationalField {}`
+    /// `RationalField {}`, but is provided for consistency with more complex structures.
     pub fn init() -> Self {
         RationalField {}
     }
@@ -41,6 +41,8 @@ impl RationalField {
     }
 }
 
+/// An arbitrary precision rational number. The field `data` is a FLINT
+/// [fmpq][flint_sys::fmpq::fmpq].
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct Rational {
@@ -48,16 +50,21 @@ pub struct Rational {
 }
 
 impl Rational {
+    /// A pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq {
         &self.data
     }
    
+    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq {
         &mut self.data
     }
 
+    /// Returns the numerator of a rational number as an [Integer].
     #[inline]
     pub fn numerator(&self) -> Integer {
         Integer {
@@ -65,6 +72,7 @@ impl Rational {
         }
     }
     
+    /// Returns the denominator of a rational number as an [Integer].
     #[inline]
     pub fn denominator(&self) -> Integer {
         Integer {
@@ -72,22 +80,25 @@ impl Rational {
         }
     }
 
+    /// Rounds the rational number down to the nearest [Integer].
     #[inline]
     pub fn floor(&self) -> Integer {
         Integer::fdiv(&self.numerator(), &self.denominator())
     }
 
+    /// Rounds the rational number up to the nearest [Integer].
     #[inline]
     pub fn ceil(&self) -> Integer {
         Integer::cdiv(&self.numerator(), &self.denominator())
     }
     
+    /// Rounds the rational number to the nearest [Integer].
     #[inline]
     pub fn round(&self) -> Integer {
         Integer::tdiv(&self.numerator(), &self.denominator())
     }
     
-    
+    /// Returns -1 if the rational number is negative, +1 if it is positive, and 0 otherwise.
     #[inline]
     pub fn sign(&self) -> i32 {
         unsafe {
@@ -95,6 +106,7 @@ impl Rational {
         }
     }
 
+    /// Returns the absolute value of a rational number.
     #[inline]
     pub fn abs(&self) -> Rational {
         unsafe {
@@ -104,6 +116,8 @@ impl Rational {
         }
     }
 
+    /// Returns the height of a rational number, the largest of the absolute values of its numerator 
+    /// and denominator.
     #[inline]
     pub fn height(&self) -> Integer {
         unsafe {
@@ -112,28 +126,19 @@ impl Rational {
             res
         }
     }
-    
-    #[inline]
-    pub fn inv(&self) -> Rational {
-        unsafe {
-            let mut res = Rational::default();
-            flint_sys::fmpq::fmpq_inv(res.as_mut_ptr(), self.as_ptr());
-            res
-        }
-    }
 
-/*
-    // TODO: RANDOM GENERATION
-
+    /// Return the greatest common divisor of rational numbers `(p,q), (r,s)` which is defined to
+    /// be the canonicalization of `gcd((ps, qr)/qs)`.
     #[inline]
     pub fn gcd(&self, other: &Rational) -> Rational {
+        let mut res = Rational::default();
         unsafe {
-            let mut res = Rational::default();
             flint_sys::fmpq::fmpq_gcd(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
-            res
         }
+        res
     }
 
+    /* TODO: make sure this makes sense
     #[inline]
     pub fn xgcd(&self, other: &Rational) -> (Rational, Integer, Integer) {
         unsafe {
@@ -148,6 +153,7 @@ impl Rational {
                 other.as_ptr());
             (d, a, b)
         }
-    }
-    */
+    }*/
+    
+    // TODO: Random, enumeration, continued fractions, special functions, dedekind sums.
 }
