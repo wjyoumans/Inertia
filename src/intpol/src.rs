@@ -28,14 +28,20 @@ use crate::integer::src::Integer;
 
 // IntPol //
 
+/// The ring of polynomials with [Integer] coefficients that can be used as an integer polynomial
+/// "actory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntPolRing {}
 
 impl IntPolRing {
+    /// Construct the ring of polynomials with integer coefficients. No initialization is needed so
+    /// this is equivalent to `IntPolRing {}`, but is provided for consistency with more complex
+    /// structures.
     pub fn init() -> Self {
         IntPolRing {}
     }
     
+    /// Create a new [IntPol].
     pub fn new<T: Into<IntPol>>(&self, x: T) -> IntPol {
         x.into()
     }
@@ -43,6 +49,8 @@ impl IntPolRing {
 
 // IntPol //
 
+/// A polynomial with [Integer] coefficients. The field `data` is a FLINT
+/// [fmpz_poly][flint_sys::fmpz_poly::fmpz_poly_struct].
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct IntPol {
@@ -50,16 +58,22 @@ pub struct IntPol {
 }
 
 impl IntPol {
+
+    /// A pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_poly_struct {
         &self.data
     }
     
+    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_poly_struct {
         &mut self.data
     }
 
+    /// Return a [String] representation of an integer polynomial.
     #[inline]
     pub fn get_str(&self) -> String {
         unsafe {
@@ -71,6 +85,7 @@ impl IntPol {
         }
     }
     
+    /// Return a pretty-printed [String] representation of an integer polynomial.
     #[inline]
     pub fn get_str_pretty(&self, var: &str) -> String {
         let v = CString::new(var).unwrap();
@@ -83,32 +98,38 @@ impl IntPol {
         }
     }
 
+    /// Return true if the polynomial is zero.
     #[inline]
     pub fn is_zero(&self) -> bool {
         *self == 0
     }
 
+    /// Return true if the polynomial is one.
     #[inline]
     pub fn is_one(&self) -> bool {
         unsafe {flint_sys::fmpz_poly::fmpz_poly_is_one(self.as_ptr()) == 1}
     }
 
-    // NOTE: we mean invertible in Q(x) here (to guarantee division is possible)
+    /// Return true if the polynomial is invertible as a rational function. False is returned only
+    /// if the polynomial is zero.
     #[inline]
     pub fn is_invertible(&self) -> bool {
         !self.is_zero()
     }
 
+    /// Return the length of the polynomial, equivalently, the number of non-zero terms.
     #[inline]
     pub fn len(&self) -> c_long {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_length(self.as_ptr())}
     }
     
+    /// Return the degree of the polynomial.
     #[inline]
     pub fn degree(&self) -> c_long {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_degree(self.as_ptr())}
     }
     
+    /// Get the i-th coefficient of an integer polynomial.
     #[inline]
     pub fn get_coeff(&self, i: usize) -> Integer {
         let mut res = Integer::default();
@@ -118,6 +139,7 @@ impl IntPol {
         }
     }
     
+    /// Set the i-th coefficient of an integer polynomial to an [Integer].
     #[inline]
     pub fn set_coeff(&mut self, i: usize, coeff: &Integer) {
         unsafe {
@@ -129,6 +151,7 @@ impl IntPol {
         }
     }
     
+    /// Set the i-th coefficient of an integer polynomial to an unsigned integer.
     #[inline]
     pub fn set_coeff_ui<T>(&mut self, i: usize, coeff: T) where 
         T: Into<c_ulong> 
@@ -142,6 +165,7 @@ impl IntPol {
         }
     }
     
+    /// Set the i-th coefficient of an integer polynomial to a signed integer.
     #[inline]
     pub fn set_coeff_si<T>(&mut self, i: usize, coeff: T) where 
         T: Into<c_long> 
@@ -155,6 +179,7 @@ impl IntPol {
         }
     }
 
+    /// Return an [Integer] vector containing the coefficients of the polynomial.
     #[inline]
     pub fn coefficients(&self) -> Vec<Integer> {
         let len = self.len();
@@ -166,27 +191,32 @@ impl IntPol {
         vec
     }
     
+    /// Return true if the polynomial is the unit +/-1.
     #[inline]
     pub fn is_unit(&self) -> bool {
         unsafe {flint_sys::fmpz_poly::fmpz_poly_is_unit(self.as_ptr()) == 1}
     }
     
+    /// Return true if the polynomial if the generator `x`, a degree one polynomial with
+    /// coefficient one and no constant term.
     #[inline]
     pub fn is_gen(&self) -> bool {
         unsafe {flint_sys::fmpz_poly::fmpz_poly_is_gen(self.as_ptr()) == 1}
     }
     
-    // 1 == true?
+    /// Return true if the polynomial has no factors with multiplicity greater than one.
     #[inline]
     pub fn is_squarefree(&self) -> bool {
         unsafe {flint_sys::fmpz_poly::fmpz_poly_is_squarefree(self.as_ptr()) == 1}
     }
 
+    /// Return true if the polynomial is monic.
     #[inline]
     pub fn is_monic(&self) -> bool {
         self.get_coeff(self.degree() as usize).is_one()
     }
 
+    /// Return true if the polynomial is constant.
     pub fn is_constant(&self) -> bool {
         self.len() <= 1
     }
