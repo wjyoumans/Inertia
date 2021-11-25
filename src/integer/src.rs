@@ -15,18 +15,17 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::mem::MaybeUninit;
 use std::ops::Rem;
 
 use flint_sys::flint::{flint_rand_s, flint_bitcnt_t};
 use flint_sys::fmpz::fmpz;
 use libc::{c_int, c_long, c_ulong};
+use num_traits::Zero;
 
 use crate::traits::Element;
 use crate::rational::src::Rational;
 
-// IntegerRing //
-
+/// An integer ring.
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
 
@@ -40,8 +39,7 @@ impl IntegerRing {
     }
 }
 
-// Integer //
-
+/// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct Integer {
@@ -49,7 +47,6 @@ pub struct Integer {
 }
 
 impl Integer {
-
     /// A pointer to the underlying FFI type. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
@@ -64,7 +61,7 @@ impl Integer {
         &mut self.data
     }
 
-    /// Convert the `Integer` to a string in base `base`.
+    /// Convert an [Integer] to a string in base `base`.
     pub fn to_str_radix(&self, base: u8) -> String {
         unsafe {
             // Extra two bytes are for possible minus sign and null terminator
@@ -95,13 +92,13 @@ impl Integer {
         }
     }
     
-    /// Return true if the integer is zero, false otherwise.
+    /// Return true if an [Integer] is zero, false otherwise.
     #[inline]
     pub fn is_zero(&self) -> bool {
         unsafe { flint_sys::fmpz::fmpz_is_zero(self.as_ptr()) == 1 }
     }
    
-    /// Return true if the integer is one, false otherwise.
+    /// Return true if an [Integer] is one, false otherwise.
     #[inline]
     pub fn is_one(&self) -> bool {
         unsafe {
@@ -109,19 +106,19 @@ impl Integer {
         }
     }
 
-    /// Return true if the integer is even, false otherwise.
+    /// Return true if an [Integer] is even, false otherwise.
     #[inline]
     pub fn is_even(&self) -> bool {
         unsafe {flint_sys::fmpz::fmpz_is_even(self.as_ptr()) == 1}
     }
     
-    /// Return true if the integer is odd, false otherwise.
+    /// Return true if an [Integer] is odd, false otherwise.
     #[inline]
     pub fn is_odd(&self) -> bool {
         unsafe {flint_sys::fmpz::fmpz_is_odd(self.as_ptr()) == 1}
     }
     
-    /// Returns -1 if the `Integer` is negative, +1 if the `Integer` is positive, and 0 otherwise.
+    /// Returns -1 an [Integer] is negative, +1 if it is positive, and 0 otherwise.
     #[inline]
     pub fn sign(&self) -> i32 {
         unsafe {
@@ -129,7 +126,7 @@ impl Integer {
         }
     }
 
-    /// Returns the absolute value of an `Integer`.
+    /// Returns the absolute value of an [Integer].
     #[inline]
     pub fn abs(&self) -> Integer {
         unsafe {
@@ -139,41 +136,40 @@ impl Integer {
         }
     }
    
-    /// Determines the size of the absolute value of an `Integer` in base `base` in terms of number
+    /// Determines the size of the absolute value of an [Integer] in base `base` in terms of number
     /// of digits. The base can be between 2 and 62, inclusive.
     #[inline]
     pub fn sizeinbase(&self, base: u8) -> usize {
         unsafe { flint_sys::fmpz::fmpz_sizeinbase(self.as_ptr(), base as i32) as usize }
     }
    
-    /// Returns the number of limbs required to store the absolute value of an `Integer`. Returns
-    /// zero if the `Integer` is zero.
+    /// Returns the number of limbs required to store the absolute value of an [Integer]. Returns
+    /// zero if the [Integer] is zero.
     #[inline]
     pub fn size(&self) -> c_long {
         unsafe { flint_sys::fmpz::fmpz_size(self.as_ptr()) }
     }
    
-    /// Returns the number of bits required to store the absolute value of an `Integer`. Returns zero
-    /// if the `Integer` is zero.
+    /// Returns the number of bits required to store the absolute value of an [Integer]. Returns zero
+    /// if the [Integer] is zero.
     #[inline]
     pub fn bits(&self) -> c_ulong {
         unsafe { flint_sys::fmpz::fmpz_bits(self.as_ptr()) }
     }
    
-    /// Determine if the `Integer` fits in a signed long.
+    /// Determine if the [Integer] fits in a signed long.
     #[inline]
     pub fn fits_si(&self) -> bool {
         unsafe { flint_sys::fmpz::fmpz_fits_si(self.as_ptr()) == 1 }
     }
     
-    /// Determine if the absolute value of an `Integer` fits in an unsigned long.
+    /// Determine if the absolute value of an [Integer] fits in an unsigned long.
     #[inline]
     pub fn abs_fits_ui(&self) -> bool {
         unsafe { flint_sys::fmpz::fmpz_abs_fits_ui(self.as_ptr()) == 1 }
     }
    
-    /// Return an `Option` containing the input as a signed long (`libc::c_long`) if possible, 
-    /// otherwise it is `None`.
+    /// If the input [Integer] fits in an signed long we return it in an [Option].
     #[inline]
     pub fn get_si(&self) -> Option<c_long> {
         if self.fits_si() {
@@ -185,8 +181,7 @@ impl Integer {
         }
     }
 
-    /// Return an `Option` containing the input as an unsigned long (`libc::c_ulong`) if possible, 
-    /// otherwise it is `None`.
+    /// If the input [Integer] fits in an unsigned long we return it in an [Option].
     #[inline]
     pub fn get_ui(&self) -> Option<c_ulong> {
         if self.sign() < 0 {
@@ -201,8 +196,8 @@ impl Integer {
         }
     }
 
-    /// Return a vector of unsigned longs (a_0, ..., a_{n-1}) such that the original integer can be
-    /// written as a_0 + a_1*x + ... + a_{n-1}x^{n-1} where x = 2^FLINT_BITS.
+    /// Return a vector `A` of unsigned longs such that the original [Integer] can be written as 
+    /// `a[0] + a[1]*x + ... + a[n-1]*x^(n-1)` where `x = 2^FLINT_BITS`.
     #[inline]
     pub fn get_ui_vector(&self) -> Vec<c_ulong> {
         assert!(self > &0);
@@ -215,7 +210,9 @@ impl Integer {
         }
         out
     }
-    
+
+    /// Set `self` to the nonnegative [Integer] `vec[0] + vec[1]*x + ... + vec[n-1]*x^(n-1)` where `x =
+    /// 2^FLINT_BITS`.
     #[inline]
     pub fn set_ui_vector(&mut self, vec: Vec<c_ulong>) {
         unsafe {
@@ -223,13 +220,13 @@ impl Integer {
         }
     }
 
-    /// Sets the bit index `bit_index` of an `Integer`.
+    /// Sets the bit index `bit_index` of an [Integer].
     #[inline]
     pub fn setbit(&mut self, bit_index: usize) {
         unsafe { flint_sys::fmpz::fmpz_setbit(self.as_mut_ptr(), bit_index as c_ulong) }
     }
 
-    /// Test the bit index `bit_index` of an `Integer`. Return `true` if it is 1, `false` if it is
+    /// Test the bit index `bit_index` of an [Integer]. Return `true` if it is 1, `false` if it is
     /// zero.
     #[inline]
     pub fn testbit(&self, bit_index: usize) -> bool {
@@ -237,6 +234,8 @@ impl Integer {
     }
 
     // TODO: All Rand functions need work.
+
+    /// Not implemented.
     #[inline]
     pub fn rand_bits(st: flint_rand_s, bt: flint_bitcnt_t) -> Integer {
         let mut res = Integer::default();
@@ -244,6 +243,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand_max_bits(st: flint_rand_s, bt: flint_bitcnt_t) -> Integer {
         let mut res = Integer::default();
@@ -251,6 +251,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand_max_bits_ui(st: flint_rand_s, bt: flint_bitcnt_t) -> Integer {
         let mut res = Integer::default();
@@ -258,6 +259,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand_max_bits_non_zero(st: flint_rand_s, bt: flint_bitcnt_t) -> Integer {
         let mut res = Integer::default();
@@ -265,6 +267,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand(st: flint_rand_s, m: &Integer) -> Integer {
         let mut res = Integer::default();
@@ -272,6 +275,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand_mod(st: flint_rand_s, m: &Integer) -> Integer {
         let mut res = Integer::default();
@@ -279,6 +283,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand_mod_si(st: flint_rand_s, m: &Integer) -> Integer {
         let mut res = Integer::default();
@@ -286,6 +291,7 @@ impl Integer {
         res
     }
     
+    /// Not implemented.
     #[inline]
     pub fn rand_prime(st: flint_rand_s, bt: flint_bitcnt_t) -> Integer {
         let mut res = Integer::default();
@@ -293,10 +299,9 @@ impl Integer {
         res
     }
 
-    /// Return the quotient self/other rounded up towards infinity.
+    /// Return the quotient `self/other` rounded up towards infinity.
     #[inline]
-    pub fn cdiv<'a, T>(&self, other: T) -> Integer where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn cdiv(&self, other: &Integer) -> Integer {
         assert!(!other.is_zero());
         unsafe {
             let mut res = Integer::default();
@@ -305,10 +310,9 @@ impl Integer {
         }
     }
     
-    /// Return the quotient self/other rounded down towards negative infinity.
+    /// Return the quotient `self/other` rounded down towards negative infinity.
     #[inline]
-    pub fn fdiv<'a, T>(&self, other: T) -> Integer where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn fdiv(&self, other: &Integer) -> Integer {
         assert!(!other.is_zero());
         unsafe {
             let mut res = Integer::default();
@@ -317,10 +321,9 @@ impl Integer {
         }
     }
     
-    /// Return the quotient self/other rounded to the nearest integer.
+    /// Return the quotient `self/other` rounded to the nearest [Integer].
     #[inline]
-    pub fn tdiv<'a, T>(&self, other: T) -> Integer where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn tdiv(&self, other: &Integer) -> Integer {
         assert!(!other.is_zero());
         unsafe {
             let mut res = Integer::default();
@@ -329,249 +332,382 @@ impl Integer {
         }
     }
     
-    /// Return the quotient self/other rounded up towards infinity and the remainder r.
+    /// Return the quotient `self/other` rounded up towards infinity as well as the remainder.
     #[inline]
-    pub fn cdivrem<'a, T>(&self, other: T) -> (Integer, Integer) where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn cdivrem(&self, other: &Integer) -> (Integer, Integer) {
         assert!(!other.is_zero());
         unsafe {
             let mut q = Integer::default();
             let mut r = Integer::default();
-            flint_sys::fmpz::fmpz_cdiv_qr(q.as_mut_ptr(), r.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+            flint_sys::fmpz::fmpz_cdiv_qr(
+                q.as_mut_ptr(), 
+                r.as_mut_ptr(), 
+                self.as_ptr(),
+                other.as_ptr()
+            );
             (q, r)
         }
     }
     
-    /// Return the quotient self/other rounded down towards negative infinity and the remainder r.
+    /// Return the quotient `self/other` rounded down towards negative infinity as well as the 
+    /// remainder.
     #[inline]
-    pub fn fdivrem<'a, T>(&self, other: T) -> (Integer, Integer) where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn fdivrem(&self, other: &Integer) -> (Integer, Integer) {
         assert!(!other.is_zero());
         unsafe {
             let mut q = Integer::default();
             let mut r = Integer::default();
-            flint_sys::fmpz::fmpz_fdiv_qr(q.as_mut_ptr(), r.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+            flint_sys::fmpz::fmpz_fdiv_qr(
+                q.as_mut_ptr(), 
+                r.as_mut_ptr(), 
+                self.as_ptr(), 
+                other.as_ptr()
+            );
             (q, r)
         }
     }
     
-    /// Return the quotient self/other rounded down towards zero and the remainder r.
+    /// Return the quotient `self/other` rounded towards zero as well as the remainder.
     #[inline]
-    pub fn divrem<'a, T>(&self, other: T) -> (Integer, Integer) where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn divrem(&self, other: &Integer) -> (Integer, Integer) {
         assert!(!other.is_zero());
         unsafe {
             let mut q = Integer::default();
             let mut r = Integer::default();
-            flint_sys::fmpz::fmpz_tdiv_qr(q.as_mut_ptr(), r.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+            flint_sys::fmpz::fmpz_tdiv_qr(
+                q.as_mut_ptr(), 
+                r.as_mut_ptr(), 
+                self.as_ptr(), 
+                other.as_ptr()
+            );
             (q, r)
         }
     }
    
-    /// Return the quotient self/other or `None` if the division is not exact.
+    /// Exact division of `self/other`. If the division is not exact the output [Result] will be an
+    /// [Err].
     #[inline]
-    pub fn divexact<'a, T>(&self, other: T) -> Option<Integer> where T: Into<&'a Integer> {
-        let other = other.into();
+    pub fn divexact(&self, other: &Integer) -> Result<Integer, ()> {
         assert!(!other.is_zero());
-
-        if !other.divides(self) {
-            return None
+        if self.rem(other) != 0 {
+            Err(())
+        } else {
+            let mut res = Integer::default();
+            unsafe { flint_sys::fmpz::fmpz_divexact(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());}
+            Ok(res)
         }
-
+    }
+    
+    /// Exact division of `self/other`. If the division is not exact the output [Result] will be an
+    /// [Err].
+    #[inline]
+    pub fn divexact_ui(&self, other: c_ulong) -> Result<Integer, ()> {
+        assert!(!other.is_zero());
+        if self.rem(other) != 0 {
+            Err(())
+        } else {
+            let mut res = Integer::default();
+            unsafe { flint_sys::fmpz::fmpz_divexact_ui(res.as_mut_ptr(), self.as_ptr(), other);}
+            Ok(res)
+        }
+    }
+    
+    /// Exact division of `self/other`. If the division is not exact the output [Result] will be an
+    /// [Err].
+    #[inline]
+    pub fn divexact_si(&self, other: c_long) -> Result<Integer, ()> {
+        assert!(!other.is_zero());
+        if self.rem(other) != 0 {
+            Err(())
+        } else {
+            let mut res = Integer::default();
+            unsafe { flint_sys::fmpz::fmpz_divexact_si(res.as_mut_ptr(), self.as_ptr(), other);}
+            Ok(res)
+        }
+    }
+   
+    /// The symmetric remainder of an [Integer] modulo `n` will be in the range 
+    /// `[-(n-1)/2, ..., (n-1)/2]` symmetric around zero.
+    #[inline]
+    pub fn srem(&self, modulus: &Integer) -> Integer {
+        assert!(modulus > &0);
         let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_divexact(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());}
-        Some(res)
+        unsafe {
+            flint_sys::fmpz::fmpz_smod(res.as_mut_ptr(), self.as_ptr(), modulus.as_ptr());
+        }
+        res
     }
    
-    /// Symmetric remainder. The `%` remainder operator is overloaded for modular arithmetic but
-    /// `srem` will reduce an `Integer` modulo n to the range -(n-1)/2, ..., 0, ..., (n-1)/2
-    /// symmetric around zero.
+    /// Raises an [Integer] to the power `exp` modulo `modulo`. If the exponent is negative and no
+    /// inverse exists then the output [Result] will be an [Err].
     #[inline]
-    pub fn srem<'a, T>(&self, other: T) -> Integer where T: Into<&'a Integer> {
-        let other = other.into();
-        assert!(!other.is_zero());
-        unsafe {
+    pub fn powm(&self, exp: &Integer, modulus: &Integer) -> Result<Integer, ()> {
+        assert!(modulus > &0);
+        if exp < &0 && !self.is_coprime(modulus) {
+            Err(())
+        } else {
             let mut res = Integer::default();
-            flint_sys::fmpz::fmpz_smod(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
-            res
+            unsafe {
+                flint_sys::fmpz::fmpz_powm(
+                    res.as_mut_ptr(), 
+                    self.as_ptr(), 
+                    exp.as_ptr(), 
+                    modulus.as_ptr()
+                );
+            }
+            Ok(res)
         }
     }
-  
-    // Replace with Powm trait
-    #[deprecated]
+
+    /// Raises an [Integer] to the power `exp` modulo `modulo`, assigning it to the input. If 
+    /// the exponent is negative and no inverse exists then the output [Result] will be an [Err].
     #[inline]
-    pub fn powm_ui<T: Into<c_ulong>>(&self, exp: T, modulus: &Integer) -> Integer {
-        assert!(!modulus.is_zero());
-        let exp = exp.into();
-        unsafe {
-            let mut res = Integer::default();
-            flint_sys::fmpz::fmpz_powm_ui(res.as_mut_ptr(), self.as_ptr(), exp, modulus.as_ptr());
-            res
+    pub fn powm_assign(&mut self, exp: &Integer, modulus: &Integer) -> Result<(), ()> {
+        assert!(modulus > &0);
+        if exp < &0 && !self.is_coprime(modulus) {
+            Err(())
+        } else {
+            unsafe {
+                flint_sys::fmpz::fmpz_powm(
+                    self.as_mut_ptr(), 
+                    self.as_ptr(), 
+                    exp.as_ptr(), 
+                    modulus.as_ptr()
+                );
+            }
+            Ok(())
         }
     }
-   
-    /// Determine whether self divides other.
+    
+    /// Raises an [Integer] to an unsigned integer `exp` modulo `modulo`.
     #[inline]
-    pub fn divides<'a, T>(&self, other: T) -> bool where T: Into<&'a Integer> {
-        unsafe { flint_sys::fmpz::fmpz_divisible(other.into().as_ptr(), self.as_ptr()) == 1 }
+    pub fn powm_ui<T>(&self, exp: T, modulus: &Integer) -> Integer where
+        T: Into<c_ulong>
+    {
+        assert!(modulus > &0);
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_powm_ui(
+                res.as_mut_ptr(), 
+                self.as_ptr(), 
+                exp.into(), 
+                modulus.as_ptr()
+            );
+        }
+        res
+    }
+    
+    /// Raises an [Integer] to an unsigned integer `exp` modulo `modulo`, assigning the result to the 
+    /// input.
+    #[inline]
+    pub fn powm_ui_assign<T>(&mut self, exp: T, modulus: &Integer) where
+        T: Into<c_ulong>
+    {
+        assert!(modulus > &0);
+        unsafe {
+            flint_sys::fmpz::fmpz_powm_ui(
+                self.as_mut_ptr(), 
+                self.as_ptr(), 
+                exp.into(), 
+                modulus.as_ptr()
+            );
+        }
+    }
+    
+    /// Determine whether `self` divides `other`.
+    #[inline]
+    pub fn divides(&self, other: &Integer) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_divisible(other.as_ptr(), self.as_ptr()) == 1 }
     }
 
-    // Use arb/acb for result.
+    /// Compute the natural logarithm of an [Integer] as a double precision float. If the input 
+    /// is less than or equal to zero the [Result] will be an [Err]. (For logarithms of negative 
+    /// integers use (the Complex/arb crate, not yet complete.) 
     #[inline]
-    pub fn log(&self) -> f64 {
-        unsafe { flint_sys::fmpz::fmpz_dlog(self.as_ptr())}
+    pub fn log(&self) -> Result<f64, ()> {
+        if self <= &0 {
+            Err(())
+        } else {
+            unsafe { 
+                Ok(flint_sys::fmpz::fmpz_dlog(self.as_ptr()))
+            }
+        }
     }
 
-    /// Return ceil(log(self)).
+    /// Return the logarithm of an [Integer] at base `base` rounded up towards infinity. Requires
+    /// `self >= 1`, `base >= 2` and that the output will fit in a signed long.
     #[inline]
-    pub fn clog<'a, T>(&self, base: T) -> c_long where T: Into<&'a Integer> {
-        unsafe { flint_sys::fmpz::fmpz_clog(self.as_ptr(), base.into().as_ptr())}
+    pub fn clog(&self, base: &Integer) -> Result<c_long, ()> {
+        if self < &1 {
+            Err(())
+        } else {
+            unsafe { 
+                Ok(flint_sys::fmpz::fmpz_clog(self.as_ptr(), base.as_ptr()))
+            }
+        }
     }
 
+    /// Return the logarithm of an [Integer] at base `base` rounded up towards infinity. Requires
+    /// `self >= 1`, `base >= 2` and that the output will fit in a signed long.
     #[inline]
     pub fn clog_ui<T: Into<c_ulong>>(&self, base: T) -> c_long {
         let base = base.into();
         unsafe { flint_sys::fmpz::fmpz_clog_ui(self.as_ptr(), base)}
     }
     
+    /// Return the logarithm of an [Integer] at base `base` rounded down towards negative infinity. 
+    /// Requires `self >= 1`, `base >= 2` and that the output will fit in a signed long.
     #[inline]
     pub fn flog(&self, base: &Integer) -> c_long {
         unsafe { flint_sys::fmpz::fmpz_flog(self.as_ptr(), base.as_ptr())}
     }
 
+    /// Return the logarithm of an [Integer] at base `base` rounded down towards negative infinity. 
+    /// Requires `self >= 1`, `base >= 2` and that the output will fit in a signed long.
     #[inline]
     pub fn flog_ui<T: Into<c_ulong>>(&self, base: T) -> c_long {
         let base = base.into();
         unsafe { flint_sys::fmpz::fmpz_flog_ui(self.as_ptr(), base)}
     }
 
-    // doc says: if n not prime and r == 1, the value of res is meaningless?
+    /// Return the square root of an [Integer] modulo `n` if it exists.
     #[inline]
-    pub fn sqrt_mod(&self, n: &Integer) -> Option<Integer> {
-        assert!(!n.is_zero());
+    pub fn sqrtmod(&self, n: &Integer) -> Result<Integer, ()> {
         let mut res = Integer::default();
         unsafe { 
             let r = flint_sys::fmpz::fmpz_sqrtmod(res.as_mut_ptr(), self.as_ptr(), n.as_ptr());
       
             if r == 0 {
-                None
+                Err(())
             } else {
-                Some(res)
+                Ok(res)
             }
         }
     }
 
+    /// Return the integer part `a` of the square root of an [Integer] and it's remainder `b`, that
+    /// is, the difference `self - b^2`. Returns an [Err] if the input is negative. 
     #[inline]
-    pub fn quadratic_residue(&self, n: &Integer) -> Option<Integer> {
-        self.sqrt_mod(n)
-    }
-    
-    #[inline]
-    pub fn sqrt_rem(&self) -> (Integer, Integer) {
-        let mut q = Integer::default();
-        let r = Integer::default();
-        unsafe { 
-            flint_sys::fmpz::fmpz_sqrtrem(q.as_mut_ptr(), r.as_ptr(), self.as_ptr());
+    pub fn sqrtrem(&self) -> Result<(Integer, Integer), ()> {
+        if self < &0 {
+            Err(())
+        } else {
+            let mut s = Integer::default();
+            let mut r = Integer::default();
+            unsafe { 
+                flint_sys::fmpz::fmpz_sqrtrem(s.as_mut_ptr(), r.as_mut_ptr(), self.as_ptr());
+            }
+            Ok((s, r))
         }
-        (q, r)
     }
-    
+   
+    /// Return true if the [Integer] is a square.
     #[inline]
     pub fn is_square(&self) -> bool {
         unsafe { flint_sys::fmpz::fmpz_is_square(self.as_ptr()) != 0}
     }
 
+    /// Return the integer part of the square root of an [Integer]. Returns an [Err] if the input
+    /// is negative.
     #[inline]
-    pub fn sqrt(&self) -> Integer {
-        assert!(self > &0);
-        let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_sqrt(res.as_mut_ptr(), self.as_ptr());}
-        res
+    pub fn sqrt(&self) -> Result<Integer, ()> {
+        if self < &0 {
+            Err(())
+        } else {
+            let mut res = Integer::default();
+            unsafe { flint_sys::fmpz::fmpz_sqrt(res.as_mut_ptr(), self.as_ptr());}
+            Ok(res)
+        }
     }
 
+    /// Return the integer part of the n-th root of an [Integer]. Requires `n > 0` and that if `n`
+    /// is even then the input is nonnegative, otherwise an [Err] is returned.
     #[inline]
-    pub fn root<T: Into<i64>>(&self, n: T) -> Integer {
+    pub fn root<T: Into<c_long>>(&self, n: T) -> Result<Integer, ()> {
         let n = n.into();
         
-        assert!(n > 0);
-        if Integer::from(n).is_even() {
-            assert!(self >= &0)
+        if n < 1 || (Integer::from(n).is_even() && self < &0) {
+            Err(())
+        } else {
+            let mut res = Integer::default();
+            unsafe { flint_sys::fmpz::fmpz_root(res.as_mut_ptr(), self.as_ptr(), n);}
+            Ok(res)
         }
-
-        let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_root(res.as_mut_ptr(), self.as_ptr(), n);}
-        res
     }
-   
-    // return bool? (c_int = 0 then not perfect power)
+  
+    /// If the input [Integer] is a perfect power then return the root and exponent, otherwise 
+    /// return an [Err].
     #[inline]
-    pub fn perfect_power(&self) -> (c_int, Option<Integer>) {
+    pub fn perfect_power(&self) -> Result<(Integer, c_int), ()> {
         let mut res = Integer::default();
         unsafe { 
             let k = flint_sys::fmpz::fmpz_is_perfect_power(res.as_mut_ptr(), self.as_ptr());
 
             if k != 0 {
-                (k, Some(res))
+                Ok((res, k))
             } else {
-                (0, None)
+                Err(())
             }
         }
     }
-    
+   
+    /// Return the n-th Fibonacci number.
     #[inline]
-    pub fn fibonacci(&self) -> Integer {
-        assert!(self > &0);
-        assert!(self.abs_fits_ui());
+    pub fn fibonacci(n: c_ulong) -> Integer {
         let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_fib_ui(res.as_mut_ptr(), self.get_ui().unwrap());}
+        unsafe { flint_sys::fmpz::fmpz_fib_ui(res.as_mut_ptr(), n);}
         res
     }
     
+    /// Return the binomial coefficient n choose k.
     #[inline]
-    pub fn binomial(&self, k: c_ulong) -> Integer {
-        assert!(self > &0);
-        assert!(self.abs_fits_ui());
+    pub fn binomial(n: c_ulong, k: c_ulong) -> Integer {
         let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_bin_uiui(res.as_mut_ptr(), self.get_ui().unwrap(), k);}
+        unsafe { flint_sys::fmpz::fmpz_bin_uiui(res.as_mut_ptr(), n, k);}
         res
     }
-    
+   
+    /// Return the factorial of an [Integer].
     #[inline]
     pub fn factorial(&self) -> Integer {
-        assert!(self > &0);
         assert!(self.abs_fits_ui());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_fac_ui(res.as_mut_ptr(), self.get_ui().unwrap());}
         res
     }
 
+    /// Return the rising factorial `x(x+1)(x+2)...(x+k-1)`.
     #[inline]
     pub fn rising_factorial(&self, k: c_ulong) -> Integer {
-        assert!(self > &0);
-        assert!(self.abs_fits_ui());
         let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_rfac_uiui(res.as_mut_ptr(), self.get_ui().unwrap(), k);}
+        unsafe { flint_sys::fmpz::fmpz_rfac_ui(res.as_mut_ptr(), self.as_ptr(), k);}
         res
     }
 
+    /// Return the greatest common divisor of two integers.
     #[inline]
     pub fn gcd(&self, other: &Integer) -> Integer {
-        unsafe {
-            let mut res = Integer::default();
-            flint_sys::fmpz::fmpz_gcd(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
-            res
-        }
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz::fmpz_gcd(res.as_mut_ptr(), self.as_ptr(), other.as_ptr()); }
+        res
+    }
+    
+    /// Return true if two integers are coprime, false otherwise.
+    #[inline]
+    pub fn is_coprime(&self, other: &Integer) -> bool {
+        self.gcd(other) == 1
     }
 
+    /// Return the least common multiple of two integers.
     #[inline]
     pub fn lcm(&self, other: &Integer) -> Integer {
-        unsafe {
-            let mut res = Integer::default();
-            flint_sys::fmpz::fmpz_lcm(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
-            res
-        }
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz::fmpz_lcm(res.as_mut_ptr(), self.as_ptr(), other.as_ptr()); }
+        res
     }
 
+    /// Compute the extended GCD of two integers. Call the input integers `f` and `g`. Then we return
+    /// `(d, a, b)` where `d = gcd(f, g)` and `a*f + b*g = d`.
     #[inline]
     pub fn xgcd(&self, other: &Integer) -> (Integer, Integer, Integer) {
         unsafe {
@@ -587,140 +723,169 @@ impl Integer {
             (d, a, b)
         }
     } 
-    
+   
+    /// Attempt to reconstruct a [Rational] from it's residue mod `m`. This is just
+    /// [rational_reconstruction2][crate::integer::src::Integer::rational_reconstruction2] with the 
+    /// numerator and denominator bounds `n == d == floor(sqrt((m-1)/2))`. If a solution with these 
+    /// constraints exists then it is unique.
     #[inline]
-    pub fn rational_reconstruction(&self, modulus: &Integer) -> Rational {
+    pub fn rational_reconstruction(&self, m: &Integer) -> Result<Rational,()> {
+        let mut res = Rational::default();
         unsafe {
-            let mut res = Rational::default();
-            flint_sys::fmpq::fmpq_reconstruct_fmpz(res.as_mut_ptr(), self.as_ptr(), modulus.as_ptr());
-            res
+            let b = flint_sys::fmpq::fmpq_reconstruct_fmpz(
+                res.as_mut_ptr(), 
+                self.as_ptr(), 
+                m.as_ptr()
+            );
+            if b == 0 {
+                Err(())
+            } else {
+                Ok(res)
+            }
         }
     }
     
+    /// Given bounds `n` and `d` satisfying `2*n*d < m`, attempt to reconstruct a [Rational] from it's 
+    /// residue mod `m` with numerator and denominator absolutely bounded by `n` and `d`
+    /// respectively. We also require `gcd(n, d) = 1` and `n = a*d % m`. If a solution exists then
+    /// it is unique.
     #[inline]
-    pub fn rational_reconstruction2(&self, modulus: &Integer, n: &Integer, d: &Integer) -> Rational {
+    pub fn rational_reconstruction2(&self, m: &Integer, n: &Integer, d: &Integer) 
+        -> Result<Rational, ()> 
+    {
+        let mut res = Rational::default();
         unsafe {
-            let mut res = Rational::default();
-            flint_sys::fmpq::fmpq_reconstruct_fmpz_2(res.as_mut_ptr(), self.as_ptr(), modulus.as_ptr(),
-                n.as_ptr(), d.as_ptr());
-            res
+            let b = flint_sys::fmpq::fmpq_reconstruct_fmpz_2(
+                res.as_mut_ptr(), 
+                self.as_ptr(), 
+                m.as_ptr(),
+                n.as_ptr(), 
+                d.as_ptr()
+            );
+            if b == 0 {
+                Err(())
+            } else {
+                Ok(res)
+            }
         }
     }
 
+    /// Attempt to invert an [Integer] modulo `modulus`.
     #[inline]
-    pub fn invmod<'a, T>(&self, modulus: T) -> Option<Integer>  where 
-        T: Into<&'a Integer>
-    {
-        let modulus = modulus.into();
-        assert!(!modulus.is_zero());
+    pub fn invmod(&self, modulus: &Integer) -> Result<Integer, ()> {
+        assert!(modulus > &0);
 
         let mut res = Integer::default();
         unsafe{ 
             let r = flint_sys::fmpz::fmpz_invmod(res.as_mut_ptr(), self.as_ptr(), modulus.as_ptr());
         
             if r == 0 {
-                None
+                Err(())
             } else {
-                Some(res)
+                Ok(res)
             }
         }
     }
     
+    /// Remove all occurences of the factor `factor` from an [Integer].
     #[inline]
     pub fn remove(&mut self, factor: &Integer) {
-        assert!(!factor.is_zero());
-        unsafe {flint_sys::fmpz::fmpz_remove(self.as_mut_ptr(), self.as_ptr(), factor.as_ptr());}
+        assert!(factor > &1);
+        unsafe {
+            flint_sys::fmpz::fmpz_remove(self.as_mut_ptr(), self.as_ptr(), factor.as_ptr());
+        }
     }
 
+    /// Negate an [Integer] modulo `modulo`.
     #[inline]
     pub fn negmod(&self, modulus: &Integer) -> Integer {
         assert!(!modulus.is_zero());
-        let mut res = self.rem(modulus);
-        unsafe {
-            flint_sys::fmpz::fmpz_negmod(res.as_mut_ptr(), res.as_ptr(), modulus.as_ptr());
+        if self > modulus {
+            let mut res = self.rem(modulus);
+            unsafe {
+                flint_sys::fmpz::fmpz_negmod(res.as_mut_ptr(), res.as_ptr(), modulus.as_ptr());
+            }
+            res
+        } else {
+            let mut res = Integer::default();
+            unsafe {
+                flint_sys::fmpz::fmpz_negmod(res.as_mut_ptr(), self.as_ptr(), modulus.as_ptr());
+            }
             res
         }
     }
 
-    // remove prime assertion?
+    /// Compute the jacobi symbol `(a/n)` for any `a` and odd positive `n`.
     #[inline]
-    pub fn jacobi(&self, p: &Integer) -> i32 {
-        assert!(p > &0);
-        assert!(p.is_prime());
-        unsafe {
-            flint_sys::fmpz::fmpz_jacobi(self.as_ptr(), p.as_ptr())
-        }
+    pub fn jacobi(&self, n: &Integer) -> c_int {
+        assert!(n > &0 && n.is_odd());
+        unsafe { flint_sys::fmpz::fmpz_jacobi(self.as_ptr(), n.as_ptr()) }
+    }
+    
+    /// Compute the kronecker symbol `(a/n)` for any `a` and any `n`.
+    #[inline]
+    pub fn kronecker(&self, n: &Integer) -> c_int {
+        unsafe { flint_sys::fmpz::fmpz_kronecker(self.as_ptr(), n.as_ptr()) }
     }
 
     // TODO: BIT PACKING
-    
-    #[inline]
-    pub fn complement(&self) -> Integer {
-        let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_complement(res.as_mut_ptr(), self.as_ptr());}
-        res
-    }
-    
+   
+    /// Set the i-th bit of an [Integer] to zero.
     #[inline]
     pub fn clear_bit(&mut self, i: c_ulong) {
         unsafe { flint_sys::fmpz::fmpz_clrbit(self.as_mut_ptr(), i);}
     }
     
+    /// Complement the i-th bit of an [Integer].
     #[inline]
     pub fn complement_bit(&mut self, i: c_ulong) {
         unsafe { flint_sys::fmpz::fmpz_combit(self.as_mut_ptr(), i);}
     }
-    
-    #[inline]
-    pub fn and(&self, other: &Integer) -> Integer {
-        let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_and(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());}
-        res
-    }
-    
-    #[inline]
-    pub fn or(&self, other: &Integer) -> Integer {
-        let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_or(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());}
-        res
-    }
-    
-    #[inline]
-    pub fn xor(&self, other: &Integer) -> Integer {
-        let mut res = Integer::default();
-        unsafe { flint_sys::fmpz::fmpz_xor(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());}
-        res
-    }
 
+    /// Use the Chinese Remainder Theorem to return the unique value `0 <= x < M` congruent to `r1`
+    /// modulo `m1` and `r2` modulo `m2` where `M = m1 * m2`. We require that the moduli are
+    /// greater than one and coprime and `0 <= r1 < m1`, `0 <= r2 < m2`.
     #[inline]
-    pub fn crt(v1: &Integer, m1: &Integer, v2: &Integer, m2: &Integer) -> Integer {
+    pub fn crt(r1: &Integer, m1: &Integer, r2: &Integer, m2: &Integer) -> Integer {
+        assert!(m1 > &1 && m2 > &1);
+        assert!(r1 >= &0 && r2 >= &0);
+        assert!(m1 > r1 && m2 > r2);
+        assert!(m1.is_coprime(m2));
+
         let mut res = Integer::default();
         unsafe { 
             flint_sys::fmpz::fmpz_CRT(
                 res.as_mut_ptr(), 
-                v1.as_ptr(), 
+                r1.as_ptr(), 
                 m1.as_ptr(),
-                v2.as_ptr(), 
+                r2.as_ptr(), 
                 m2.as_ptr(),
-                0);
+                0
+            );
         }
         res
     }
     
+    /// Use the Chinese Remainder Theorem to compute the unique [Integer] that is congruent to `r[i]`
+    /// modulo `m[i]` for all `i`. This uses the same assumptions as
+    /// [crt][crate::integer::src::Integer::crt], also requiring the inputs to have the same length.
     #[inline]
-    pub fn multi_crt(v: &[Integer], m: &[Integer]) -> Integer {
-        let mut res = Integer::default();        
+    pub fn multi_crt(r: &[Integer], m: &[Integer]) -> Integer {
+        assert!(r.len() == m.len());
+        let mut res = Integer::default(); 
        
-        let len = v.len();
-        let vv: Vec<flint_sys::fmpz::fmpz> = v.iter().map(|x| x.as_ptr().clone()).collect();
-        let vm: Vec<flint_sys::fmpz::fmpz> = m.iter().map(|y| y.as_ptr().clone()).collect();
+        let len = r.len();
+        let vr: Vec<flint_sys::fmpz::fmpz> = r.iter().map(|x| x.as_ptr().clone()).collect();
+        let vm: Vec<flint_sys::fmpz::fmpz> = m.iter().map(|x| x.as_ptr().clone()).collect();
 
         unsafe { 
-            flint_sys::fmpz::fmpz_multi_crt(
+            let b = flint_sys::fmpz::fmpz_multi_crt(
                 res.as_mut_ptr(), 
                 vm.as_ptr(), 
-                vv.as_ptr(),
-                len as c_long);
+                vr.as_ptr(),
+                len as c_long
+            );
+            assert!(b == 1, "The CRT assumptions were not satisfied and the output is undefined.");
         }
         res
     }
@@ -728,6 +893,7 @@ impl Integer {
     // PRIMALITY TESTING
     // TODO: probable prime tests?
 
+    /// Returns true if the [Integer] is a prime.
     #[inline]
     pub fn is_prime(&self) -> bool {
         unsafe {
@@ -736,6 +902,7 @@ impl Integer {
     }
 
     // guaranteed prime
+    /// Returns the next prime greater than the input.
     #[inline]
     pub fn next_prime(&self) -> Integer {
         unsafe {
@@ -745,6 +912,7 @@ impl Integer {
         }
     }
     
+    /// Outputs the primorial of `n`, the product of all primes less than or equal to `n`.
     #[inline]
     pub fn primorial(n: c_ulong) -> Integer {
         let mut res = Integer::default();
@@ -752,18 +920,27 @@ impl Integer {
         res
     }
 
+    /// Returns the value of the Euler totient/phi function at an [Integer] `n`, the number of 
+    /// positive integers up to `n` inclusive that are coprime to `n`. The input must be greater
+    /// than zero.
     #[inline]
     pub fn euler_phi(&self) -> Integer {
+        assert!(self > &0);
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_euler_phi(res.as_mut_ptr(), self.as_ptr());}
         res
     }
     
+    /// Compute the Moebius mu function at an [Integer] `n`, which is defined to be 0 if `n` has
+    /// a prime factor of multiplicity greater than one, -1 if `n` has an odd number of distinct
+    /// prime factors, and 1 otherwise.
     #[inline]
     pub fn moebius_mu(&self) -> c_int {
         unsafe { flint_sys::fmpz::fmpz_moebius_mu(self.as_ptr())}
     }
-    
+   
+    /// Compute the divisor function `sigma_k(n)` of an [Integer] `n`, which is the sum of `k`-th
+    /// powers of the divisors of `n`. If `k = 0` then it counts the number of divisors.
     #[inline]
     pub fn divisor_sigma(&self, k: c_ulong) -> Integer {
         let mut res = Integer::default();
