@@ -78,6 +78,24 @@ impl_unop_unsafe! {
 impl_binop_unsafe! {
     Integer, Integer, Integer
     
+    BitAnd {bitand}
+    BitAndAssign {bitand_assign}
+    BitAndFrom {bitand_from}
+    AssignBitAnd {assign_bitand}
+    flint_sys::fmpz::fmpz_and;
+  
+    BitOr {bitor}
+    BitOrAssign {bitor_assign}
+    BitOrFrom {bitor_from}
+    AssignBitOr {assign_bitor}
+    flint_sys::fmpz::fmpz_or;
+    
+    BitXor {bitxor}
+    BitXorAssign {bitxor_assign}
+    BitXorFrom {bitxor_from}
+    AssignBitXor {assign_bitxor}
+    flint_sys::fmpz::fmpz_xor;
+    
     Add {add}
     AddAssign {add_assign}
     AddFrom {add_from}
@@ -101,13 +119,28 @@ impl_binop_unsafe! {
     RemFrom {rem_from}
     AssignRem {assign_rem}
     flint_sys::fmpz::fmpz_tdiv_r;
+    
 }
-
 
 impl_binop_unsafe! {
     op_assign
     Integer, u64 {u64 u32 u16 u8}, Integer
-   
+    
+    BitAnd {bitand}
+    BitAndAssign {bitand_assign}
+    AssignBitAnd {assign_bitand}
+    fmpz_and_ui;
+  
+    BitOr {bitor}
+    BitOrAssign {bitor_assign}
+    AssignBitOr {assign_bitor}
+    fmpz_or_ui;
+    
+    BitXor {bitxor}
+    BitXorAssign {bitxor_assign}
+    AssignBitXor {assign_bitxor}
+    fmpz_xor_ui;
+
     Add {add}
     AddAssign {add_assign}
     AssignAdd {assign_add}
@@ -137,6 +170,21 @@ impl_binop_unsafe! {
 impl_binop_unsafe! {
     op_assign
     Integer, i64 {i64 i32 i16 i8}, Integer
+    
+    BitAnd {bitand}
+    BitAndAssign {bitand_assign}
+    AssignBitAnd {assign_bitand}
+    fmpz_and_si;
+  
+    BitOr {bitor}
+    BitOrAssign {bitor_assign}
+    AssignBitOr {assign_bitor}
+    fmpz_or_si;
+    
+    BitXor {bitxor}
+    BitXorAssign {bitxor_assign}
+    AssignBitXor {assign_bitxor}
+    fmpz_xor_si;
    
     Add {add}
     AddAssign {add_assign}
@@ -162,6 +210,21 @@ impl_binop_unsafe! {
 impl_binop_unsafe! {
     op_from
     u64 {u64 u32 u16 u8}, Integer, Integer
+    
+    BitAnd {bitand}
+    BitAndFrom {bitand_from}
+    AssignBitAnd {assign_bitand}
+    fmpz_ui_and;
+  
+    BitOr {bitor}
+    BitOrFrom {bitor_from}
+    AssignBitOr {assign_bitor}
+    fmpz_ui_or;
+    
+    BitXor {bitxor}
+    BitXorFrom {bitxor_from}
+    AssignBitXor {assign_bitxor}
+    fmpz_ui_xor;
    
     Add {add}
     AddFrom {add_from}
@@ -192,6 +255,21 @@ impl_binop_unsafe! {
 impl_binop_unsafe! {
     op_from
     i64 {i64 i32 i16 i8}, Integer, Integer
+    
+    BitAnd {bitand}
+    BitAndFrom {bitand_from}
+    AssignBitAnd {assign_bitand}
+    fmpz_si_and;
+  
+    BitOr {bitor}
+    BitOrFrom {bitor_from}
+    AssignBitOr {assign_bitor}
+    fmpz_si_or;
+    
+    BitXor {bitxor}
+    BitXorFrom {bitxor_from}
+    AssignBitXor {assign_bitxor}
+    fmpz_si_xor;
    
     Add {add}
     AddFrom {add_from}
@@ -212,6 +290,132 @@ impl_binop_unsafe! {
     RemFrom {rem_from}
     AssignRem {assign_rem}
     fmpz_si_tdiv_r;
+}
+
+#[inline]
+unsafe fn fmpz_and_ui(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: *const flint_sys::fmpz::fmpz,
+    x: c_ulong)
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
+    flint_sys::fmpz::fmpz_and(res, f, tmp.as_ptr());
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_and_si(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: *const flint_sys::fmpz::fmpz, 
+    x: c_long)
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
+    flint_sys::fmpz::fmpz_and(res, f, tmp.as_ptr());
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_ui_and(
+    res: *mut flint_sys::fmpz::fmpz,
+    x: c_ulong,
+    f: *const flint_sys::fmpz::fmpz) 
+{
+    fmpz_and_ui(res, f, x);
+}
+
+#[inline]
+unsafe fn fmpz_si_and(
+    res: *mut flint_sys::fmpz::fmpz,
+    x: c_long,
+    f: *const flint_sys::fmpz::fmpz) 
+{
+    fmpz_and_si(res, f, x);
+}
+
+#[inline]
+unsafe fn fmpz_or_ui(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: *const flint_sys::fmpz::fmpz,
+    x: c_ulong)
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
+    flint_sys::fmpz::fmpz_or(res, f, tmp.as_ptr());
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_or_si(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: *const flint_sys::fmpz::fmpz, 
+    x: c_long)
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
+    flint_sys::fmpz::fmpz_or(res, f, tmp.as_ptr());
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_ui_or(
+    res: *mut flint_sys::fmpz::fmpz,
+    x: c_ulong,
+    f: *const flint_sys::fmpz::fmpz) 
+{
+    fmpz_or_ui(res, f, x);
+}
+
+#[inline]
+unsafe fn fmpz_si_or(
+    res: *mut flint_sys::fmpz::fmpz,
+    x: c_long,
+    f: *const flint_sys::fmpz::fmpz) 
+{
+    fmpz_or_si(res, f, x);
+}
+
+#[inline]
+unsafe fn fmpz_xor_ui(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: *const flint_sys::fmpz::fmpz,
+    x: c_ulong)
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
+    flint_sys::fmpz::fmpz_xor(res, f, tmp.as_ptr());
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_xor_si(
+    res: *mut flint_sys::fmpz::fmpz,
+    f: *const flint_sys::fmpz::fmpz, 
+    x: c_long)
+{
+    let mut tmp = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
+    flint_sys::fmpz::fmpz_xor(res, f, tmp.as_ptr());
+    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_ui_xor(
+    res: *mut flint_sys::fmpz::fmpz,
+    x: c_ulong,
+    f: *const flint_sys::fmpz::fmpz) 
+{
+    fmpz_xor_ui(res, f, x);
+}
+
+#[inline]
+unsafe fn fmpz_si_xor(
+    res: *mut flint_sys::fmpz::fmpz,
+    x: c_long,
+    f: *const flint_sys::fmpz::fmpz) 
+{
+    fmpz_xor_si(res, f, x);
 }
 
 #[inline]
