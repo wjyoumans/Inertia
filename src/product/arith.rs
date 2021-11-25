@@ -15,22 +15,98 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::ops::Mul;
+use std::ops::{Mul, MulAssign};
 use std::hash::Hash;
 
+use crate::traits::{Inv, InvAssign};
 use crate::product::src::Product;
 
+impl<T> Inv for Product<T> where
+    T: Eq + Hash,
+{
+    type Output = Self;
+    fn inv(mut self) -> Self::Output {
+        self.inv_assign();
+        self
+    }
+}
 
-impl<S, T> Mul<Product<S>> for Product<T> where 
-    Product<S>: Into<Product<T>>,
-    S: Eq + Hash,
+impl<T> Inv for &Product<T> where
+    T: Eq + Hash,
+    Product<T>: Clone,
+{
+    type Output = Product<T>;
+    fn inv(self) -> Self::Output {
+        let mut out = self.clone();
+        out.inv_assign();
+        out
+    }
+}
+
+impl<T> InvAssign for Product<T> where
+    T: Eq + Hash,
+{
+    fn inv_assign(&mut self) {
+        for v in self.hashmap.values_mut() {
+            *v *= 1;
+        }
+    }
+}
+
+impl<T> Mul for Product<T> where 
     T: Eq + Hash + Clone,
 {
     type Output = Product<T>;
-    //default fn mul(mut self, rhs: Product<S>) -> Product<T> {
-    fn mul(mut self, rhs: Product<S>) -> Product<T> {
-        let rhs: Product<T> = rhs.into();
+    fn mul(mut self, rhs: Product<T>) -> Product<T> {
+        self.mul_assign(rhs);
+        self
+    }
+}
 
+impl<T> Mul<&Product<T>> for Product<T> where
+    T: Eq + Hash + Clone,
+{
+    type Output = Product<T>;
+    fn mul(mut self, rhs: &Product<T>) -> Product<T> {
+        self.mul_assign(rhs);
+        self
+    }
+}
+
+impl<T> Mul<Product<T>> for &Product<T> where
+    T: Eq + Hash + Clone,
+{
+    type Output = Product<T>;
+    fn mul(self, mut rhs: Product<T>) -> Product<T> {
+        rhs.mul_assign(self);
+        rhs
+    }
+}
+
+impl<T> Mul for &Product<T> where 
+    T: Eq + Hash + Clone,
+    Product<T>: Clone
+{
+    type Output = Product<T>;
+    fn mul(self, rhs: &Product<T>) -> Product<T> {
+        let mut out = self.clone();
+        out.mul_assign(rhs);
+        out
+    }
+}
+
+impl<T> MulAssign for Product<T> where 
+    T: Eq + Hash + Clone,
+{
+    fn mul_assign(&mut self, rhs: Product<T>) {
+        self.mul_assign(&rhs)
+    }
+}
+
+impl<T> MulAssign<&Product<T>> for Product<T> where 
+    T: Eq + Hash + Clone,
+{
+    fn mul_assign(&mut self, rhs: &Product<T>) {
         for (k, v) in rhs.hashmap.iter() {
             if self.hashmap.contains_key(k) {
                 *self.hashmap.get_mut(k).unwrap() += v;
@@ -38,7 +114,5 @@ impl<S, T> Mul<Product<S>> for Product<T> where
                 self.hashmap.insert((*k).clone(), (*v).clone());
             }
         }
-
-        self
     }
 }

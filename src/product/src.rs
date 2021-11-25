@@ -19,27 +19,20 @@ use std::hash::Hash;
 use rustc_hash::FxHashMap;
 use crate::integer::src::Integer;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Product<T: Hash> {
     pub hashmap: FxHashMap<T, Integer>,
 }
 
 impl<T> Product<T> where T: Eq + Hash
 {
-    pub fn new(p: T, k: Integer) -> Self {
-        let mut fac = FxHashMap::<T, Integer>::default();
-        fac.insert(p, k);
-        Product { hashmap: fac}
+    pub fn new(x: T, k: Integer) -> Self {
+        let mut hashmap = FxHashMap::<T, Integer>::default();
+        hashmap.insert(x, k);
+        Product { hashmap: hashmap }
     }
     
     pub fn len(&self) -> usize {
         self.hashmap.len()
-    }
-    
-    pub fn inv(&mut self) -> &Self {
-        for v in self.hashmap.values_mut() {
-            *v *= -1;
-        }
-        self
     }
 }
