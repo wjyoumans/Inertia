@@ -25,15 +25,18 @@ use num_traits::Zero;
 use crate::traits::Element;
 use crate::rational::src::Rational;
 
-/// An integer ring.
+/// An integer ring that can be used as an [Integer] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
 
 impl IntegerRing {
+    /// Construct an integer ring. No initialization is needed so this is equivalent to
+    /// `IntegerRing {}`, but is provided for consistency with more complex structures.
     pub fn init() -> Self {
         IntegerRing {}
     }
-    
+
+    /// Create a new [Integer].
     pub fn new<T: Into<Integer>>(&self, x: T) -> Integer {
         x.into()
     }
@@ -43,7 +46,7 @@ impl IntegerRing {
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct Integer {
-    pub data: <Self as Element>::Data,
+    pub data: fmpz,
 }
 
 impl Integer {
