@@ -77,6 +77,7 @@ pub mod integer;
 pub mod rational;
 pub mod intpol;
 pub mod ratpol;
+pub mod intmat;
 
 pub mod prelude { 
     //! A prelude for glob importing.
