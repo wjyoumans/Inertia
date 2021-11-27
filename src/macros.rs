@@ -17,6 +17,53 @@
 
 /// Macros for bulk implementing traits.
 
+// Helper macros //
+
+macro_rules! op_guard {
+    (Div, $rhs:expr) => {
+        if !$rhs.is_invertible() {
+            panic!("Invalid divisor (zero or not invertible).")
+        }
+    };
+    (Rem, $rhs:expr) => {
+        // TODO: check if negative (doesn't make sense for polynomials)
+        if $rhs.is_zero() {
+            panic!("Invalid modulus (zero or negative).")
+        }
+    };
+    ($op:ident, $rhs:expr) => {}
+}
+
+macro_rules! default {
+    // Unary ops
+    (Neg, matrix, $out_ty:ident, $in:ident) => {
+        $out_ty::zero($in.nrows(), $in.ncols())
+    };
+    ($op:ident, $kw:ident, $out_ty:ident, $in:ident) => {
+        $out_ty::default()
+    };
+
+    // Binary ops
+    (Add, matrix, $out_ty:ident, $lhs:ident, $rhs:ident) => {
+        $out_ty::zero($lhs.nrows(), $lhs.ncols())
+    };
+    (Sub, matrix, $out_ty:ident, $lhs:ident, $rhs:ident) => {
+        $out_ty::zero($lhs.nrows(), $lhs.ncols())
+    };
+    (Mul, matrix, $out_ty:ident, $lhs:ident, $rhs:ident) => {
+        $out_ty::zero($lhs.nrows(), $rhs.ncols())
+    };
+    ($op:ident, lhs_scalar, $out_ty:ident, $lhs:ident, $rhs:ident) => {
+        $out_ty::zero($rhs.nrows(), $rhs.ncols())
+    };
+    ($op:ident, rhs_scalar, $out_ty:ident, $lhs:ident, $rhs:ident) => {
+        $out_ty::zero($lhs.nrows(), $lhs.ncols())
+    };
+    ($op:ident, $kw:ident, $out_ty:ident, $lhs:ident, $rhs:ident) => {
+        $out_ty::default()
+    };
+}
+
 /*
 macro_rules! op_guard {
     (Add, matrix, $lhs: expr, $rhs: expr) => {
@@ -53,6 +100,8 @@ macro_rules! op_guard {
 }
 */
 
+
+/// Macros for overloading comparison operators
 macro_rules! impl_cmp {
     // a = a
     (
@@ -148,6 +197,7 @@ macro_rules! impl_cmp {
 
 }
 
+/// Macros for overloading comparison operators with unsafe functions.
 macro_rules! impl_cmp_unsafe {
     (
         eq
@@ -287,22 +337,8 @@ macro_rules! impl_cmp_unsafe {
     )+)
 }
 
-macro_rules! op_guard {
-    (Div, $rhs:expr) => {
-        if !$rhs.is_invertible() {
-            panic!("Invalid divisor (zero or not invertible).")
-        }
-    };
-    (Rem, $rhs:expr) => {
-        // TODO: check if negative (doesn't make sense for polynomials)
-        if $rhs.is_zero() {
-            panic!("Invalid modulus (zero or negative).")
-        }
-    };
-    ($op:ident, $rhs:expr) => {}
-}
 
-
+/// Macros for overloading unary operators.
 macro_rules! impl_unop {
     (
         // assign
@@ -358,8 +394,10 @@ macro_rules! impl_unop {
     };
 }
 
+/// Macros for overloading unary operators with unsafe functions.
 macro_rules! impl_unop_unsafe {
     (
+        $kw:ident
         $t:ident
         $op:ident {$meth:ident}
         $op_assign:ident {$meth_assign:ident}
@@ -371,7 +409,7 @@ macro_rules! impl_unop_unsafe {
             $op {$meth}
             {
                 fn $meth(self) -> $t {
-                    let mut res = $t::default();
+                    let mut res = default!($op, $kw, $t, self);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr()); }
                     res
                 }
@@ -385,6 +423,7 @@ macro_rules! impl_unop_unsafe {
         }
     };
     (
+        $kw:ident
         $t:ident, $out:ident
         $op:ident {$meth:ident}
         $func:path
@@ -395,7 +434,7 @@ macro_rules! impl_unop_unsafe {
             $op {$meth}
             {
                 fn $meth(self) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr()); }
                     res
                 }
@@ -404,6 +443,7 @@ macro_rules! impl_unop_unsafe {
     }
 }
 
+/// Macros for overloading binary operators.
 macro_rules! impl_binop {
     (
         // a + a = a
@@ -748,9 +788,11 @@ macro_rules! impl_binop {
     };
 }
 
+/// Macros for overloading binary operators with unsafe functions.
 macro_rules! impl_binop_unsafe {
     (
         // a + a = a
+        $kw:ident
         $t1:ident, $t2:ident, $out:ident
         $(
             $op:ident {$meth:ident}
@@ -765,8 +807,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
-                    //op_guard!($op, rhs);
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr(), rhs.as_ptr()); }
                     res
                 }
@@ -793,6 +834,7 @@ macro_rules! impl_binop_unsafe {
     )+);
     (
         // a + b = a
+        $kw:ident
         op_assign
         $t1:ident, $t2:ident, $out:ident
         $(
@@ -808,7 +850,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr(), rhs.as_ptr()); }
                     res
                 }
@@ -829,6 +871,7 @@ macro_rules! impl_binop_unsafe {
     )+);
     (
         // a + b = a, b primitive
+        $kw:ident
         op_assign    
         $t1:ident, $cast:ty {$($t2:ident)+}, $out:ident
         
@@ -840,6 +883,7 @@ macro_rules! impl_binop_unsafe {
         $($next:tt)*
     ) => ($(
         impl_binop_unsafe! {@inner
+            $kw
             op_assign
             $t1, $cast {$t2}, $out
             
@@ -850,12 +894,14 @@ macro_rules! impl_binop_unsafe {
         })+
 
         impl_binop_unsafe! {
+            $kw
             op_assign
             $t1, $cast {$($t2)+}, $out
             $($next)*
         }
     );
     (@inner
+        $kw:ident
         op_assign
         $t1:ident, $cast:ty {$t2:ident}, $out:ident
         $(
@@ -871,7 +917,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr(), *rhs as $cast); }
                     res
                 }
@@ -891,11 +937,13 @@ macro_rules! impl_binop_unsafe {
         }
     )*);
     (
+        $kw:ident
         op_assign
         $t1:ident, $cast:ty {$($t2:ident)+}, $out:ident
     ) => {};
     (
         // a + b = b
+        $kw:ident
         op_from
         $t1:ident, $t2:ident, $out:ident
         $(
@@ -911,7 +959,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr(), rhs.as_ptr()); }
                     res
                 }
@@ -932,6 +980,7 @@ macro_rules! impl_binop_unsafe {
     )+);
     (
         // a + b = b, a primitive
+        $kw:ident
         op_from
         $cast:ty {$($t1:ident)+}, $t2:ident, $out:ident
         
@@ -943,6 +992,7 @@ macro_rules! impl_binop_unsafe {
         $($next:tt)*
     ) => ($(
         impl_binop_unsafe! {@inner
+            $kw
             op_from
             $cast {$t1}, $t2, $out
             
@@ -953,12 +1003,14 @@ macro_rules! impl_binop_unsafe {
         })+
 
         impl_binop_unsafe! {
+            $kw
             op_from
             $cast {$($t1)+}, $t2, $out
             $($next)*
         }
     );
     (@inner
+        $kw:ident
         op_from
         $cast:ty {$t1:ident}, $t2:ident, $out:ident
         $(
@@ -974,7 +1026,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), *self as $cast, rhs.as_ptr()); }
                     res
                 }
@@ -994,11 +1046,13 @@ macro_rules! impl_binop_unsafe {
         }
     )*);
     (
+        $kw:ident
         op_from
         $cast:ty {$($t1:ident)+}, $t2:ident, $out:ident
     ) => {};
     (
         // a + b = c
+        $kw:ident
         $t1:ident, $t2:ident, $out:ident
         $(
             $op:ident {$meth:ident}
@@ -1011,7 +1065,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr(), rhs.as_ptr()); }
                     res
                 }
@@ -1026,6 +1080,7 @@ macro_rules! impl_binop_unsafe {
     )+);
     (
         // a + b = c, a primitive
+        $kw:ident
         $cast:ty {$($t1:ident)+}, $t2:ident, $out:ident
         
         $op:ident {$meth:ident}
@@ -1035,6 +1090,7 @@ macro_rules! impl_binop_unsafe {
         $($next:tt)*
     ) => ($(
         impl_binop_unsafe! {@inner
+            $kw
             $cast {$t1}, $t2, $out
             
             $op {$meth}
@@ -1043,11 +1099,13 @@ macro_rules! impl_binop_unsafe {
         })+
 
         impl_binop_unsafe! {
+            $kw
             $cast {$($t1)+}, $t2, $out
             $($next)*
         }
     );
     (@inner
+        $kw:ident
         $cast:ty {$t1:ident}, $t2:ident, $out:ident
         $(
             $op:ident {$meth:ident}
@@ -1060,7 +1118,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), *self as $cast, rhs.as_ptr()); }
                     res
                 }
@@ -1074,10 +1132,12 @@ macro_rules! impl_binop_unsafe {
         }
     )*);
     (
+        $kw:ident
         $cast:ty {$($t1:ident)+}, $t2:ident, $out:ident
     ) => {};
     (
         // a + b = c, b primitive
+        $kw:ident
         $t1:ident, $cast:ty {$($t2:ident)+}, $out:ident
         
         $op:ident {$meth:ident}
@@ -1087,6 +1147,7 @@ macro_rules! impl_binop_unsafe {
         $($next:tt)*
     ) => ($(
         impl_binop_unsafe! {@inner
+            $kw
             $t1, $cast {$t2}, $out
             
             $op {$meth}
@@ -1095,11 +1156,13 @@ macro_rules! impl_binop_unsafe {
         })+
 
         impl_binop_unsafe! {
+            $kw
             $t1, $cast {$($t2)+}, $out
             $($next)*
         }
     );
     (@inner
+        $kw:ident
         $t1:ident, $cast:ty {$t2:ident}, $out:ident
         $(
             $op:ident {$meth:ident}
@@ -1112,7 +1175,7 @@ macro_rules! impl_binop_unsafe {
             $op {$meth}
             {
                 fn $meth(self, rhs: &$t2) -> $out {
-                    let mut res = $out::default();
+                    let mut res = default!($op, $kw, $out, self, rhs);
                     unsafe { $func(res.as_mut_ptr(), self.as_ptr(), *rhs as $cast); }
                     res
                 }
@@ -1126,42 +1189,12 @@ macro_rules! impl_binop_unsafe {
         }
     )*);
     (
+        $kw:ident
         $t1:ident, $cast:ty {$($t2:ident)+}, $out:ident
     ) => {};
 }
 
-/*
-macro_rules! impl_from {
-    (
-        impl From<&$src:ident> for $dst:ident {
-            fn from($arg:ident : &$arg_ty:ident) -> $dst_ty:ident {
-                $($code:tt)*
-            }
-        }
-    ) => {
-        impl From<$src> for $dst {
-            #[inline]
-            fn from($arg: $arg_ty) -> $dst_ty {
-                $dst::from(&$arg)
-            }
-        }
-        
-        impl From<&$src> for $dst {
-            #[inline]
-            fn from($arg: &$arg_ty) -> $dst_ty {
-                $($code)*
-            }
-        }
-        
-        impl From<&mut $src> for $dst {
-            #[inline]
-            fn from($arg: &mut $arg_ty) -> $dst_ty {
-                $($code)*
-            }
-        }
-    }
-}*/
-
+/// Macros for implementing `From` for conversions.
 macro_rules! impl_from {
     (
         $t1:ident, $t2:ident
@@ -1183,6 +1216,7 @@ macro_rules! impl_from {
     }
 }
 
+/// Macros for implementing `From` for conversions with unsafe functions.
 macro_rules! impl_from_unsafe {
     (
         // a -> b

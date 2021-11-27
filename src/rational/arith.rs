@@ -88,6 +88,7 @@ impl_cmp_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     Rational
     Neg {neg}
     NegAssign {neg_assign}
@@ -95,6 +96,7 @@ impl_unop_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     Rational
     Inv {inv}
     InvAssign {inv_assign}
@@ -102,6 +104,7 @@ impl_unop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     Rational, Rational, Rational
     
     Add {add}
@@ -130,6 +133,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     Rational, Integer, Rational
    
@@ -155,6 +159,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     Rational, Integer, Integer
 
     Rem {rem}
@@ -163,6 +168,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     Integer, Rational, Rational
    
@@ -188,6 +194,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     Rational, u64 {u64 u32 u16 u8}, Rational
    
@@ -213,6 +220,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     Rational, u64 {u64 u32 u16 u8}, Integer
 
     Rem {rem}
@@ -221,6 +229,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     Rational, i64 {i64 i32 i16 i8}, Rational
    
@@ -246,6 +255,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     Rational, i64 {i64 i32 i16 i8}, Integer
 
     Rem {rem}
@@ -254,6 +264,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     u64 {u64 u32 u16 u8}, Rational, Rational
    
@@ -279,6 +290,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     i64 {i64 i32 i16 i8}, Rational, Rational
    

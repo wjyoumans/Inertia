@@ -51,6 +51,7 @@ impl_cmp_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     IntPol
     Neg {neg}
     NegAssign {neg_assign}
@@ -58,6 +59,7 @@ impl_unop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     IntPol, IntPol, IntPol
     
     Add {add}
@@ -86,6 +88,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     IntPol, Integer, IntPol
    
@@ -111,6 +114,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     Integer, IntPol, IntPol
    
@@ -136,6 +140,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     IntPol, u64 {u64 u32 u16 u8}, IntPol
    
@@ -161,6 +166,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     IntPol, i64 {i64 i32 i16 i8}, IntPol
    
@@ -186,6 +192,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     u64 {u64 u32 u16 u8}, IntPol, IntPol
    
@@ -211,6 +218,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     i64 {i64 i32 i16 i8}, IntPol, IntPol
    

@@ -64,6 +64,7 @@ impl_cmp_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     Integer
     Neg {neg}
     NegAssign {neg_assign}
@@ -71,6 +72,7 @@ impl_unop_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     Integer
     Not {not}
     NotAssign {not_assign}
@@ -78,12 +80,14 @@ impl_unop_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     Integer, Rational
     Inv {inv}
     fmpq_inv_fmpz
 }
 
 impl_binop_unsafe! {
+    None
     Integer, Integer, Integer
     
     BitAnd {bitand}
@@ -131,6 +135,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     Integer, Integer, Rational
 
     Pow {pow}
@@ -139,6 +144,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     Integer, u64 {u64 u32 u16 u8}, Integer
     
@@ -184,6 +190,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     Integer, i64 {i64 i32 i16 i8}, Integer
     
@@ -224,6 +231,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     Integer, i64 {i64 i32 i16 i8}, Rational
 
     Pow {pow}
@@ -232,6 +240,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     u64 {u64 u32 u16 u8}, Integer, Integer
     
@@ -281,6 +290,7 @@ impl_binop_unsafe! {
 }*/
 
 impl_binop_unsafe! {
+    None
     op_from
     i64 {i64 i32 i16 i8}, Integer, Integer
     

@@ -50,6 +50,7 @@ impl_cmp_unsafe! {
 }
 
 impl_unop_unsafe! {
+    None
     RatPol
     Neg {neg}
     NegAssign {neg_assign}
@@ -57,6 +58,7 @@ impl_unop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     RatPol, RatPol, RatPol
     
     Add {add}
@@ -85,6 +87,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     RatPol, Integer, RatPol
    
@@ -112,6 +115,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     Integer, RatPol, RatPol
    
@@ -139,6 +143,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     RatPol, u64 {u64 u32 u16 u8}, RatPol
    
@@ -166,6 +171,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_assign
     RatPol, i64 {i64 i32 i16 i8}, RatPol
    
@@ -193,6 +199,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     u64 {u64 u32 u16 u8}, RatPol, RatPol
    
@@ -220,6 +227,7 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    None
     op_from
     i64 {i64 i32 i16 i8}, RatPol, RatPol
    
