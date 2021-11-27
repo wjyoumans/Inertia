@@ -28,8 +28,8 @@ This is a checklist of the main intended features and their current implementati
     - [ ] polynomials over finite fields
     - [ ] polynomials over p-adic/q-adics
 - [ ] matrices
-    - [ ] integer matrices
-    - [ ] rational matrices
+    - [x] integer matrices
+    - [x] rational matrices
     - [ ] real matrices
     - [ ] complex matrices 
     - [ ] matrices over integers mod n
