@@ -76,7 +76,7 @@ impl Rational {
     #[inline]
     pub fn denominator(&self) -> Integer {
         Integer {
-            data: self.data.num
+            data: self.data.den
         }
     }
 
