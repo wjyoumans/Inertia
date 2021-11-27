@@ -21,7 +21,6 @@ use std::ffi::{CStr, CString};
 use flint_sys::fmpq_poly::fmpq_poly_struct;
 use libc::{c_long, c_ulong};
 
-use crate::traits::Element;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 use crate::intpol::src::IntPol;
@@ -46,7 +45,7 @@ impl RatPolRing {
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct RatPol {
-    pub data: <Self as Element>::Data,
+    pub data: fmpq_poly_struct,
 }
 
 impl RatPol {
