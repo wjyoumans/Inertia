@@ -25,6 +25,7 @@ use rug::ops::*;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
+use crate::rational::src::Rational;
 
 impl_cmp_unsafe! {
     eq
@@ -76,6 +77,12 @@ impl_unop_unsafe! {
     flint_sys::fmpz::fmpz_complement
 }
 
+impl_unop_unsafe! {
+    Integer, Rational
+    Inv {inv}
+    fmpq_inv_fmpz
+}
+
 impl_binop_unsafe! {
     Integer, Integer, Integer
     
@@ -121,6 +128,14 @@ impl_binop_unsafe! {
     AssignRem {assign_rem}
     flint_sys::fmpz::fmpz_tdiv_r;
     
+}
+
+impl_binop_unsafe! {
+    Integer, Integer, Rational
+
+    Pow {pow}
+    AssignPow {assign_pow}
+    fmpz_pow_fmpz;
 }
 
 impl_binop_unsafe! {
@@ -209,6 +224,14 @@ impl_binop_unsafe! {
 }
 
 impl_binop_unsafe! {
+    Integer, i64 {i64 i32 i16 i8}, Rational
+
+    Pow {pow}
+    AssignPow {assign_pow}
+    fmpz_pow_si;
+}
+
+impl_binop_unsafe! {
     op_from
     u64 {u64 u32 u16 u8}, Integer, Integer
     
@@ -246,12 +269,16 @@ impl_binop_unsafe! {
     RemFrom {rem_from}
     AssignRem {assign_rem}
     fmpz_ui_tdiv_r;
-    
+}
+
+/*
+impl_binop_unsafe! {
+    u64 {u64 u32 u16 i8}, Integer, Rational
+
     Pow {pow}
-    PowFrom {pow_from}
     AssignPow {assign_pow}
     fmpz_ui_pow;
-}
+}*/
 
 impl_binop_unsafe! {
     op_from
@@ -292,6 +319,14 @@ impl_binop_unsafe! {
     AssignRem {assign_rem}
     fmpz_si_tdiv_r;
 }
+/*
+impl_binop_unsafe! {
+    i64 {i64 i32 i16 i8}, Integer, Rational
+
+    Pow {pow}
+    AssignPow {assign_pow}
+    fmpz_si_pow;
+}*/
 
 #[inline]
 unsafe fn fmpz_and_ui(
@@ -299,10 +334,8 @@ unsafe fn fmpz_and_ui(
     f: *const flint_sys::fmpz::fmpz,
     x: c_ulong)
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_and(res, f, tmp.as_ptr());
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_ui(res, x);
+    flint_sys::fmpz::fmpz_and(res, f, res);
 }
 
 #[inline]
@@ -311,10 +344,8 @@ unsafe fn fmpz_and_si(
     f: *const flint_sys::fmpz::fmpz, 
     x: c_long)
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_and(res, f, tmp.as_ptr());
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_si(res, x);
+    flint_sys::fmpz::fmpz_and(res, f, res);
 }
 
 #[inline]
@@ -341,10 +372,8 @@ unsafe fn fmpz_or_ui(
     f: *const flint_sys::fmpz::fmpz,
     x: c_ulong)
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_or(res, f, tmp.as_ptr());
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_ui(res, x);
+    flint_sys::fmpz::fmpz_or(res, f, res);
 }
 
 #[inline]
@@ -353,10 +382,8 @@ unsafe fn fmpz_or_si(
     f: *const flint_sys::fmpz::fmpz, 
     x: c_long)
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_or(res, f, tmp.as_ptr());
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_si(res, x);
+    flint_sys::fmpz::fmpz_or(res, f, res);
 }
 
 #[inline]
@@ -383,10 +410,8 @@ unsafe fn fmpz_xor_ui(
     f: *const flint_sys::fmpz::fmpz,
     x: c_ulong)
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_xor(res, f, tmp.as_ptr());
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_ui(res, x);
+    flint_sys::fmpz::fmpz_xor(res, f, res);
 }
 
 #[inline]
@@ -395,10 +420,8 @@ unsafe fn fmpz_xor_si(
     f: *const flint_sys::fmpz::fmpz, 
     x: c_long)
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_xor(res, f, tmp.as_ptr());
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_si(res, x);
+    flint_sys::fmpz::fmpz_xor(res, f, res);
 }
 
 #[inline]
@@ -499,37 +522,73 @@ unsafe fn fmpz_tdiv_r_si(
 
 #[inline]
 unsafe fn fmpz_ui_tdiv_r(
-    f: *mut flint_sys::fmpz::fmpz,
+    res: *mut flint_sys::fmpz::fmpz,
     x: c_ulong,
     h: *const flint_sys::fmpz::fmpz) 
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_tdiv_r(f, tmp.as_ptr(), h);
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_ui(res, x);
+    flint_sys::fmpz::fmpz_tdiv_r(res, res, h);
 }
 
 #[inline]
 unsafe fn fmpz_si_tdiv_r(
-    f: *mut flint_sys::fmpz::fmpz,
+    res: *mut flint_sys::fmpz::fmpz,
     x: c_long,
     h: *const flint_sys::fmpz::fmpz) 
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_si(tmp.as_mut_ptr(), x);
-    flint_sys::fmpz::fmpz_tdiv_r(f, tmp.as_ptr(), h);
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpz::fmpz_init_set_si(res, x);
+    flint_sys::fmpz::fmpz_tdiv_r(res, res, h);
+}
+
+#[inline]
+unsafe fn fmpq_inv_fmpz(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: *const flint_sys::fmpz::fmpz)
+{
+    flint_sys::fmpq::fmpq_set_fmpz_den1(res, f);
+    flint_sys::fmpq::fmpq_inv(res, res);
+}
+
+#[inline]
+unsafe fn fmpz_pow_fmpz(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: *const flint_sys::fmpz::fmpz,
+    g: *const flint_sys::fmpz::fmpz,
+    )
+{
+    flint_sys::fmpq::fmpq_set_fmpz_den1(res, f);
+    flint_sys::fmpq::fmpq_pow_fmpz(res, res, g);
+}
+
+#[inline]
+unsafe fn fmpz_pow_si(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: *const flint_sys::fmpz::fmpz,
+    g: c_long,
+    )
+{
+    flint_sys::fmpq::fmpq_set_fmpz_den1(res, f);
+    flint_sys::fmpq::fmpq_pow_si(res, res, g);
 }
 
 #[inline]
 unsafe fn fmpz_ui_pow(
-    res: *mut flint_sys::fmpz::fmpz,
+    res: *mut flint_sys::fmpq::fmpq,
     f: c_ulong,
     g: *const flint_sys::fmpz::fmpz,
     )
 {
-    let mut tmp = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(tmp.as_mut_ptr(), f);
-    flint_sys::fmpz::fmpz_pow_fmpz(res, tmp.as_ptr(), g);
-    flint_sys::fmpz::fmpz_clear(tmp.as_mut_ptr());
+    flint_sys::fmpq::fmpq_set_ui_den1(res, f);
+    flint_sys::fmpq::fmpq_pow_fmpz(res, res, g);
+}
+
+#[inline]
+unsafe fn fmpz_si_pow(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: c_long,
+    g: *const flint_sys::fmpz::fmpz,
+    )
+{
+    flint_sys::fmpq::fmpq_set_si_den1(res, f);
+    flint_sys::fmpq::fmpq_pow_fmpz(res, res, g);
 }

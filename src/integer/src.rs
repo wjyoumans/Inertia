@@ -23,7 +23,6 @@ use flint_sys::fmpz::fmpz;
 use libc::{c_int, c_long, c_ulong};
 use num_traits::Zero;
 
-use crate::traits::Element;
 use crate::rational::src::Rational;
 
 /// An integer ring that can be used as an [Integer] "factory".

@@ -36,23 +36,10 @@ impl Parent for IntegerRing {
     type Element = Integer;
 }
 
-impl Zero for IntegerRing {
-    fn zero(&self) -> Integer {
-        Integer::from(0)
-    }
-}
-
-impl One for IntegerRing {
-    fn one(&self) -> Integer {
-        Integer::from(1)
-    }
-}
-
-
 // Integer //
 
 impl Element for Integer {
-    type Data = fmpz;
+    type Data = ();
     type Parent = IntegerRing;
 }
 
@@ -89,7 +76,6 @@ impl Drop for Integer {
 }
 
 impl Hash for Integer {
-    #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.get_ui_vector().hash(state);
     }
@@ -98,10 +84,9 @@ impl Hash for Integer {
 impl Factorizable for Integer {
     type Output = Product<Integer>;
     fn factor(&self) -> Self::Output {
-        if self.is_zero() {
-            return Product::<Integer>::new(Integer::from(0), Integer::from(1))
-        } else if self.is_one() {
-            return Product::<Integer>::new(Integer::from(1), Integer::from(1))
+        assert!(self != &0);
+        if self == &1 {
+            return Product::from(Integer::from(1))
         };
        
         let mut fac = MaybeUninit::uninit();
@@ -127,7 +112,6 @@ impl Factorizable for Integer {
     }
 }
 
-/*
 impl EvaluateProduct for Product<Integer> {
     type Output = Rational;
     fn evaluate(&self) -> Rational {
@@ -139,22 +123,22 @@ impl EvaluateProduct for Product<Integer> {
     }
 }
 
-impl EvaluateProductMod<&Integer> for Product<Integer> {
-    type Output = Integer;
-    fn evaluate_mod(&self, modulus: &Integer) -> Result<Integer, Err> {
-        let mut x = Integer::from(1);
-        for (p, k) in self.hashmap.iter() {
-            x *= p.powm(k, modulus);
-            x %= modulus;
-        }
-        x
-    }
-}*/
-
-/*
-impl<'a> EvaluateProductMod<Integer> for Fac<'a, Integer> {
-    type Output = Integer;
-    fn evaluate_mod(&self, modulus: Integer) -> Integer {
+impl EvaluateProductMod<Integer> for Product<Integer> {
+    type Output = Result<Integer, ()>;
+    #[inline]
+    fn evaluate_mod(&self, modulus: Integer) -> Result<Integer, ()> {
         self.evaluate_mod(&modulus)
     }
-}*/
+}
+
+impl EvaluateProductMod<&Integer> for Product<Integer> {
+    type Output = Result<Integer, ()>;
+    fn evaluate_mod(&self, modulus: &Integer) -> Result<Integer, ()> {
+        let mut x = Integer::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.powm(k, modulus)?;
+            x %= modulus;
+        }
+        Ok(x)
+    }
+}
