@@ -23,6 +23,7 @@ use flint_sys::fmpz_mat::fmpz_mat_struct;
 use libc::c_long;
 
 use crate::integer::src::Integer;
+use crate::intpol::src::IntPol;
 
 
 /// The vector space of `rows` by `cols` matrices of [Integers][Integer].
@@ -103,6 +104,81 @@ impl IntMat {
         }
     }*/
 
+    /// Swap two integer matrices. The dimensions are allowed to be different.
+    #[inline]
+    pub fn swap(&mut self, other: &mut IntMat) {
+        unsafe { 
+            flint_sys::fmpz_mat::fmpz_mat_swap(self.as_mut_ptr(), other.as_mut_ptr()); 
+        }
+    }
+
+    /// Swap the rows `r` and `s` of an integer matrix. 
+    #[inline]
+    pub fn swap_rows(&mut self, r: c_long, s: c_long) {
+        assert!(r < self.nrows());
+        assert!(s < self.nrows());
+
+        unsafe { 
+            flint_sys::fmpz_mat::fmpz_mat_swap_rows(
+                self.as_mut_ptr(), 
+                std::ptr::null(),
+                r,
+                s
+            ); 
+        }
+    }
+    
+    /// Swap the columns `r` and `s` of an integer matrix. 
+    #[inline]
+    pub fn swap_cols(&mut self, r: c_long, s: c_long) {
+        assert!(r < self.ncols());
+        assert!(s < self.ncols());
+
+        unsafe { 
+            flint_sys::fmpz_mat::fmpz_mat_swap_rows(
+                self.as_mut_ptr(), 
+                std::ptr::null(),
+                r,
+                s
+            ); 
+        }
+    }
+    
+    /// Swap row `i` and `r - i` of an integer matrix for `0 <= i < r/2` where `r` is the number
+    /// of rows of the input matrix.
+    #[inline]
+    pub fn invert_rows(&mut self) {
+        unsafe { 
+            flint_sys::fmpz_mat::fmpz_mat_invert_rows(
+                self.as_mut_ptr(), 
+                std::ptr::null()
+            ); 
+        }
+    }
+    
+    /// Swap columns `i` and `c - i` of an integer matrix for `0 <= i < c/2` where `c` is the number
+    /// of columns of the input matrix.
+    #[inline]
+    pub fn invert_columns(&mut self) {
+        unsafe { 
+            flint_sys::fmpz_mat::fmpz_mat_invert_cols(
+                self.as_mut_ptr(), 
+                std::ptr::null()
+            ); 
+        }
+    }
+    
+   
+    /* TODO: function missing from bindings
+    /// Swap two integer matrices by swapping the individual entries rather than swapping the
+    /// contents of their structs.
+    #[inline]
+    pub fn swap_entrywise(&mut self, other: &mut IntMat) {
+        unsafe { 
+            flint_sys::fmpz_mat::fmpz_mat_swap_entrywise(self.as_mut_ptr(), other.as_mut_ptr()); 
+        }
+    }
+    */
 
     /// Return an `m` by `n` integer zero matrix.
     #[inline]
@@ -275,30 +351,16 @@ impl IntMat {
         res
     }
     
+    /// Return row `i` as an integer matrix.
     #[inline]
     pub fn row(&self, i: usize) -> IntMat {
         self.submatrix(i, 0, i + 1, self.ncols() as usize)
-        /*
-        let c = self.ncols() as usize;
-        let mut row = Vec::<Integer>::with_capacity(c);
-        for j in 0usize..c {
-            row.push(self.get_entry(i, j));
-        }
-        row
-        */
     }
    
+    /// Return column `j` as an integer matrix.
     #[inline]
     pub fn col(&self, j: usize) -> IntMat {
         self.submatrix(0, j, self.nrows() as usize, j + 1)
-        /*
-        let r = self.nrows() as usize;
-        let mut col = Vec::<Integer>::with_capacity(r);
-        for i in 0usize..r {
-            col.push(self.get_entry(i, j));
-        }
-        col
-        */
     }
 
     /// Return the square of an integer matrix. The matrix must be square.
@@ -317,25 +379,9 @@ impl IntMat {
         unsafe { flint_sys::fmpz_mat::fmpz_mat_sqr(self.as_mut_ptr(), self.as_ptr()) }
     }
 
-    /*
+    /// Return the kronecker product of two integer matrices.
     #[inline]
-    pub fn inv(&self) -> Option<(IntMat<'a>, Integer<'a>)> {
-        assert!(self.is_square());
-        let mut res = IntMat::zero(self.nrows(), self.ncols());
-        let mut den = Integer::default();
-        unsafe { 
-            let x = flint_sys::fmpz_mat::fmpz_mat_inv(res.as_mut_ptr(), den.as_mut_ptr(), self.as_ptr()); 
-            if x == 0 {
-                None
-            } else {
-                Some((res, den))
-            }
-        }
-    }*/
-
-    /*
-    #[inline]
-    pub fn kronecker_product(&self, other: &IntMat<'a>) -> IntMat<'a> {
+    pub fn kronecker_product(&self, other: &IntMat) -> IntMat {
         let mut res = IntMat::zero(self.nrows()*other.nrows(), self.ncols()*other.ncols());
         unsafe { 
             flint_sys::fmpz_mat::fmpz_mat_kronecker_product(
@@ -347,71 +393,98 @@ impl IntMat {
         res
     }
     
+    /// Compute the trace of a square integer matrix.
     #[inline]
-    pub fn trace(&self) -> Integer<'a> {
+    pub fn trace(&self) -> Integer {
         assert!(self.is_square());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz_mat::fmpz_mat_trace(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
-    
+
+    /// Return the content of an integer matrix, that is, the gcd of all its entries. Returns zero
+    /// if the matrix is empty.
     #[inline]
-    pub fn det(&self) -> Integer<'a> {
+    pub fn content(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_content(res.as_mut_ptr(), self.as_ptr()); }
+        res
+    }
+    
+    /// Compute the determinant of a square integer matrix.
+    #[inline]
+    pub fn det(&self) -> Integer {
         assert!(self.is_square());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz_mat::fmpz_mat_det(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
     
+    /// Return an absolute upper bound on the determinant of a square integer matrix computed from
+    /// the Hadamard inequality.
     #[inline]
-    pub fn det_bound(&self) -> Integer<'a> {
+    pub fn det_bound(&self) -> Integer {
         assert!(self.is_square());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz_mat::fmpz_mat_det_bound(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
     
+    /// Return a positive divisor of the determinant of a square integer matrix. If the determinant
+    /// is zero this will always return zero.
     #[inline]
-    pub fn det_divisor(&self) -> Integer<'a> {
+    pub fn det_divisor(&self) -> Integer {
         assert!(self.is_square());
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz_mat::fmpz_mat_det_divisor(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
     
+    /// Applies a similarity transform to an `n` by `n` integer matrix. If `P` is the identity
+    /// matrix whose zero entries in row `r` have been replaced by `d`, this transform is
+    /// equivalent to `P^-1 * M * P`. 
     #[inline]
-    pub fn similarity<'b, T>(&self, r: c_long, d: &'b T) -> IntMat<'a> where 
-        &'b T: Into<Integer<'a>> 
-    {
+    pub fn similarity(&self, r: c_long, d: &Integer) -> IntMat {
         assert!(self.is_square());
         let mut res = self.clone();
-        unsafe { flint_sys::fmpz_mat::fmpz_mat_similarity(res.as_mut_ptr(), r, d.into().as_ptr()); }
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_similarity(res.as_mut_ptr(), r, d.as_ptr()); }
         res
     }
     
+    /// Applies a similarity transform to an `n` by `n` integer matrix in place.
     #[inline]
-    pub fn charpoly(&self) -> IntPol<'a> {
+    pub fn similarity_assign(&mut self, r: c_long, d: &Integer) {
+        assert!(self.is_square());
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_similarity(self.as_mut_ptr(), r, d.as_ptr()); }
+    }
+  
+    /// Return the characteristic polynomial of a square integer matrix.
+    #[inline]
+    pub fn charpoly(&self) -> IntPol {
         assert!(self.is_square());
         let mut res = IntPol::default();
         unsafe { flint_sys::fmpz_mat::fmpz_mat_charpoly(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
     
+    /// Return the minimal polynomial of a square integer matrix.
     #[inline]
-    pub fn minpoly(&self) -> IntPol<'a> {
+    pub fn minpoly(&self) -> IntPol {
         assert!(self.is_square());
         let mut res = IntPol::default();
         unsafe { flint_sys::fmpz_mat::fmpz_mat_minpoly(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
-    
+
+    /// Return the rank of a matrix, that is, the number of linearly independent columns
+    /// (equivalently, rows) of an integer matrix. The rank is computed by row reducing a copy of
+    /// the input matrix.
     #[inline]
     pub fn rank(&self) -> c_long {
         unsafe { flint_sys::fmpz_mat::fmpz_mat_rank(self.as_ptr()) }
     }
-   */
 
-    /*
+    /* todo: RatMat
     pub fn solve<'a, T>(&self, B: &'a T) -> Option<RatMat<'a>> where &'a T: Into<IntMat<'a>> {
         let B = B.into();
         assert_eq!(self.nrows(), B.nrows());
