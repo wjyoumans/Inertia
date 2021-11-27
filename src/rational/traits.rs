@@ -15,12 +15,15 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz::fmpz as fmpq;
 
 use crate::traits::*;
+use crate::product::src::Product;
+use crate::integer::src::Integer;
 use crate::rational::src::{Rational, RationalField};
 
 // RationalField //
@@ -33,7 +36,7 @@ impl Parent for RationalField {
 // Integer //
 
 impl Element for Rational {
-    type Data = fmpq;
+    type Data = ();
     type Parent = RationalField;
 }
 
@@ -47,11 +50,6 @@ impl Clone for Rational {
     }
 }
 
-/*
-impl Debug for Integer {
-
-}*/
-
 impl Default for Rational {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
@@ -63,6 +61,12 @@ impl Default for Rational {
 }
 
 
+impl fmt::Display for Rational {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", String::from(self))
+    }
+}
+
 impl Drop for Rational {
     fn drop(&mut self) {
         unsafe { flint_sys::fmpq::fmpq_clear(self.as_mut_ptr());}
@@ -73,5 +77,18 @@ impl Hash for Rational {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.numerator().hash(state);
         self.denominator().hash(state);
+    }
+}
+
+impl Factorizable for Rational {
+    type Output = Product<Integer>;
+    fn factor(&self) -> Self::Output {
+        assert!(self != &0);
+        
+        if self == &1 {
+            Product::from(Integer::from(1))
+        } else { 
+            self.numerator().factor() * self.denominator().factor().inv()
+        }
     }
 }
