@@ -22,6 +22,8 @@ use std::mem::MaybeUninit;
 use flint_sys::fmpq_mat::fmpq_mat_struct;
 use libc::c_long;
 
+use crate::integer::src::Integer;
+use crate::intmat::src::IntMat;
 use crate::rational::src::Rational;
 
 
@@ -94,6 +96,51 @@ impl RatMat {
             }
         }
     }*/
+
+
+    /// Return two integer matrices containing the numerator and denominator of each entry of a
+    /// rational matrix.
+    #[inline]
+    pub fn num_den_entrywise(&self) -> (IntMat, IntMat) {
+        let mut num = IntMat::zero(self.nrows(), self.ncols());
+        let mut den = IntMat::zero(self.nrows(), self.ncols());
+        unsafe {
+            flint_sys::fmpq_mat::fmpq_mat_get_fmpz_mat_entrywise(
+                num.as_mut_ptr(),
+                den.as_mut_ptr(),
+                self.as_ptr()
+            );
+        }
+        (num, den)
+    }
+    
+    /// Return the numerator and denominator of a rational matrix as an integer matrix and integer,
+    /// obtained by clearing the denominators of the input matrix.
+    #[inline]
+    pub fn num_den(&self) -> (IntMat, Integer) {
+        let mut num = IntMat::zero(self.nrows(), self.ncols());
+        let mut den = Integer::default();
+        unsafe {
+            flint_sys::fmpq_mat::fmpq_mat_get_fmpz_mat_matwise(
+                num.as_mut_ptr(),
+                den.as_mut_ptr(),
+                self.as_ptr()
+            );
+        }
+        (num, den)
+    }
+
+    /// Return the numerator of the rational matrix as an [IntMat].
+    #[inline]
+    pub fn numerator(&self) -> IntMat {
+        self.num_den().0
+    }
+    
+    /// Return the denominator of the rational matrix as an [Integer].
+    #[inline]
+    pub fn denominator(&self) -> Integer {
+        self.num_den().1
+    }
 
     /// Swap two rational matrices. The dimensions are allowed to be different.
     #[inline]
@@ -366,13 +413,12 @@ impl RatMat {
         self.submatrix(0, j, self.nrows() as usize, j + 1)
     }
 
-    /*
     /// Return the square of an rational matrix. The matrix must be square.
     #[inline]
     pub fn square(&self) -> Self {
         assert!(self.is_square());
         let mut res = RatMat::zero(self.nrows(), self.ncols());
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_sqr(res.as_mut_ptr(), self.as_ptr()) }
+        unsafe { flint_sys::fmpq_mat::fmpq_mat_mul(res.as_mut_ptr(), self.as_ptr(), self.as_ptr()) }
         res
     }
     
@@ -380,8 +426,8 @@ impl RatMat {
     #[inline]
     pub fn square_assign(&mut self) {
         assert!(self.is_square());
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_sqr(self.as_mut_ptr(), self.as_ptr()) }
-    }*/
+        unsafe { flint_sys::fmpq_mat::fmpq_mat_mul(self.as_mut_ptr(), self.as_ptr(), self.as_ptr()) }
+    }
 
     /// Return the kronecker product of two rational matrices.
     #[inline]
