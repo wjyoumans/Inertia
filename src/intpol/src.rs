@@ -22,9 +22,7 @@ use std::ops::Rem;
 
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
-use num_traits::{Signed, Unsigned};
 
-use crate::traits::Element;
 use crate::integer::src::Integer;
 
 // IntPol //
