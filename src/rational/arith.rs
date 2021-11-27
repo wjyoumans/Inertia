@@ -26,23 +26,6 @@ use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 
-// Integer
-
-impl_unop_unsafe! {
-    Integer, Rational
-    Inv {inv}
-    fmpq_inv_fmpz
-}
-
-impl_binop_unsafe! {
-    Integer, Integer, Rational
-
-    Pow {pow}
-    AssignPow {assign_pow}
-    fmpz_pow_fmpz;
-}
-
-// Rational
 
 impl_cmp_unsafe! {
     eq
@@ -59,7 +42,7 @@ impl_cmp_unsafe! {
 impl_cmp_unsafe! {
     eq
     Rational, Integer
-    flint_sys::fmpq::fmpq_cmp_fmpz
+    fmpq_equal_fmpz
 }
 
 impl_cmp_unsafe! {
@@ -71,7 +54,7 @@ impl_cmp_unsafe! {
 impl_cmp_unsafe! {
     eq
     Integer, Rational
-    fmpq_fmpz_cmp
+    fmpq_fmpz_equal
 }
 
 impl_cmp_unsafe! {
@@ -83,7 +66,7 @@ impl_cmp_unsafe! {
 impl_cmp_unsafe! {
     eq
     Rational, u64 {u64 u32 u16 u8}
-    flint_sys::fmpq::fmpq_cmp_ui
+    flint_sys::fmpq::fmpq_equal_ui
 }
 
 impl_cmp_unsafe! {
@@ -95,7 +78,7 @@ impl_cmp_unsafe! {
 impl_cmp_unsafe! {
     eq
     Rational, i64 {i64 i32 i16 i8}
-    flint_sys::fmpq::fmpq_cmp_si
+    flint_sys::fmpq::fmpq_equal_si
 }
 
 impl_cmp_unsafe! {
@@ -322,21 +305,34 @@ impl_binop_unsafe! {
 
 
 #[inline]
-unsafe fn fmpq_inv_fmpz(
-    res: *mut flint_sys::fmpq::fmpq,
-    f: *const flint_sys::fmpz::fmpz)
+unsafe fn fmpq_equal_fmpz(
+    f: *const flint_sys::fmpq::fmpq,
+    g: *const flint_sys::fmpz::fmpz) -> c_int
 {
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
-    flint_sys::fmpq::fmpq_set_fmpz_den1(z.as_mut_ptr(), f);
-    flint_sys::fmpq::fmpq_inv(res, z.as_ptr());
-    flint_sys::fmpq::fmpq_clear(z.as_mut_ptr());
+    if flint_sys::fmpq::fmpq_cmp_fmpz(f, g) == 0 {
+        1
+    } else {
+        0
+    }
+}
+
+#[inline]
+unsafe fn fmpq_fmpz_equal(
+    f: *const flint_sys::fmpz::fmpz,
+    g: *const flint_sys::fmpq::fmpq) -> c_int
+{
+    if flint_sys::fmpq::fmpq_cmp_fmpz(g, f) == 0 {
+        1
+    } else {
+        0
+    }
 }
 
 #[inline]
 unsafe fn fmpq_fmpz_cmp(
     f: *const flint_sys::fmpz::fmpz,
-    g: *const flint_sys::fmpq::fmpq) -> c_int {
+    g: *const flint_sys::fmpq::fmpq) -> c_int 
+{
     -flint_sys::fmpq::fmpq_cmp_fmpz(g, f)
 }
 
@@ -513,18 +509,4 @@ unsafe fn fmpq_mod_si(
     flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), g);
     flint_sys::fmpq::fmpq_mod_fmpz(res, f, z.as_ptr());
     flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
-}
-
-#[inline]
-unsafe fn fmpz_pow_fmpz(
-    res: *mut flint_sys::fmpq::fmpq,
-    f: *const flint_sys::fmpz::fmpz,
-    g: *const flint_sys::fmpz::fmpz,
-    )
-{
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
-    flint_sys::fmpq::fmpq_set_fmpz_den1(z.as_mut_ptr(), f);
-    flint_sys::fmpq::fmpq_pow_fmpz(res, z.as_ptr(), g);
-    flint_sys::fmpq::fmpq_clear(z.as_mut_ptr());
 }
