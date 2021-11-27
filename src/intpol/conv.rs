@@ -15,52 +15,31 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt::Debug;
-
 use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
 
 
-macro_rules! impl_from_prim {
-    ($cast:ident $func:path; $($t:ident)*) => ($(
-        impl_from! {
-            impl From<&$t> for IntPol {
-                fn from(src: &$t) -> IntPol {
-                    let mut res = IntPol::default();
-                    unsafe { $func(res.as_mut_ptr(), *src as $cast); }
-                    res
-                }
-            }
-        }
-
-    )*)
+impl_from_unsafe! {
+    IntPol, u64 {usize u64 u32 u16 u8}
+    flint_sys::fmpz_poly::fmpz_poly_set_ui
 }
 
-impl_from_prim! {u64 flint_sys::fmpz_poly::fmpz_poly_set_ui; usize u64 u32 u16 u8 }
-impl_from_prim! {i64 flint_sys::fmpz_poly::fmpz_poly_set_si; isize i64 i32 i16 i8 }
+impl_from_unsafe! {
+    IntPol, i64 {isize i64 i32 i16 i8}
+    flint_sys::fmpz_poly::fmpz_poly_set_si
+}
+
+impl_from_unsafe! {
+    IntPol, Integer
+    flint_sys::fmpz_poly::fmpz_poly_set_fmpz
+}
 
 impl_from! {
-    impl From<&Integer> for IntPol {
-        fn from(src: &Integer) -> IntPol {
-            let mut res = IntPol::default();
-            unsafe {
-                flint_sys::fmpz_poly::fmpz_poly_set_fmpz(
-                    res.as_mut_ptr(),
-                    src.as_ptr()
-                );
-            }
-            res
+    String, IntPol
+    {
+        fn from(x: &IntPol) -> String {
+            x.get_str_pretty("x")
         }
-    }
-}
-
-impl From<&[Integer]> for IntPol {
-    fn from(src: &[Integer]) -> IntPol {
-        let mut res = IntPol::default();
-        for (i, x) in src.iter().enumerate() {
-            res.set_coeff(i, x);
-        }
-        res
     }
 }
 
@@ -75,15 +54,12 @@ impl<'a, T> From<&'a [T]> for IntPol where &'a T: Into<Integer>
     }
 }
 
-
-impl From<&IntPol> for String {
-    fn from(x: &IntPol) -> String {
-        x.get_str_pretty("x")
-    }
-}
-
-impl<'a> From<IntPol> for String {
-    fn from(x: IntPol) -> String {
-        String::from(&x)
+impl From<&[Integer]> for IntPol {
+    fn from(src: &[Integer]) -> IntPol {
+        let mut res = IntPol::default();
+        for (i, x) in src.iter().enumerate() {
+            res.set_coeff(i, x);
+        }
+        res
     }
 }

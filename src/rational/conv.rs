@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt::Debug;
 use std::ffi::CString;
 
 use num_traits::PrimInt;
@@ -24,39 +23,34 @@ use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 
 
-macro_rules! impl_from_prim {
-    ($cast:ident $func:path; $($t:ident)*) => ($(
-        impl_from! {
-            impl From<&$t> for Rational {
-                fn from(src: &$t) -> Rational {
-                    let mut res = Rational::default();
-                    unsafe { $func(res.as_mut_ptr(), *src as $cast, 1); }
-                    res
-                }
-            }
-        }
-
-    )*)
+impl_from_unsafe! {
+    Rational, u64 {usize u64 u32 u16 u8}
+    flint_sys::fmpq::fmpq_set_ui_den1
 }
 
-impl_from_prim! {u64 flint_sys::fmpq::fmpq_set_ui; usize u64 u32 u16 u8 }
-impl_from_prim! {i64 flint_sys::fmpq::fmpq_set_si; isize i64 i32 i16 i8 }
+impl_from_unsafe! {
+    Rational, i64 {isize i64 i32 i16 i8}
+    flint_sys::fmpq::fmpq_set_si_den1
+}
+
+impl_from_unsafe! {
+    Rational, Integer
+    flint_sys::fmpq::fmpq_set_fmpz_den1
+}
 
 impl_from! {
-    impl From<&Integer> for Rational {
-        fn from(src: &Integer) -> Rational {
-            let mut res = Rational::default();
-            unsafe { 
-                flint_sys::fmpq::fmpq_set_fmpz_frac(
-                    res.as_mut_ptr(), 
-                    src.as_ptr(), 
-                    Integer::from(1).as_ptr()
-                ); 
+    String, Rational
+    {
+        fn from(x: &Rational) -> String {
+            if x.denominator() == 1 {
+                x.numerator().to_str_radix(10)
+            } else {
+                format!("{}/{}", &x.numerator().to_str_radix(10), &x.denominator().to_str_radix(10))
             }
-            res
         }
     }
 }
+
 
 impl<T> From<[T; 2]> for Rational where
     T: PrimInt + Into<Integer>
@@ -95,20 +89,3 @@ impl From<&str> for Rational {
         }
     }
 }
-
-impl From<Rational> for String {
-    fn from(x: Rational) -> String {
-        format!("{}/{}", x.numerator().to_str_radix(10), x.denominator().to_str_radix(10))
-    }
-}
-
-impl From<&Rational> for String {
-    fn from(x: &Rational) -> String {
-        if x.denominator() == 1 {
-            x.numerator().to_str_radix(10)
-        } else {
-            format!("{}/{}", &x.numerator().to_str_radix(10), &x.denominator().to_str_radix(10))
-        }
-    }
-}
-
