@@ -48,7 +48,7 @@ impl<T> InvAssign for Product<T> where
 {
     fn inv_assign(&mut self) {
         for v in self.hashmap.values_mut() {
-            *v *= 1;
+            *v *= -1;
         }
     }
 }
