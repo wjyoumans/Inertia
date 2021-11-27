@@ -1130,6 +1130,7 @@ macro_rules! impl_binop_unsafe {
     ) => {};
 }
 
+/*
 macro_rules! impl_from {
     (
         impl From<&$src:ident> for $dst:ident {
@@ -1159,4 +1160,61 @@ macro_rules! impl_from {
             }
         }
     }
+}*/
+
+macro_rules! impl_from {
+    (
+        $t1:ident, $t2:ident
+        {
+            $($code:tt)*
+        }
+    ) => {
+        impl From<$t2> for $t1 {
+            #[inline]
+            fn from(src: $t2) -> $t1 {
+                <$t1>::from(&src)
+            }
+        }
+
+        impl From<&$t2> for $t1 {
+            #[inline]
+            $($code)*
+        }
+    }
+}
+
+macro_rules! impl_from_unsafe {
+    (
+        // a -> b
+        $t1:ident, $t2:ident
+        $func:path
+    ) => (
+        impl_from! {
+            $t1, $t2
+            {
+                fn from(src: &$t2) -> $t1 {
+                    let mut res = <$t1>::default();
+                    unsafe { $func(res.as_mut_ptr(), src.as_ptr()); }
+                    res
+                }
+            }
+        }
+    );
+    (
+        // a -> b, a primitive
+        $t1:ident, $cast:ident {$($t2:ident)*}
+        $func:path
+    ) => ($(
+        impl_from! {
+            $t1, $t2
+            {
+                fn from(src: &$t2) -> $t1 {
+                    let mut res = <$t1>::default();
+                    unsafe { $func(res.as_mut_ptr(), *src as $cast); }
+                    res
+                }
+            }
+        }
+
+    )*)
 }
