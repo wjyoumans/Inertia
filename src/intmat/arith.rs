@@ -15,8 +15,12 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+use std::mem::MaybeUninit;
 use std::ops::*;
-use rug::ops::NegAssign;
+
+use libc::{c_long, c_ulong};
+use rug::ops::*;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
@@ -28,13 +32,13 @@ impl_cmp_unsafe! {
     flint_sys::fmpz_mat::fmpz_mat_equal
 }
 
-/* no default
 impl_unop_unsafe! {
+    matrix
     IntMat
     Neg {neg}
     NegAssign {neg_assign}
     flint_sys::fmpz_mat::fmpz_mat_neg
-}*/
+}
 
 /* need RatMat
 impl Inv for IntMat {
@@ -55,3 +59,196 @@ impl Inv for IntMat {
     }
 }
 */
+
+impl_binop_unsafe! {
+    matrix
+    IntMat, IntMat, IntMat
+
+    Add {add}
+    AddAssign {add_assign}
+    AddFrom {add_from}
+    AssignAdd {assign_add}
+    flint_sys::fmpz_mat::fmpz_mat_add;
+    
+    Sub {sub}
+    SubAssign {sub_assign}
+    SubFrom {sub_from}
+    AssignSub {assign_sub}
+    flint_sys::fmpz_mat::fmpz_mat_sub;
+    
+    Mul {mul}
+    MulAssign {mul_assign}
+    MulFrom {mul_from}
+    AssignMul {assign_mul}
+    flint_sys::fmpz_mat::fmpz_mat_mul;
+}
+
+impl_binop_unsafe! {
+    rhs_scalar
+    op_assign
+    IntMat, Integer, IntMat
+
+    Mul {mul}
+    MulAssign {mul_assign}
+    AssignMul {assign_mul}
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mul_fmpz;
+    
+    Rem {rem}
+    RemAssign {rem_assign}
+    AssignRem {assign_rem}
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mod_fmpz;
+}
+
+/* TODO: RatMat
+impl_binop_unsafe! {
+    rhs_scalar
+    IntMat, Integer, RatMat
+
+    Div {div}
+    DivAssign {div_assign}
+    AssignDiv {assign_div}
+    fmpz_mat_scalar_div_fmpz;
+}*/
+
+impl_binop_unsafe! {
+    lhs_scalar
+    op_from
+    Integer, IntMat, IntMat
+
+    Mul {mul}
+    MulFrom {mul_from}
+    AssignMul {assign_mul}
+    fmpz_mat_fmpz_scalar_mul;
+}
+
+impl_binop_unsafe! {
+    rhs_scalar
+    op_assign
+    IntMat, u64 {u64 u32 u16 u8}, IntMat
+
+    Mul {mul}
+    MulAssign {mul_assign}
+    AssignMul {assign_mul}
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mul_ui;
+    
+    Rem {rem}
+    RemAssign {rem_assign}
+    AssignRem {assign_rem}
+    fmpz_mat_scalar_mod_ui;
+
+    Pow {pow}
+    PowAssign {pow_assign}
+    AssignPow {assign_pow}
+    flint_sys::fmpz_mat::fmpz_mat_pow;
+}
+
+/* TODO: RatMat
+impl_binop_unsafe! {
+    rhs_scalar
+    IntMat, Integer, RatMat
+
+    Div {div}
+    DivAssign {div_assign}
+    AssignDiv {assign_div}
+    fmpz_mat_scalar_div_fmpz;
+}*/
+
+impl_binop_unsafe! {
+    rhs_scalar
+    op_assign
+    IntMat, i64 {i64 i32 i16 i8}, IntMat
+
+    Mul {mul}
+    MulAssign {mul_assign}
+    AssignMul {assign_mul}
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mul_si;
+
+    Rem {rem}
+    RemAssign {rem_assign}
+    AssignRem {assign_rem}
+    fmpz_mat_scalar_mod_si;
+}
+
+/* TODO: RatMat
+impl_binop_unsafe! {
+    rhs_scalar
+    IntMat, Integer, RatMat
+
+    Div {div}
+    DivAssign {div_assign}
+    AssignDiv {assign_div}
+    fmpz_mat_scalar_div_fmpz;
+}*/
+
+impl_binop_unsafe! {
+    lhs_scalar
+    op_from
+    u64 {u64 u32 u16 u8}, IntMat, IntMat
+
+    Mul {mul}
+    MulFrom {mul_from}
+    AssignMul {assign_mul}
+    fmpz_mat_ui_scalar_mul;
+}
+
+impl_binop_unsafe! {
+    lhs_scalar
+    op_from
+    i64 {i64 i32 i16 i8}, IntMat, IntMat
+
+    Mul {mul}
+    MulFrom {mul_from}
+    AssignMul {assign_mul}
+    fmpz_mat_si_scalar_mul;
+}
+
+#[inline]
+unsafe fn fmpz_mat_fmpz_scalar_mul(
+    res: *mut flint_sys::fmpz_mat::fmpz_mat_struct,
+    f: *const flint_sys::fmpz::fmpz,
+    g: *const flint_sys::fmpz_mat::fmpz_mat_struct)
+{
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mul_fmpz(res, g, f);
+}
+
+#[inline]
+unsafe fn fmpz_mat_ui_scalar_mul(
+    res: *mut flint_sys::fmpz_mat::fmpz_mat_struct,
+    f: c_ulong,
+    g: *const flint_sys::fmpz_mat::fmpz_mat_struct)
+{
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mul_ui(res, g, f);
+}
+
+#[inline]
+unsafe fn fmpz_mat_si_scalar_mul(
+    res: *mut flint_sys::fmpz_mat::fmpz_mat_struct,
+    f: c_long,
+    g: *const flint_sys::fmpz_mat::fmpz_mat_struct)
+{
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mul_si(res, g, f);
+}
+
+#[inline]
+unsafe fn fmpz_mat_scalar_mod_ui(
+    res: *mut flint_sys::fmpz_mat::fmpz_mat_struct,
+    f: *const flint_sys::fmpz_mat::fmpz_mat_struct,
+    g: c_ulong)
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), g);
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mod_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_mat_scalar_mod_si(
+    res: *mut flint_sys::fmpz_mat::fmpz_mat_struct,
+    f: *const flint_sys::fmpz_mat::fmpz_mat_struct,
+    g: c_long)
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), g);
+    flint_sys::fmpz_mat::fmpz_mat_scalar_mod_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}

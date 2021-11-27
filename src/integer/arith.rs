@@ -280,8 +280,9 @@ impl_binop_unsafe! {
     fmpz_ui_tdiv_r;
 }
 
-/*
+/* TODO: not working?
 impl_binop_unsafe! {
+    None
     u64 {u64 u32 u16 i8}, Integer, Rational
 
     Pow {pow}
@@ -329,14 +330,17 @@ impl_binop_unsafe! {
     AssignRem {assign_rem}
     fmpz_si_tdiv_r;
 }
-/*
+
+/* TODO: not working?
 impl_binop_unsafe! {
+    None
     i64 {i64 i32 i16 i8}, Integer, Rational
 
     Pow {pow}
     AssignPow {assign_pow}
     fmpz_si_pow;
-}*/
+}
+*/
 
 #[inline]
 unsafe fn fmpz_and_ui(
