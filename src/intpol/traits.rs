@@ -17,12 +17,15 @@
 
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::mem::{self, MaybeUninit};
+use std::mem::MaybeUninit;
 
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 
 use crate::traits::*;
+use crate::integer::src::Integer;
+use crate::rational::src::Rational;
 use crate::intpol::src::{IntPol, IntPolRing};
+use crate::ratpol::src::RatPol;
 
 // IntPolRing //
 
@@ -34,7 +37,7 @@ impl Parent for IntPolRing {
 // IntPol //
 
 impl Element for IntPol {
-    type Data = fmpz_poly_struct;
+    type Data = ();
     type Parent = IntPolRing;
 }
 
@@ -77,3 +80,45 @@ impl Hash for IntPol {
     }
 }
 
+
+impl<T> Evaluate<T> for IntPol where
+    T: Into<Integer>
+{
+    type Output = Integer;
+    #[inline]
+    fn evaluate(&self, x: T) -> Self::Output {
+        self.evaluate(&x.into())
+    }
+}
+
+impl Evaluate<&Integer> for IntPol {
+    type Output = Integer;
+    #[inline]
+    fn evaluate(&self, x: &Integer) -> Self::Output {
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_evaluate_fmpz(
+                res.as_mut_ptr(),
+                self.as_ptr(),
+                x.as_ptr()
+            );
+        }
+        res
+    }
+}
+
+impl Evaluate<Rational> for IntPol {
+    type Output = Rational;
+    #[inline]
+    fn evaluate(&self, x: Rational) -> Self::Output {
+        RatPol::from(self).evaluate(x)
+    }
+}
+
+impl Evaluate<&Rational> for IntPol {
+    type Output = Rational;
+    #[inline]
+    fn evaluate(&self, x: &Rational) -> Self::Output {
+        RatPol::from(self).evaluate(x)
+    }
+}
