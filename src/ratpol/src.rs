@@ -82,6 +82,18 @@ impl RatPol {
         }
     }
 
+    /// Return true if the polynomial is zero.
+    #[inline]
+    pub fn is_zero(&self) -> bool {
+        unsafe {flint_sys::fmpq_poly::fmpq_poly_is_zero(self.as_ptr()) == 1}
+    }
+
+    /// Return true if the polynomial is one.
+    #[inline]
+    pub fn is_one(&self) -> bool {
+        unsafe {flint_sys::fmpq_poly::fmpq_poly_is_one(self.as_ptr()) == 1}
+    }
+    
     #[inline]
     pub fn len(&self) -> c_long {
         unsafe { flint_sys::fmpq_poly::fmpq_poly_length(self.as_ptr())}

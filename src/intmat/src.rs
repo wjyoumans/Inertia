@@ -26,7 +26,7 @@ use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
 
 
-/// The vector space of `rows` by `cols` matrices of [Integers][Integer].
+/// The vector space of `rows` by `cols` [Integer] matrices.
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntMatSpace {
     rows: c_long,
@@ -201,6 +201,18 @@ impl IntMat {
         }
     }
 
+    /// Return true if the matrix contains all zeros.
+    #[inline]
+    pub fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_zero(self.as_ptr()) == 1 } 
+    }
+    
+    /// Return true if the matrix is the identity.
+    #[inline]
+    pub fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_one(self.as_ptr()) == 1 } 
+    }
+
     /// Return true if the number of rows or columns is zero.
     #[inline]
     pub fn is_empty(&self) -> bool {
@@ -214,6 +226,12 @@ impl IntMat {
             flint_sys::fmpz_mat::fmpz_mat_is_square(self.as_ptr()) != 0
         }
     }
+    
+    /// Return true if the matrix is invertible.
+    #[inline]
+    pub fn is_invertible(&self) -> bool {
+        self.is_square() && !self.det().is_zero()
+    }
 
     /// Return true if row `i` is all zeros.
     #[inline]
@@ -224,13 +242,10 @@ impl IntMat {
     }
 
     /// Return true if column `i` is all zeros.
+    // TODO: Does an additional allocation compared to `is_zero_row`.
     #[inline]
     pub fn is_zero_col(&self, i: usize) -> bool {
-        let mut temp = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fmpz_mat::fmpz_mat_transpose(temp.as_mut_ptr(), self.as_ptr());
-            flint_sys::fmpz_mat::fmpz_mat_is_zero_row(temp.as_ptr(), i as c_long) != 0
-        }   
+        self.col(i).is_zero()
     }
 
     /// Return the number of rows of an integer matrix.

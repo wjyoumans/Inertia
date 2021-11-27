@@ -100,7 +100,7 @@ impl IntPol {
     /// Return true if the polynomial is zero.
     #[inline]
     pub fn is_zero(&self) -> bool {
-        *self == 0
+        unsafe {flint_sys::fmpz_poly::fmpz_poly_is_zero(self.as_ptr()) == 1}
     }
 
     /// Return true if the polynomial is one.
