@@ -16,6 +16,8 @@
  */
 
 
+use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use crate::traits::*;
@@ -45,12 +47,11 @@ impl Clone for IntMat {
     }
 }
 
-/*
 impl fmt::Display for IntMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
-}*/
+}
 
 impl Drop for IntMat {
     fn drop(&mut self) {
@@ -58,14 +59,13 @@ impl Drop for IntMat {
     }
 }
 
-/*
 impl Hash for IntMat {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.get_ui_vector().hash(state);
+        Vec::from(self).hash(state);
     }
-}*/
+}
 
-/* 
+/* TODO: RatMat 
 impl EvaluateProduct for Product<Integer> {
     type Output = Rational;
     fn evaluate(&self) -> Rational {
