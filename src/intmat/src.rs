@@ -63,15 +63,15 @@ pub struct IntMat {
 }
 
 impl IntMat {
-    /// A pointer to the underlying FFI type. This is only needed to interface directly with FLINT
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
     /// via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_mat_struct {
         &self.data
     }
     
-    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
-    /// FLINT via the FFI.
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_mat_struct {
         &mut self.data

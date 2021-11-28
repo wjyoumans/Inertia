@@ -50,15 +50,15 @@ pub struct Rational {
 }
 
 impl Rational {
-    /// A pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq {
         &self.data
     }
    
-    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
-    /// FLINT via the FFI.
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq {
         &mut self.data

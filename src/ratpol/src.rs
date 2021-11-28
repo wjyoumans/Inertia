@@ -49,11 +49,15 @@ pub struct RatPol {
 }
 
 impl RatPol {
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq_poly_struct {
         &self.data
     }
     
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_poly_struct {
         &mut self.data

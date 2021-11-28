@@ -58,15 +58,15 @@ pub struct IntPol {
 
 impl IntPol {
 
-    /// A pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_poly_struct {
         &self.data
     }
     
-    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
-    /// FLINT via the FFI.
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_poly_struct {
         &mut self.data

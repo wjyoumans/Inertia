@@ -50,20 +50,22 @@ impl IntModRing {
 pub type IntMod = Elem<IntModRing>;
 
 impl IntMod {
-    /// A pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz {
         &self.data
     }
     
-    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
-    /// FLINT via the FFI.
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz {
         &mut self.data
     }
 
+    /// A reference to the struct holding context information. This is only needed to interface
+    /// directly with FLINT via the FFI.
     pub fn ctx_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.wrap
     }

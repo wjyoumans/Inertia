@@ -56,15 +56,15 @@ pub struct RatMat {
 }
 
 impl RatMat {
-    /// A pointer to the underlying FFI type. This is only needed to interface directly with FLINT
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
     /// via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq_mat_struct {
         &self.data
     }
     
-    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
-    /// FLINT via the FFI.
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_mat_struct {
         &mut self.data

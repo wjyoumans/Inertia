@@ -56,20 +56,22 @@ impl FiniteField {
 pub type FinFldElem = Elem<FiniteField>;
 
 impl FinFldElem {
-    /// A pointer to the underlying FFI type. This is only needed to interface directly with 
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_struct {
         &self.data
     }
     
-    /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
-    /// FLINT via the FFI.
+    /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
+    /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_struct {
         &mut self.data
     }
 
+    /// A reference to the struct holding context information. This is only needed to interface
+    /// directly with FLINT via the FFI.
     pub fn ctx_ptr(&self) -> &fq_ctx_struct {
         &self.ctx.wrap
     }
