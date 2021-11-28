@@ -81,6 +81,7 @@ pub mod ratpol;
 pub mod ratfunc;
 pub mod intmat;
 pub mod ratmat;
+pub mod finfld;
 
 pub mod prelude { 
     //! A prelude for glob importing.
@@ -93,6 +94,9 @@ pub mod prelude {
 
     pub use crate::rational::src::*;
     pub use super::rat;
+
+    pub use crate::intmod::src::*;
+    //pub use super::intmod;
 
     pub use crate::intpol::src::*;
     pub use super::intpol;
