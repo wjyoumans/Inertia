@@ -67,14 +67,14 @@ impl IntMat {
     /// A pointer to the underlying FFI type. This is only needed to interface directly with FLINT
     /// via the FFI.
     #[inline]
-    pub fn as_ptr(&self) -> &flint_sys::fmpz_mat::fmpz_mat_struct {
+    pub fn as_ptr(&self) -> &fmpz_mat_struct {
         &self.data
     }
     
     /// A mutable pointer to the underlying FFI type. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
-    pub fn as_mut_ptr(&mut self) -> &mut flint_sys::fmpz_mat::fmpz_mat_struct {
+    pub fn as_mut_ptr(&mut self) -> &mut fmpz_mat_struct {
         &mut self.data
     }
 
