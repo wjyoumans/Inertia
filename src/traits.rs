@@ -139,6 +139,7 @@ impl<T: Parent> Drop for Elem<T> {
     default fn drop(&mut self) {}
 }
 
+/*
 pub trait Zero: Parent {
     fn zero(&self) -> Self::Element;
 }
@@ -146,3 +147,4 @@ pub trait Zero: Parent {
 pub trait One: Parent {
     fn one(&self) -> Self::Element;
 }
+*/

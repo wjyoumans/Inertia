@@ -228,6 +228,15 @@ macro_rules! impl_cmp_unsafe {
                 }
             }
         }
+        impl_cmp! {
+            eq
+            $t2, $t1
+            {
+                fn eq(&self, rhs: &$t1) -> bool {
+                    unsafe { $func(rhs.as_ptr(), self.as_ptr()) != 0 }
+                }
+            }
+        }
     };
     (
         eq
@@ -289,6 +298,22 @@ macro_rules! impl_cmp_unsafe {
                     if cmp == 0 {
                         Some(Equal)
                     } else if cmp < 0 {
+                        Some(Less)
+                    } else {
+                        Some(Greater)
+                    }
+                }
+            }
+        }
+        impl_cmp! {
+            ord
+            $t2, $t1
+            {
+                fn partial_cmp(&self, rhs: &$t1) -> Option<Ordering> {
+                    let cmp = unsafe { $func(rhs.as_ptr(), self.as_ptr()) };
+                    if cmp == 0 {
+                        Some(Equal)
+                    } else if cmp > 0 {
                         Some(Less)
                     } else {
                         Some(Greater)

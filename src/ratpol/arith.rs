@@ -23,6 +23,7 @@ use rug::ops::*;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
+use crate::rational::src::Rational;
 use crate::ratpol::src::RatPol;
 
 impl_cmp_unsafe! {
@@ -35,6 +36,12 @@ impl_cmp_unsafe! {
     eq
     RatPol, Integer
     fmpq_poly_equal_fmpz
+}
+
+impl_cmp_unsafe! {
+    eq
+    RatPol, Rational
+    fmpq_poly_equal_fmpq
 }
 
 impl_cmp_unsafe! {
@@ -254,6 +261,7 @@ impl_binop_unsafe! {
     */
 }
 
+#[inline]
 unsafe fn fmpq_poly_equal_fmpz(
     f: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     x: *const flint_sys::fmpz::fmpz,
@@ -262,9 +270,26 @@ unsafe fn fmpq_poly_equal_fmpz(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
     flint_sys::fmpq_poly::fmpq_poly_set_fmpz(z.as_mut_ptr(), x);
-    flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr())
+    let b = flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_clear(z.as_mut_ptr());
+    b
 }
 
+#[inline]
+unsafe fn fmpq_poly_equal_fmpq(
+    f: *const flint_sys::fmpq_poly::fmpq_poly_struct,
+    x: *const flint_sys::fmpq::fmpq,
+    ) -> c_int
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_set_fmpq(z.as_mut_ptr(), x);
+    let b = flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_clear(z.as_mut_ptr());
+    b
+}
+
+#[inline]
 unsafe fn fmpq_poly_equal_ui(
     f: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     x: c_ulong,
@@ -273,9 +298,12 @@ unsafe fn fmpq_poly_equal_ui(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
     flint_sys::fmpq_poly::fmpq_poly_set_ui(z.as_mut_ptr(), x);
-    flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr())
+    let b = flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_clear(z.as_mut_ptr());
+    b
 }
 
+#[inline]
 unsafe fn fmpq_poly_equal_si(
     f: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     x: c_long,
@@ -284,29 +312,31 @@ unsafe fn fmpq_poly_equal_si(
     let mut z = MaybeUninit::uninit();
     flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
     flint_sys::fmpq_poly::fmpq_poly_set_si(z.as_mut_ptr(), x);
-    flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr())
+    let b = flint_sys::fmpq_poly::fmpq_poly_equal(f, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_clear(z.as_mut_ptr());
+    b
 }
 
+#[inline]
 unsafe fn fmpq_poly_add_ui(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     x: c_ulong,
     )
 {
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), x);
-    flint_sys::fmpq_poly::fmpq_poly_add_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_set_ui(res, x);
+    flint_sys::fmpq_poly::fmpq_poly_add(res, f, res);
 }
 
+#[inline]
 unsafe fn fmpq_poly_sub_ui(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     x: c_ulong,
     )
 {
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), x);
-    flint_sys::fmpq_poly::fmpq_poly_sub_fmpz(res, f, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_set_ui(res, x);
+    flint_sys::fmpq_poly::fmpq_poly_sub(res, f, res);
 }
 
 /*
@@ -334,6 +364,7 @@ unsafe fn fmpq_poly_scalar_mod_si(
     flint_sys::fmpq_poly::fmpq_poly_rem(res, f, z.as_ptr());
 }*/
 
+#[inline]
 unsafe fn fmpq_poly_fmpz_add(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: *const flint_sys::fmpz::fmpz,
@@ -343,6 +374,7 @@ unsafe fn fmpq_poly_fmpz_add(
     flint_sys::fmpq_poly::fmpq_poly_add_fmpz(res, g, f);
 }
 
+#[inline]
 unsafe fn fmpq_poly_fmpz_scalar_mul(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: *const flint_sys::fmpz::fmpz,
@@ -363,28 +395,29 @@ unsafe fn fmpq_poly_fmpz_scalar_mod(
     flint_sys::fmpz_poly::fmpz_poly_rem(res, res, g);
 }*/
 
+#[inline]
 unsafe fn fmpq_poly_ui_add(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: c_ulong,
     g: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     )
 {
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), f);
-    flint_sys::fmpq_poly::fmpq_poly_add_fmpz(res, g, z.as_ptr());
+    flint_sys::fmpq_poly::fmpq_poly_set_ui(res, f);
+    flint_sys::fmpq_poly::fmpq_poly_add(res, res, g);
 }
 
+#[inline]
 unsafe fn fmpq_poly_ui_sub(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: c_ulong,
     g: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     )
 {
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), f);
-    flint_sys::fmpq_poly::fmpq_poly_fmpz_sub(res, z.as_ptr(), g);
+    flint_sys::fmpq_poly::fmpq_poly_set_ui(res, f);
+    flint_sys::fmpq_poly::fmpq_poly_sub(res, res, g);
 }
 
+#[inline]
 unsafe fn fmpq_poly_ui_scalar_mul(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: c_ulong,
@@ -406,6 +439,7 @@ unsafe fn fmpq_poly_ui_scalar_mod(
 }
 */
 
+#[inline]
 unsafe fn fmpq_poly_si_add(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: c_long,
@@ -415,16 +449,18 @@ unsafe fn fmpq_poly_si_add(
     flint_sys::fmpq_poly::fmpq_poly_add_si(res, g, f);
 }
 
+#[inline]
 unsafe fn fmpq_poly_si_sub(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: c_long,
     g: *const flint_sys::fmpq_poly::fmpq_poly_struct,
     )
 {
-    flint_sys::fmpq_poly::fmpq_poly_sub_si(res, g, f);
-    flint_sys::fmpq_poly::fmpq_poly_neg(res, res);
+    flint_sys::fmpq_poly::fmpq_poly_set_si(res, f);
+    flint_sys::fmpq_poly::fmpq_poly_sub(res, res, g);
 }
 
+#[inline]
 unsafe fn fmpq_poly_si_scalar_mul(
     res: *mut flint_sys::fmpq_poly::fmpq_poly_struct,
     f: c_long,
