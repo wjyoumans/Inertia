@@ -77,6 +77,7 @@ pub mod integer;
 pub mod rational;
 pub mod intpol;
 pub mod ratpol;
+pub mod ratfunc;
 pub mod intmat;
 pub mod ratmat;
 
@@ -98,8 +99,14 @@ pub mod prelude {
     pub use crate::ratpol::src::*;
     pub use super::ratpol;
     
+    pub use crate::ratfunc::src::*;
+    //pub use super::ratfunc;
+
     pub use crate::intmat::src::*;
     //pub use super::intmat;
+    
+    pub use crate::ratmat::src::*;
+    //pub use super::ratmat;
 }
 
 pub use prelude::*;
