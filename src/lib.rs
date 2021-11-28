@@ -78,6 +78,7 @@ pub mod rational;
 pub mod intmod;
 pub mod intpol;
 pub mod ratpol;
+pub mod intmodpol;
 pub mod ratfunc;
 pub mod intmat;
 pub mod ratmat;
