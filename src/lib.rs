@@ -75,6 +75,7 @@ pub mod traits;
 pub mod product;
 pub mod integer;
 pub mod rational;
+pub mod intmod;
 pub mod intpol;
 pub mod ratpol;
 pub mod ratfunc;
