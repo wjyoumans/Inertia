@@ -19,10 +19,8 @@
 use std::ffi::{CStr, CString};
 
 use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
-use libc::{c_long, c_ulong};
 
-use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
+//use crate::intpol::src::IntPol;
 
 // RatFunc //
 

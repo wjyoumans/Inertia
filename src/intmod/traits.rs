@@ -23,7 +23,6 @@ use std::sync::Arc;
 
 use flint_sys::fmpz::fmpz;
 use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
-use rustc_hash::FxHashMap;
 
 use crate::traits::*;
 use crate::integer::src::Integer;

@@ -17,11 +17,11 @@
 
 
 use std::fmt;
-use std::hash::{Hash, Hasher};
+//use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use crate::traits::*;
-use crate::rational::src::Rational;
+//use crate::rational::src::Rational;
 use crate::ratfunc::src::{RatFunc, RatFuncField};
 
 // RatFuncField //

@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::ffi::CString;
 
 use crate::integer::src::Integer;
 use crate::intmod::src::IntMod;

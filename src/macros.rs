@@ -19,6 +19,7 @@
 
 // Helper macros //
 
+/*
 macro_rules! op_guard {
     (Div, $rhs:expr) => {
         if !$rhs.is_invertible() {
@@ -32,7 +33,7 @@ macro_rules! op_guard {
         }
     };
     ($op:ident, $rhs:expr) => {}
-}
+}*/
 
 macro_rules! default {
     // Unary ops

@@ -19,8 +19,6 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use flint_sys::fmpz_poly::fmpz_poly_struct;
-
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;

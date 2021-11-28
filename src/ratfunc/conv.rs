@@ -15,10 +15,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
-use crate::rational::src::Rational;
-use crate::ratpol::src::RatPol;
 use crate::ratfunc::src::RatFunc;
 
 /*

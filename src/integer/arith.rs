@@ -17,7 +17,6 @@
 
 
 use std::cmp::Ordering::{self, Less, Greater, Equal};
-use std::mem::MaybeUninit;
 use std::ops::*;
 
 use libc::{c_long, c_ulong};
@@ -585,6 +584,7 @@ unsafe fn fmpz_pow_si(
     flint_sys::fmpq::fmpq_pow_si(res, res, g);
 }
 
+/*
 #[inline]
 unsafe fn fmpz_ui_pow(
     res: *mut flint_sys::fmpq::fmpq,
@@ -606,3 +606,4 @@ unsafe fn fmpz_si_pow(
     flint_sys::fmpq::fmpq_set_si_den1(res, f);
     flint_sys::fmpq::fmpq_pow_fmpz(res, res, g);
 }
+*/

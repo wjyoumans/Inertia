@@ -19,8 +19,6 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use flint_sys::fmpz::fmpz as fmpq;
-
 use crate::traits::*;
 use crate::product::src::Product;
 use crate::integer::src::Integer;

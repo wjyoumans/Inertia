@@ -20,8 +20,6 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use flint_sys::fmpq_poly::fmpq_poly_struct;
-
 use crate::traits::*;
 use crate::rational::src::Rational;
 use crate::ratpol::src::{RatPol, RatPolRing};

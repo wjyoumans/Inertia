@@ -16,7 +16,6 @@
  */
 
 
-use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz_mat::fmpz_mat_struct;

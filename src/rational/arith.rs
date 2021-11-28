@@ -16,7 +16,6 @@
  */
 
 use std::cmp::Ordering::{self, Less, Greater, Equal};
-use std::mem::MaybeUninit;
 use std::ops::*;
 
 use libc::{c_int, c_long, c_ulong};
@@ -314,26 +313,6 @@ unsafe fn fmpq_equal_fmpz(
     } else {
         0
     }
-}
-
-#[inline]
-unsafe fn fmpq_fmpz_equal(
-    f: *const flint_sys::fmpz::fmpz,
-    g: *const flint_sys::fmpq::fmpq) -> c_int
-{
-    if flint_sys::fmpq::fmpq_cmp_fmpz(g, f) == 0 {
-        1
-    } else {
-        0
-    }
-}
-
-#[inline]
-unsafe fn fmpq_fmpz_cmp(
-    f: *const flint_sys::fmpz::fmpz,
-    g: *const flint_sys::fmpq::fmpq) -> c_int 
-{
-    -flint_sys::fmpq::fmpq_cmp_fmpz(g, f)
 }
 
 #[inline]
