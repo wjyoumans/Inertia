@@ -15,9 +15,9 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/// Traits for operations and algebraic structures.
+use std::fmt;
 
-use std::sync::Arc;
+/// Traits for operations and algebraic structures.
 
 
 /// Inverse as a unary operation.
@@ -131,12 +131,18 @@ impl<T> Drop for Wrap<T> {
 /// An element of a `Parent`. We use the thread-safe [Arc] reference counter to avoid cleaning up
 /// the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
-    pub ctx: Arc<T::Data>,
+    pub ctx: T::Data,
     pub data: <T::Element as Element>::Data,
 }
 
 impl<T: Parent> Drop for Elem<T> {
     default fn drop(&mut self) {}
+}
+
+impl<T: Parent> fmt::Debug for Elem<T> {
+    default fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Debug not implemented.")
+    }
 }
 
 /*

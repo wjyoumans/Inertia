@@ -31,7 +31,7 @@ use crate::finfld::src::{FiniteField, FinFldElem};
 // FiniteField //
 
 impl Parent for FiniteField {
-    type Data = Wrap<fq_ctx_struct>;
+    type Data = Arc<Wrap<fq_ctx_struct>>;
     type Element = FinFldElem;
 }
 

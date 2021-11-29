@@ -19,6 +19,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
+use flint_sys::fmpq::fmpq;
+
 use crate::traits::*;
 use crate::product::src::Product;
 use crate::integer::src::Integer;
@@ -34,7 +36,7 @@ impl Parent for RationalField {
 // Integer //
 
 impl Element for Rational {
-    type Data = ();
+    type Data = fmpq;
     type Parent = RationalField;
 }
 
@@ -53,7 +55,7 @@ impl Default for Rational {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
-            Rational { data: z.assume_init() }
+            Rational { ctx: (), data: z.assume_init() }
         }
     }
 }

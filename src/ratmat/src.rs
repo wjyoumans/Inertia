@@ -21,6 +21,7 @@ use std::mem::MaybeUninit;
 use flint_sys::fmpq_mat::fmpq_mat_struct;
 use libc::c_long;
 
+use crate::traits::Elem;
 use crate::integer::src::Integer;
 use crate::intmat::src::IntMat;
 use crate::rational::src::Rational;
@@ -49,11 +50,7 @@ impl RatMatSpace {
 
 /// A matrix of arbitrary precision [Rationals][Rational]. The field `data` is a FLINT
 /// [fmpq_mat_struct][flint_sys::fmpq_mat::fmpq_mat_struct].
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct RatMat {
-    pub data: fmpq_mat_struct,
-}
+pub type RatMat = Elem<RatMatSpace>;
 
 impl RatMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
@@ -223,7 +220,7 @@ impl RatMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, n);
-            RatMat { data: z.assume_init() }
+            RatMat { ctx: (), data: z.assume_init() }
         }
     }
 
@@ -234,7 +231,7 @@ impl RatMat {
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, m);
             flint_sys::fmpq_mat::fmpq_mat_one(z.as_mut_ptr());
-            RatMat { data: z.assume_init() }
+            RatMat { ctx: (), data: z.assume_init() }
         }
     }
 

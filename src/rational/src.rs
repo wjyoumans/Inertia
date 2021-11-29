@@ -16,6 +16,8 @@
  */
 
 use flint_sys::fmpq::fmpq;
+
+use crate::traits::Elem;
 use crate::integer::src::Integer;
 
 // RationalField //
@@ -43,11 +45,7 @@ impl RationalField {
 
 /// An arbitrary precision rational number. The field `data` is a FLINT
 /// [fmpq][flint_sys::fmpq::fmpq].
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct Rational {
-    pub data: fmpq,
-}
+pub type Rational = Elem<RationalField>;
 
 impl Rational {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -76,18 +74,22 @@ impl Rational {
         unsafe { flint_sys::fmpq::fmpq_is_one(self.as_ptr()) == 1 } 
     }
 
+    // TODO: does this share mem?
     /// Returns the numerator of a rational number as an [Integer].
     #[inline]
     pub fn numerator(&self) -> Integer {
         Integer {
+            ctx: (),
             data: self.data.num
         }
     }
     
+    // TODO: does this share mem?
     /// Returns the denominator of a rational number as an [Integer].
     #[inline]
     pub fn denominator(&self) -> Integer {
         Integer {
+            ctx: (),
             data: self.data.den
         }
     }

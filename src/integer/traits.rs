@@ -20,6 +20,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
+use flint_sys::fmpz::fmpz;
 use rug::ops::Pow;
 use rustc_hash::FxHashMap;
 
@@ -38,7 +39,7 @@ impl Parent for IntegerRing {
 // Integer //
 
 impl Element for Integer {
-    type Data = ();
+    type Data = fmpz;
     type Parent = IntegerRing;
 }
 
@@ -47,7 +48,7 @@ impl Clone for Integer {
         let mut z = MaybeUninit::uninit();
         unsafe { 
             flint_sys::fmpz::fmpz_init_set(z.as_mut_ptr(), &self.data); 
-            Integer { data: z.assume_init() }
+            Integer { ctx: (), data: z.assume_init() }
         }
     }
 }
@@ -57,7 +58,7 @@ impl Default for Integer {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
-            Integer { data: z.assume_init() }
+            Integer { ctx: (), data: z.assume_init() }
         }
     }
 }
@@ -101,7 +102,7 @@ impl Factorizable for Integer {
             
             let mut hashmap = FxHashMap::<Integer, Integer>::default();
             for (p, k) in base.iter().zip(exp) {
-                hashmap.insert(Integer { data: p.clone() }, Integer::from(k));
+                hashmap.insert(Integer { ctx: (), data: p.clone() }, Integer::from(k));
             }
             
             flint_sys::fmpz_factor::fmpz_factor_clear(&mut fac);

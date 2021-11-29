@@ -23,7 +23,7 @@ impl_from! {
     Integer, IntMod
     {
         fn from(x: &IntMod) -> Integer {
-            Integer { data: x.data }
+            Integer { ctx: (), data: x.data }
         }
     }
 }

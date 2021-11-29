@@ -29,7 +29,7 @@ use crate::integer::src::Integer;
 
 /// The finite field with `p^k` elements for `p` prime.
 pub struct FiniteField {
-    pub ctx: Arc<Wrap<fq_ctx_struct>>,
+    pub ctx: <Self as Parent>::Data,
 }
 
 impl FiniteField {

@@ -31,7 +31,7 @@ use crate::intmod::src::{IntMod, IntModRing};
 // IntModRing //
 
 impl Parent for IntModRing {
-    type Data = Wrap<fmpz_mod_ctx_struct>;
+    type Data = Arc<Wrap<fmpz_mod_ctx_struct>>;
     type Element = IntMod;
 }
 

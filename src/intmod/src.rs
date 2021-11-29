@@ -27,7 +27,7 @@ use crate::integer::src::Integer;
 
 /// The ring of integers mod `n` for any integer `n`.
 pub struct IntModRing {
-    pub ctx: Arc<Wrap<fmpz_mod_ctx_struct>>,
+    pub ctx: <Self as Parent>::Data,
 }
 
 impl IntModRing {

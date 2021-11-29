@@ -20,6 +20,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
+use flint_sys::fmpq_mat::fmpq_mat_struct;
+
 use crate::traits::*;
 use crate::ratmat::src::{RatMat, RatMatSpace};
 
@@ -33,7 +35,7 @@ impl Parent for RatMatSpace {
 // IntMat //
 
 impl Element for RatMat {
-    type Data = ();
+    type Data = fmpq_mat_struct;
     type Parent = RatMatSpace;
 }
 
@@ -42,7 +44,7 @@ impl Clone for RatMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init_set(z.as_mut_ptr(), &self.data);
-            RatMat { data: z.assume_init() }
+            RatMat { ctx: (), data: z.assume_init() }
         }
     }
 }

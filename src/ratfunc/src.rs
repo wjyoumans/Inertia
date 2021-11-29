@@ -20,6 +20,7 @@ use std::ffi::{CStr, CString};
 
 use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
 
+use crate::traits::Elem;
 //use crate::intpol::src::IntPol;
 
 // RatFunc //
@@ -43,11 +44,7 @@ impl RatFuncField {
 
 /// A rational function represented as the quotient of integer polynomials. The field `data` is a
 /// FLINT [fmpz_poly_q][flint_sys::fmpz_poly_q::fmpz_poly_q_struct]
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct RatFunc {
-    pub data: fmpz_poly_q_struct,
-}
+pub type RatFunc = Elem<RatFuncField>;
 
 impl RatFunc {
     /// A pointer to the underlying FFI type. This is only needed to interface directly with 

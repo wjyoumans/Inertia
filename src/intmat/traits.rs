@@ -20,6 +20,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
+use flint_sys::fmpz_mat::fmpz_mat_struct;
+
 use crate::traits::*;
 use crate::intmat::src::{IntMat, IntMatSpace};
 
@@ -33,7 +35,7 @@ impl Parent for IntMatSpace {
 // IntMat //
 
 impl Element for IntMat {
-    type Data = ();
+    type Data = fmpz_mat_struct;
     type Parent = IntMatSpace;
 }
 
@@ -42,7 +44,7 @@ impl Clone for IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init_set(z.as_mut_ptr(), &self.data);
-            IntMat { data: z.assume_init() }
+            IntMat { ctx: (), data: z.assume_init() }
         }
     }
 }

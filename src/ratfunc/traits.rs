@@ -20,6 +20,8 @@ use std::fmt;
 //use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
+use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
+
 use crate::traits::*;
 //use crate::rational::src::Rational;
 use crate::ratfunc::src::{RatFunc, RatFuncField};
@@ -34,7 +36,7 @@ impl Parent for RatFuncField {
 // RatFunc //
 
 impl Element for RatFunc {
-    type Data = ();
+    type Data = fmpz_poly_q_struct;
     type Parent = RatFuncField;
 }
 
@@ -44,7 +46,7 @@ impl Clone for RatFunc {
         unsafe { 
             flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
             flint_sys::fmpz_poly_q::fmpz_poly_q_set(z.as_mut_ptr(), self.as_ptr()); 
-            RatFunc { data: z.assume_init() }
+            RatFunc { ctx: (), data: z.assume_init() }
         }
     }
 }
@@ -54,7 +56,7 @@ impl Default for RatFunc {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
-            RatFunc { data: z.assume_init() }
+            RatFunc { ctx: (), data: z.assume_init() }
         }
     }
 }

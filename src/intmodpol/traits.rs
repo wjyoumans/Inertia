@@ -31,7 +31,7 @@ use crate::intmodpol::src::{IntModPol, IntModPolRing};
 // IntModRing //
 
 impl Parent for IntModPolRing {
-    type Data = Wrap<fmpz_mod_ctx_struct>;
+    type Data = Arc<Wrap<fmpz_mod_ctx_struct>>;
     type Element = IntModPol;
 }
 

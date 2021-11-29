@@ -19,6 +19,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
+use flint_sys::fmpz_poly::fmpz_poly_struct;
+
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
@@ -35,7 +37,7 @@ impl Parent for IntPolRing {
 // IntPol //
 
 impl Element for IntPol {
-    type Data = ();
+    type Data = fmpz_poly_struct;
     type Parent = IntPolRing;
 }
 
@@ -45,7 +47,7 @@ impl Clone for IntPol {
         unsafe { 
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
             flint_sys::fmpz_poly::fmpz_poly_set(z.as_mut_ptr(), &self.data); 
-            IntPol { data: z.assume_init() }
+            IntPol { ctx: (), data: z.assume_init() }
         }
     }
 }
@@ -55,7 +57,7 @@ impl Default for IntPol {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPol { data: z.assume_init() }
+            IntPol { ctx: (), data: z.assume_init() }
         }
     }
 }

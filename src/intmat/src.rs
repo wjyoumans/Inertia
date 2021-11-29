@@ -21,6 +21,7 @@ use std::mem::MaybeUninit;
 use flint_sys::fmpz_mat::fmpz_mat_struct;
 use libc::c_long;
 
+use crate::traits::Elem;
 use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
 
@@ -56,11 +57,7 @@ impl IntMatSpace {
 
 /// A matrix of arbitrary precision [Integer]s. The field `data` is a FLINT
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct IntMat {
-    pub data: fmpz_mat_struct,
-}
+pub type IntMat = Elem<IntMatSpace>;
 
 impl IntMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
@@ -185,7 +182,7 @@ impl IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
-            IntMat { data: z.assume_init() }
+            IntMat { ctx: (), data: z.assume_init() }
         }
     }
 
@@ -196,7 +193,7 @@ impl IntMat {
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, m);
             flint_sys::fmpz_mat::fmpz_mat_one(z.as_mut_ptr());
-            IntMat { data: z.assume_init() }
+            IntMat { ctx: (), data: z.assume_init() }
         }
     }
 

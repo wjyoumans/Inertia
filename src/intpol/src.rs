@@ -23,6 +23,7 @@ use std::ops::Rem;
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
 
+use crate::traits::Elem;
 use crate::integer::src::Integer;
 
 // IntPol //
@@ -50,11 +51,7 @@ impl IntPolRing {
 
 /// A polynomial with [Integer] coefficients. The field `data` is a FLINT
 /// [fmpz_poly][flint_sys::fmpz_poly::fmpz_poly_struct].
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct IntPol {
-    pub data: fmpz_poly_struct,
-}
+pub type IntPol = Elem<IntPolRing>;
 
 impl IntPol {
 

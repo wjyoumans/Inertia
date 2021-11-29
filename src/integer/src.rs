@@ -23,6 +23,7 @@ use flint_sys::fmpz::fmpz;
 use libc::{c_int, c_long, c_ulong};
 use num_traits::Zero;
 
+use crate::traits::Elem;
 use crate::rational::src::Rational;
 
 /// An integer ring that can be used as an [Integer] "factory".
@@ -43,11 +44,7 @@ impl IntegerRing {
 }
 
 /// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct Integer {
-    pub data: fmpz,
-}
+pub type Integer = Elem<IntegerRing>;
 
 impl Integer {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

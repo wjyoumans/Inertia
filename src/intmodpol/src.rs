@@ -28,7 +28,7 @@ use crate::intpol::src::IntPol;
 
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
 pub struct IntModPolRing {
-    pub ctx: Arc<Wrap<fmpz_mod_ctx_struct>>,
+    pub ctx: <Self as Parent>::Data,
 }
 
 impl IntModPolRing {
