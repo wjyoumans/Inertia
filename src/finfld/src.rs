@@ -26,6 +26,7 @@ use libc::c_long;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
+use crate::finfld::traits::FinFldCtx;
 
 /// The finite field with `p^k` elements for `p` prime.
 pub struct FiniteField {
@@ -42,7 +43,7 @@ impl FiniteField {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fq_default::fq_default_ctx_init(z.as_mut_ptr(), p.as_ptr(), k, var.as_ptr());
-            FiniteField { ctx: Arc::new(Wrap { wrap: z.assume_init() }) }
+            FiniteField { ctx: Arc::new(FinFldCtx(z.assume_init())) }
         }
     }
 
@@ -73,7 +74,7 @@ impl FinFldElem {
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_ptr(&self) -> &fq_ctx_struct {
-        &self.ctx.wrap
+        &self.ctx.0
     }
     
     /// Return a [String] representation of a finite field element.

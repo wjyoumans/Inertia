@@ -24,6 +24,7 @@ use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
+use crate::intmod::traits::IntModCtx;
 
 /// The ring of integers mod `n` for any integer `n`.
 pub struct IntModRing {
@@ -36,7 +37,7 @@ impl IntModRing {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
-            IntModRing { ctx: Arc::new(Wrap { wrap: z.assume_init() }) }
+            IntModRing { ctx: Arc::new(IntModCtx(z.assume_init())) }
         }
     }
 
@@ -67,6 +68,6 @@ impl IntMod {
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_ptr(&self) -> &fmpz_mod_ctx_struct {
-        &self.ctx.wrap
+        &self.ctx.0
     }
 }

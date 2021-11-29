@@ -30,15 +30,17 @@ use crate::intmod::src::{IntMod, IntModRing};
 
 // IntModRing //
 
-impl Parent for IntModRing {
-    type Data = Arc<Wrap<fmpz_mod_ctx_struct>>;
-    type Element = IntMod;
+pub struct IntModCtx(pub fmpz_mod_ctx_struct);
+
+impl Drop for IntModCtx {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
+    }
 }
 
-impl Drop for Wrap<fmpz_mod_ctx_struct> {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.wrap); }
-    }
+impl Parent for IntModRing {
+    type Data = Arc<IntModCtx>;
+    type Element = IntMod;
 }
 
 // IntMod //

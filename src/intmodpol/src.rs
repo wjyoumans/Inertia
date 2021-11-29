@@ -25,6 +25,7 @@ use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
+use crate::intmodpol::traits::IntModPolCtx;
 
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
 pub struct IntModPolRing {
@@ -37,7 +38,7 @@ impl IntModPolRing {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
-            IntModPolRing { ctx: Arc::new(Wrap { wrap: z.assume_init() }) }
+            IntModPolRing { ctx: Arc::new(IntModPolCtx(z.assume_init())) }
         }
     }
 
@@ -68,7 +69,7 @@ impl IntModPol {
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_ptr(&self) -> &fmpz_mod_ctx_struct {
-        &self.ctx.wrap
+        &self.ctx.0
     }
     
     /// Return a [String] representation of a polynomial over integers mod `n`.

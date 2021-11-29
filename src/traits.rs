@@ -118,16 +118,6 @@ pub trait Element {
     type Parent: Parent;
 }
 
-#[doc(hidden)]
-/// A wrapper for structs coming from FFI bindings.
-pub struct Wrap<T> {
-    pub wrap: T,
-}
-
-impl<T> Drop for Wrap<T> {
-    default fn drop(&mut self) {}
-}
-
 /// An element of a `Parent`. We use the thread-safe [Arc] reference counter to avoid cleaning up
 /// the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
@@ -144,13 +134,3 @@ impl<T: Parent> fmt::Debug for Elem<T> {
         f.write_str("Debug not implemented.")
     }
 }
-
-/*
-pub trait Zero: Parent {
-    fn zero(&self) -> Self::Element;
-}
-
-pub trait One: Parent {
-    fn one(&self) -> Self::Element;
-}
-*/

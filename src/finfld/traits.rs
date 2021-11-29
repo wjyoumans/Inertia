@@ -30,15 +30,17 @@ use crate::finfld::src::{FiniteField, FinFldElem};
 
 // FiniteField //
 
-impl Parent for FiniteField {
-    type Data = Arc<Wrap<fq_ctx_struct>>;
-    type Element = FinFldElem;
+pub struct FinFldCtx(pub fq_ctx_struct);
+
+impl Drop for FinFldCtx {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.0); }
+    }
 }
 
-impl Drop for Wrap<fq_ctx_struct> {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.wrap); }
-    }
+impl Parent for FiniteField {
+    type Data = Arc<FinFldCtx>;
+    type Element = FinFldElem;
 }
 
 // FinFldElem //

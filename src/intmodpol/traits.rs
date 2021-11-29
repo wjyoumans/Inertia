@@ -28,16 +28,22 @@ use crate::traits::*;
 use crate::intpol::src::IntPol;
 use crate::intmodpol::src::{IntModPol, IntModPolRing};
 
-// IntModRing //
+// IntModPolRing //
+
+pub struct IntModPolCtx(pub fmpz_mod_ctx_struct);
+
+impl Drop for IntModPolCtx {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
+    }
+}
 
 impl Parent for IntModPolRing {
-    type Data = Arc<Wrap<fmpz_mod_ctx_struct>>;
+    type Data = Arc<IntModPolCtx>;
     type Element = IntModPol;
 }
 
-// Drop implemented in IntMod
-
-// IntMod //
+// IntModPol //
 
 impl Element for IntModPol {
     type Data = fmpz_mod_poly_struct;
