@@ -20,7 +20,7 @@ use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fq_default::fq_default_struct as fq_struct;
+use flint_sys::fq_default::fq_default_poly_struct as fq_poly_struct;
 use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
 use libc::c_long;
 
@@ -28,12 +28,13 @@ use crate::traits::*;
 use crate::integer::src::Integer;
 
 /// The finite field with `p^k` elements for `p` prime.
-pub struct FiniteField {
+pub struct FinFldPolRing {
     pub ctx: Arc<Wrap<fq_ctx_struct>>,
 }
 
-impl FiniteField {
-    /// Construct the finite field with `p^k` elements for `p` prime.
+impl FinFldPolRing {
+    /// Construct the univariate ring of polynomials over a finite field with `p^k` elements for `p` 
+    /// prime.
     pub fn init(p: &Integer, k: c_long) -> Self {
         assert!(p.is_prime());
         assert!(k > 0);
