@@ -1261,6 +1261,22 @@ macro_rules! impl_from_unsafe {
         }
     );
     (
+        // a -> b, with third argument (precision, context, etc)
+        $t1:ident, $t2:ident, $arg:expr;
+        $func:path
+    ) => (
+        impl_from! {
+            $t1, $t2
+            {
+                fn from(src: &$t2) -> $t1 {
+                    let mut res = <$t1>::default();
+                    unsafe { $func(res.as_mut_ptr(), src.as_ptr(), $arg); }
+                    res
+                }
+            }
+        }
+    );
+    (
         // a -> b, a primitive
         $t1:ident, $cast:ident {$($t2:ident)*}
         $func:path

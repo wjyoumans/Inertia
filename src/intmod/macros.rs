@@ -17,14 +17,11 @@
 
 
 #[macro_export]
-macro_rules! rat {
-    () => (
-        Rational::from(0)
-    );
-    ($arg:expr) => (
-        Rational::from($arg)
-    );
-    ($num:expr, $den:expr) => (
-        Rational::from([&Integer::from($num), &Integer::from($den)])
-    )
+macro_rules! intmod {
+    ($modulus:expr) => {
+        IntModRing::init($modulus).new(0)
+    };
+    ($n:expr, $modulus:expr) => {
+        IntModRing::init($modulus).new($n)
+    };
 }

@@ -23,10 +23,22 @@ use std::sync::Arc;
 
 use flint_sys::fmpz::fmpz;
 use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
+use num_traits::PrimInt;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::intmod::src::{IntMod, IntModRing};
+
+
+/// A trait for implementing different initializations of the ring of integers mod `n`.
+pub trait IntModRingInit<T> {
+    fn init(x: T) -> Self;
+}
+
+/// A trait for constructing elements of the ring of integers mod `n`.
+pub trait IntModRingNew<T> {
+    fn new(&self, x: T) -> IntMod;
+}
 
 // IntModRing //
 
@@ -41,6 +53,46 @@ impl Drop for IntModCtx {
 impl Parent for IntModRing {
     type Data = Arc<IntModCtx>;
     type Element = IntMod;
+}
+
+impl IntModRingInit<&Integer> for IntModRing {
+    /// Construct the ring of integers mod `n`.
+    #[inline]
+    fn init(n: &Integer) -> Self {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
+            IntModRing { ctx: Arc::new(IntModCtx(z.assume_init())) }
+        }
+    }
+}
+
+impl<T> IntModRingInit<T> for IntModRing where
+    T: PrimInt + Into<Integer>
+{
+    /// Construct the ring of integers mod `n`.
+    #[inline]
+    fn init(n: T) -> Self {
+        Self::init(&n.into())
+    }
+}
+
+impl IntModRingNew<&Integer> for IntModRing {
+    /// Construct an element of the ring of integers mod `n`.
+    #[inline]
+    fn new(&self, n: &Integer) -> IntMod {
+        IntMod { ctx: Arc::clone(&self.ctx), data: n.data }
+    }
+}
+
+impl<T> IntModRingNew<T> for IntModRing where
+    T: PrimInt + Into<Integer>
+{
+    /// Construct an element of the ring of integers mod `n`.
+    #[inline]
+    fn new(&self, n: T) -> IntMod {
+        self.new(&n.into())
+    }
 }
 
 // IntMod //

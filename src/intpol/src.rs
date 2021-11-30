@@ -113,7 +113,7 @@ impl IntPol {
         !self.is_zero()
     }
 
-    /// Return the length of the polynomial, equivalently, the number of non-zero terms.
+    /// Return the length of the polynomial, equivalently, the degree plus one.
     #[inline]
     pub fn len(&self) -> c_long {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_length(self.as_ptr())}

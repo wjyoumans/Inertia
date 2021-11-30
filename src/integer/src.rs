@@ -36,11 +36,6 @@ impl IntegerRing {
     pub fn init() -> Self {
         IntegerRing {}
     }
-
-    /// Create a new [Integer].
-    pub fn new<T: Into<Integer>>(&self, x: T) -> Integer {
-        x.into()
-    }
 }
 
 /// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].

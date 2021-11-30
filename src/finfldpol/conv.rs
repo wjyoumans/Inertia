@@ -16,31 +16,13 @@
  */
 
 
-use crate::intpol::src::IntPol;
-use crate::finfld::src::FinFldElem;
+use crate::finfldpol::src::FinFldPol;
 
 impl_from! {
-    IntPol, FinFldElem
+    String, FinFldPol
     {
-        fn from(x: &FinFldElem) -> IntPol {
-            let mut res = IntPol::default();
-            unsafe {
-                flint_sys::fq_default::fq_default_get_fmpz_poly(
-                    res.as_mut_ptr(), 
-                    x.as_ptr(), 
-                    x.ctx_ptr()
-                );
-            }
-            res
-        }
-    }
-}
-
-impl_from! {
-    String, FinFldElem
-    {
-        fn from(x: &FinFldElem) -> String {
-            x.get_str_pretty()
+        fn from(x: &FinFldPol) -> String {
+            x.get_str_pretty("x")
         }
     }
 }

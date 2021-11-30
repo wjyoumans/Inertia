@@ -17,14 +17,11 @@
 
 
 #[macro_export]
-macro_rules! rat {
-    () => (
-        Rational::from(0)
-    );
-    ($arg:expr) => (
-        Rational::from($arg)
-    );
-    ($num:expr, $den:expr) => (
-        Rational::from([&Integer::from($num), &Integer::from($den)])
-    )
+macro_rules! finfld {
+    ($p:expr, $k:expr) => {
+        FiniteField::init($p, $k).new(0)
+    };
+    ($n:expr, $p:expr, $k:expr) => {
+        FiniteField::init($p, $k).new($n)
+    };
 }

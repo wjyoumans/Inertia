@@ -15,16 +15,20 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//! An arbitrary precision complex number with numerical errors tracked automatically using ball 
+//! arithmetic.
 
-#[macro_export]
-macro_rules! rat {
-    () => (
-        Rational::from(0)
-    );
-    ($arg:expr) => (
-        Rational::from($arg)
-    );
-    ($num:expr, $den:expr) => (
-        Rational::from([&Integer::from($num), &Integer::from($den)])
-    )
-}
+/// Implementations of arithmetic operations.
+//pub mod arith;
+
+/// Conversion implementations.
+pub mod conv;
+
+/// Constructor macros.
+pub mod macros;
+
+/// Definition and general implementation.
+pub mod src;
+
+/// Implementation of traits not involving operations.
+pub mod traits;

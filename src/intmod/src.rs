@@ -31,22 +31,6 @@ pub struct IntModRing {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl IntModRing {
-    /// Construct the ring of integers mod `n`.
-    pub fn init(n: &Integer) -> Self {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
-            IntModRing { ctx: Arc::new(IntModCtx(z.assume_init())) }
-        }
-    }
-
-    /// Create a new integer mod `n`.
-    pub fn new<T: Into<IntMod>>(&self, x: T) -> IntMod {
-        x.into()
-    }
-}
-
 /// An element of the ring of integers mod `n`.
 pub type IntMod = Elem<IntModRing>;
 

@@ -21,62 +21,59 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fq_default::fq_default_struct as fq_struct;
-use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
+use flint_sys::fq_default_poly::fq_default_poly_struct as fq_poly_struct;
 
 use crate::traits::*;
 use crate::intpol::src::IntPol;
-use crate::finfld::src::{FiniteField, FinFldElem};
+use crate::finfldpol::src::{FinFldPol, FinFldPolRing};
+use crate::finfld::traits::FqCtx;
 
-// FiniteField //
+// FinFldPolRing //
 
-impl Parent for FiniteField {
-    type Data = Wrap<fq_ctx_struct>;
-    type Element = FinFldElem;
+impl Parent for FinFldPolRing {
+    type Data = Arc<FqCtx>;
+    type Element = FinFldPol;
 }
 
-impl Drop for Wrap<fq_ctx_struct> {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.wrap); }
-    }
+// FinFldPol //
+
+impl Element for FinFldPol {
+    type Data = fq_poly_struct;
+    type Parent = FinFldPolRing;
 }
 
-// FinFldElem //
-
-impl Element for FinFldElem {
-    type Data = fq_struct;
-    type Parent = FiniteField;
-}
-
-impl Clone for FinFldElem {
+impl Clone for FinFldPol {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe { 
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_ptr());
-            flint_sys::fq_default::fq_default_set(
+            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.ctx_ptr());
+            flint_sys::fq_default_poly::fq_default_poly_set(
                 z.as_mut_ptr(), 
                 self.as_ptr(),
                 self.ctx_ptr()
             ); 
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
         }
     }
 }
 
-impl fmt::Display for FinFldElem {
+impl fmt::Display for FinFldPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
 }
 
-impl Drop for FinFldElem {
+impl Drop for FinFldPol {
     fn drop(&mut self) {
-        unsafe { flint_sys::fq_default::fq_default_clear(self.as_mut_ptr(), self.ctx_ptr());}
+        unsafe { 
+            flint_sys::fq_default_poly::fq_default_poly_clear(self.as_mut_ptr(), self.ctx_ptr());
+        }
     }
 }
 
-impl Hash for FinFldElem {
+impl Hash for FinFldPol {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        IntPol::from(self).hash(state);
+        // avoid calling hash on coefficients directly, since they each hash the finite field context.
+        self.coefficients().iter().map(|x| IntPol::from(x)).collect::<Vec<IntPol>>().hash(state);
     }
 }

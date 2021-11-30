@@ -26,32 +26,13 @@ use libc::c_long;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::finfld::traits::FinFldCtx;
+use crate::finfld::traits::FqCtx;
 
 /// The finite field with `p^k` elements for `p` prime.
 pub struct FiniteField {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl FiniteField {
-    /// Construct the finite field with `p^k` elements for `p` prime.
-    pub fn init(p: &Integer, k: c_long) -> Self {
-        assert!(p.is_prime());
-        assert!(k > 0);
-
-        let var = CString::new("o").unwrap();
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default::fq_default_ctx_init(z.as_mut_ptr(), p.as_ptr(), k, var.as_ptr());
-            FiniteField { ctx: Arc::new(FinFldCtx(z.assume_init())) }
-        }
-    }
-
-    /// Construct an element of a finite field.
-    pub fn new<T: Into<FinFldElem>>(&self, x: T) -> FinFldElem {
-        x.into()
-    }
-}
 
 /// An element of a finite field.
 pub type FinFldElem = Elem<FiniteField>;

@@ -17,14 +17,14 @@
 
 
 #[macro_export]
-macro_rules! rat {
-    () => (
-        Rational::from(0)
-    );
-    ($arg:expr) => (
-        Rational::from($arg)
-    );
-    ($num:expr, $den:expr) => (
-        Rational::from([&Integer::from($num), &Integer::from($den)])
-    )
+macro_rules! complex {
+    () => {
+        Complex::default()
+    };
+    ($arg:expr) => {
+        Complex::from($arg)
+    };
+    ($arg1:expr, $arg2:expr) => {
+        Complex::from([&Real::from($arg1), &Real::from($arg2)])
+    }
 }

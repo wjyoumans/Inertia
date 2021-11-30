@@ -48,8 +48,8 @@
 //!     - [ ] polynomials over finite fields
 //!     - [ ] polynomials over p-adic/q-adics
 //! - [ ] matrices
-//!     - [ ] integer matrices
-//!     - [ ] rational matrices
+//!     - [x] integer matrices
+//!     - [x] rational matrices
 //!     - [ ] real matrices
 //!     - [ ] complex matrices 
 //!     - [ ] matrices over integers mod n
@@ -62,6 +62,8 @@
 
 #![feature(min_specialization)]
 
+const REAL_DEFAULT_PREC: libc::c_long = 10;
+
 #[macro_use]
 pub(crate) mod macros;
 
@@ -73,16 +75,22 @@ extern crate quickcheck_macros;
 pub mod traits;
 
 pub mod product;
+
 pub mod integer;
 pub mod rational;
+pub mod real;
+pub mod complex;
 pub mod intmod;
-pub mod intpol;
-pub mod ratpol;
-pub mod intmodpol;
-pub mod ratfunc;
+pub mod finfld;
+
 pub mod intmat;
 pub mod ratmat;
-pub mod finfld;
+
+pub mod intpol;
+pub mod ratpol;
+pub mod ratfunc;
+pub mod intmodpol;
+pub mod finfldpol;
 
 pub mod prelude { 
     //! A prelude for glob importing.
@@ -91,13 +99,27 @@ pub mod prelude {
     pub use crate::traits::*;
 
     pub use crate::integer::src::*;
+    pub use crate::integer::traits::IntegerNew;
     pub use super::int;
 
     pub use crate::rational::src::*;
     pub use super::rat;
+    
+    pub use crate::real::src::*;
+    pub use super::real;
+
+    pub use crate::complex::src::*;
+    pub use super::complex;
 
     pub use crate::intmod::src::*;
-    //pub use super::intmod;
+    pub use crate::intmod::traits::IntModRingInit;
+    pub use crate::intmod::traits::IntModRingNew;
+    pub use super::intmod;
+    
+    pub use crate::finfld::src::*;
+    pub use crate::finfld::traits::FiniteFieldInit;
+    pub use crate::finfld::traits::FiniteFieldNew;
+    pub use super::finfld;
 
     pub use crate::intpol::src::*;
     pub use super::intpol;

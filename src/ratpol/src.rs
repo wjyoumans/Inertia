@@ -95,6 +95,7 @@ impl RatPol {
         unsafe {flint_sys::fmpq_poly::fmpq_poly_is_one(self.as_ptr()) == 1}
     }
     
+    /// Return the length of the polynomial, equivalently, the degree plus one.
     #[inline]
     pub fn len(&self) -> c_long {
         unsafe { flint_sys::fmpq_poly::fmpq_poly_length(self.as_ptr())}

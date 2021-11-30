@@ -16,15 +16,43 @@
  */
 
 
-#[macro_export]
-macro_rules! rat {
-    () => (
-        Rational::from(0)
-    );
-    ($arg:expr) => (
-        Rational::from($arg)
-    );
-    ($num:expr, $den:expr) => (
-        Rational::from([&Integer::from($num), &Integer::from($den)])
-    )
+use std::ffi::CString;
+
+use crate::real::src::Real;
+use crate::integer::src::Integer;
+use crate::rational::src::Rational;
+
+
+impl_from_unsafe! {
+    Real, u64 {usize u64 u32 u16 u8}
+    arb_sys::arb::arb_set_ui
+}
+
+impl_from_unsafe! {
+    Real, i64 {isize i64 i32 i16 i8}
+    arb_sys::arb::arb_set_si
+}
+
+impl_from_unsafe! {
+    Real, f64 {f64}
+    arb_sys::arb::arb_set_d
+}
+
+impl_from_unsafe! {
+    Real, Integer
+    arb_sys::arb::arb_set_fmpz
+}
+
+impl_from_unsafe! {
+    Real, Rational, crate::REAL_DEFAULT_PREC;
+    arb_sys::arb::arb_set_fmpq
+}
+
+impl_from! {
+    String, Real
+    {
+        fn from(x: &Real) -> String {
+           format!("{}", &x.get_str(*x.ctx))
+        }
+    }
 }

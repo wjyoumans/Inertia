@@ -24,7 +24,7 @@
 pub mod conv;
 
 /// Constructor macros.
-//pub mod macros;
+pub mod macros;
 
 /// Definition and general implementation.
 pub mod src;

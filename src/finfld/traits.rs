@@ -16,6 +16,7 @@
  */
 
 
+use std::ffi::{CStr, CString};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
@@ -23,24 +24,90 @@ use std::sync::Arc;
 
 use flint_sys::fq_default::fq_default_struct as fq_struct;
 use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
+use libc::c_long;
+use num_traits::PrimInt;
 
 use crate::traits::*;
+use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
 use crate::finfld::src::{FiniteField, FinFldElem};
 
+
+/// A trait for implementing different initializations of a finite field.
+pub trait FiniteFieldInit<T, U> {
+    fn init(p: T, k: U) -> Self;
+}
+
+/// A trait for constructing elements of a finite field.
+pub trait FiniteFieldNew<T> {
+    fn new(&self, x: T) -> FinFldElem;
+}
+
 // FiniteField //
 
-pub struct FinFldCtx(pub fq_ctx_struct);
+pub struct FqCtx(pub fq_ctx_struct);
 
-impl Drop for FinFldCtx {
+impl Drop for FqCtx {
     fn drop(&mut self) {
         unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.0); }
     }
 }
 
 impl Parent for FiniteField {
-    type Data = Arc<FinFldCtx>;
+    type Data = Arc<FqCtx>;
     type Element = FinFldElem;
+}
+
+impl FiniteFieldInit<&Integer, c_long> for FiniteField {
+    /// Construct the finite field with `p^k` elements.
+    #[inline]
+    fn init(p: &Integer, k: c_long) -> Self {
+        assert!(p.is_prime());
+        assert!(k > 0);
+    
+        let var = CString::new("o").unwrap();
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default::fq_default_ctx_init(z.as_mut_ptr(), p.as_ptr(), k, var.as_ptr());
+            FiniteField { ctx: Arc::new(FqCtx(z.assume_init())) }
+        }
+    }
+}
+
+impl<T> FiniteFieldInit<T, c_long> for FiniteField where
+    T: PrimInt + Into<Integer>
+{
+    /// Construct the finite field with `p^k` elements.
+    #[inline]
+    fn init(p: T, k: c_long) -> Self {
+        Self::init(&p.into(), k)
+    }
+}
+
+impl FiniteFieldNew<&Integer> for FiniteField {
+    /// Construct an element of a finite field.
+    #[inline]
+    fn new(&self, n: &Integer) -> FinFldElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default::fq_default_set_fmpz(
+                z.as_mut_ptr(),
+                n.as_ptr(),
+                &self.ctx.0
+            );
+            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+        }
+    }
+}
+
+impl<T> FiniteFieldNew<T> for FiniteField where
+    T: PrimInt + Into<Integer>
+{
+    /// Construct an element of a finite field.
+    #[inline]
+    fn new(&self, n: T) -> FinFldElem {
+        self.new(&n.into())
+    }
 }
 
 // FinFldElem //
