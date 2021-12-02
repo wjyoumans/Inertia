@@ -31,13 +31,15 @@
 //! ## Features
 //!
 //! This is a checklist of the main intended features and their current implementation progress.
+//! Features marked with an asterisk have their basic implementation done but need work on
+//! additional functions, arithmetic, conversion, etc.
 //!
 //! - [x] arbitrary precision integers
 //! - [x] rational numbers
-//! - [ ] real numbers
-//! - [ ] complex numbers
-//! - [ ] integers mod n
-//! - [ ] finite fields
+//! - [ ] \*real numbers
+//! - [ ] \*complex numbers
+//! - [ ] \*integers mod n
+//! - [ ] \*finite fields
 //! - [ ] p-adic/q-adic numbers
 //! - [ ] polynomials
 //!     - [x] integer polynomials
@@ -56,7 +58,7 @@
 //!     - [ ] matrices over finite fields
 //!     - [ ] matrices over p-adic/q-adics
 //! - [ ] multivariate polynomials
-//! - [ ] rational functions
+//! - [ ] \*rational functions
 //! - [ ] number fields
 
 
