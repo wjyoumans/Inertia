@@ -30,8 +30,8 @@ additional functions, arithmetic, conversion, etc.
     - [x] rational polynomials
     - [ ] real polynomials
     - [ ] complex polynomials 
-    - [ ] polynomials over integers mod n
-    - [ ] polynomials over finite fields
+    - [ ] \*polynomials over integers mod n
+    - [ ] \*polynomials over finite fields
     - [ ] polynomials over p-adic/q-adics
 - [ ] matrices
     - [x] integer matrices
