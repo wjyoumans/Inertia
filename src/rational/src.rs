@@ -58,18 +58,6 @@ impl Rational {
         &mut self.data
     }
 
-    /// Return true if the rational number is the additive identity zero.
-    #[inline]
-    pub fn is_zero(&self) -> bool {
-        unsafe { flint_sys::fmpq::fmpq_is_zero(self.as_ptr()) == 1 } 
-    }
-    
-    /// Return true if the rational number is the multiplicative identity one.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        unsafe { flint_sys::fmpq::fmpq_is_one(self.as_ptr()) == 1 } 
-    }
-
     // TODO: does this share mem?
     /// Returns the numerator of a rational number as an [Integer].
     #[inline]

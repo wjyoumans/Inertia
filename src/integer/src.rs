@@ -90,20 +90,6 @@ impl Integer {
             }
         }
     }
-    
-    /// Return true if an [Integer] is zero, false otherwise.
-    #[inline]
-    pub fn is_zero(&self) -> bool {
-        unsafe { flint_sys::fmpz::fmpz_is_zero(self.as_ptr()) == 1 }
-    }
-   
-    /// Return true if an [Integer] is one, false otherwise.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        unsafe {
-            flint_sys::fmpz::fmpz_is_one(self.as_ptr()) == 1
-        }
-    }
 
     /// Return true if an [Integer] is even, false otherwise.
     #[inline]

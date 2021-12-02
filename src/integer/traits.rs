@@ -37,12 +37,50 @@ impl Parent for IntegerRing {
     type Element = Integer;
 }
 
+impl Additive for IntegerRing {
+    fn zero(&self) -> Integer {
+        Integer::default()
+    }
+}
+
+impl Multiplicative for IntegerRing {
+    fn one(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz::fmpz_one(res.as_mut_ptr()); }
+        res
+    }
+}
+
+impl AdditiveGroup for IntegerRing {}
+
+impl MultiplicativeGroup for IntegerRing {}
+
+impl Ring for IntegerRing {}
+
 // Integer //
 
 impl Element for Integer {
     type Data = fmpz;
     type Parent = IntegerRing;
 }
+
+impl AdditiveElement for Integer {
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for Integer {
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for Integer {}
+
+impl MultiplicativeGroupElement for Integer {}
+
+impl RingElement for Integer {}
 
 impl Clone for Integer {
     fn clone(&self) -> Self {

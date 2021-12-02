@@ -33,12 +33,54 @@ impl Parent for RationalField {
     type Element = Rational;
 }
 
-// Integer //
+impl Additive for RationalField {
+    fn zero(&self) -> Rational {
+        Rational::default()
+    }
+}
+
+impl Multiplicative for RationalField {
+    fn one(&self) -> Rational {
+        let mut res = Rational::default();
+        unsafe { flint_sys::fmpq::fmpq_one(res.as_mut_ptr()); }
+        res
+    }
+}
+
+impl AdditiveGroup for RationalField {}
+
+impl MultiplicativeGroup for RationalField {}
+
+impl Ring for RationalField {}
+
+impl Field for RationalField {}
+
+// Rational //
 
 impl Element for Rational {
     type Data = fmpq;
     type Parent = RationalField;
 }
+
+impl AdditiveElement for Rational {
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpq::fmpq_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for Rational {
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpq::fmpq_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for Rational {}
+
+impl MultiplicativeGroupElement for Rational {}
+
+impl RingElement for Rational {}
+
+impl FieldElement for Rational {}
 
 impl Clone for Rational {
     fn clone(&self) -> Self {

@@ -19,6 +19,7 @@ use std::ffi::CString;
 
 use num_traits::PrimInt;
 
+use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 
