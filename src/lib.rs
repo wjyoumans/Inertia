@@ -94,6 +94,8 @@ pub mod ratfunc;
 pub mod intmodpol;
 pub mod finfldpol;
 
+pub mod numfld;
+
 pub mod prelude { 
     //! A prelude for glob importing.
     

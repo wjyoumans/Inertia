@@ -138,6 +138,55 @@ pub trait Element {
     type Parent: Parent;
 }
 
+pub trait Additive: Parent {
+    fn zero(&self) -> <Self as Parent>::Element;
+}
+pub trait AdditiveElement: Element {
+    fn is_zero(&self) -> bool;
+}
+
+pub trait Multiplicative: Parent {
+    fn one(&self) -> <Self as Parent>::Element;
+}
+pub trait MultiplicativeElement: Element {
+    fn is_one(&self) -> bool;
+}
+
+pub trait AdditiveGroup: Additive {
+    #[inline]
+    fn identity(&self) -> <Self as Parent>::Element {
+        self.zero()
+    }
+}
+pub trait AdditiveGroupElement: AdditiveElement {
+    #[inline]
+    fn is_identity(&self) -> bool {
+        self.is_zero()
+    }
+}
+
+pub trait MultiplicativeGroup: Multiplicative {
+    #[inline]
+    fn identity(&self) -> <Self as Parent>::Element {
+        self.one()
+    }
+}
+pub trait MultiplicativeGroupElement: MultiplicativeElement {
+    #[inline]
+    fn is_identity(&self) -> bool {
+        self.is_one()
+    }
+}
+
+pub trait Ring: AdditiveGroup + MultiplicativeGroup {}
+pub trait RingElement: AdditiveGroupElement + MultiplicativeGroupElement {}
+
+pub trait Field: Ring {}
+pub trait FieldElement: RingElement {}
+
+pub trait NumberField: Field {}
+pub trait NumberFieldElement: FieldElement {}
+
 /// An element of a `Parent`. In cases where the parent holds important context data we use the 
 /// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
