@@ -21,7 +21,7 @@ use std::mem::MaybeUninit;
 use flint_sys::fmpz_mat::fmpz_mat_struct;
 use libc::c_long;
 
-use crate::traits::Elem;
+use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
 
@@ -33,27 +33,18 @@ pub struct IntMatSpace {
     cols: c_long,
 }
 
-impl IntMatSpace {
-    /// Construct the space of dimension `m` by `n` [Integer] matrices.
-    #[inline]
-    pub fn init(m: c_long, n: c_long) -> Self {
-        IntMatSpace { rows: m, cols: n }
+impl ParentInit2<c_long, c_long> for IntMatSpace {
+    fn init(m: c_long, n: c_long) -> Self {
+        IntMatSpace { rows: m, cols: n}
     }
+}
 
-    /// Create a new [IntMat].
-    #[inline]
-    pub fn new<T: Into<IntMat>>(&self, x: T) -> IntMat {
+impl<T: Into<IntMat>> ParentNew<T> for IntMatSpace {
+    fn new(&self, x: T) -> IntMat {
         x.into()
     }
-    /*
-    pub fn new(&self) -> IntMat {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), self.rows, self.cols);
-            IntMat { data: z.assume_init() }
-        }
-    }*/
 }
+
 
 /// A matrix of arbitrary precision [Integer]s. The field `data` is a FLINT
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].

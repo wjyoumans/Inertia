@@ -30,14 +30,14 @@ use crate::traits::*;
 //use crate::product::src::Product;
 use crate::complex::src::{Complex, ComplexField};
 
-// RealField //
+// ComplexField //
 
 impl Parent for ComplexField {
     type Data = Arc<c_long>;
     type Element = Complex;
 }
 
-// Real //
+// Complex //
 
 impl Element for Complex {
     type Data = acb_struct;

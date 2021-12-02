@@ -21,6 +21,7 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz_mat::fmpz_mat_struct;
+use libc::c_long;
 
 use crate::traits::*;
 use crate::intmat::src::{IntMat, IntMatSpace};

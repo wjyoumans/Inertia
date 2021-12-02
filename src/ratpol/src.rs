@@ -21,7 +21,7 @@ use std::ffi::{CStr, CString};
 use flint_sys::fmpq_poly::fmpq_poly_struct;
 use libc::{c_long, c_ulong};
 
-use crate::traits::Elem;
+use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::rational::src::Rational;
 use crate::intpol::src::IntPol;
@@ -31,12 +31,14 @@ use crate::intpol::src::IntPol;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RatPolRing {}
 
-impl RatPolRing {
-    pub fn init() -> Self {
+impl ParentInit for RatPolRing {
+    fn init() -> Self {
         RatPolRing {}
     }
-    
-    pub fn new<T: Into<RatPol>>(&self, x: T) -> RatPol {
+}
+
+impl<T: Into<RatPol>> ParentNew<T> for RatPolRing {
+    fn new(&self, x: T) -> RatPol {
         x.into()
     }
 }

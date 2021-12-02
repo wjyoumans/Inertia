@@ -23,10 +23,11 @@ use std::sync::Arc;
 use flint_sys::fq_default_poly::fq_default_poly_struct as fq_poly_struct;
 use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
 use libc::c_long;
+use num_traits::PrimInt;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::finfld::traits::FiniteFieldInit;
+use crate::intpol::src::IntPol;
 use crate::finfld::src::{FinFldElem, FiniteField};
 
 /// The finite field with `p^k` elements for `p` prime.
@@ -34,17 +35,49 @@ pub struct FinFldPolRing {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl FinFldPolRing {
-    /// Construct the univariate ring of polynomials over a finite field with `p^k` elements for `p` 
-    /// prime.
-    pub fn init(p: &Integer, k: c_long) -> Self {
+impl ParentInit2<&Integer, c_long> for FinFldPolRing {
+    /// Construct the ring of polynomials over the finite field with `p^k` elements.
+    #[inline]
+    fn init(p: &Integer, k: c_long) -> Self {
         let ff = FiniteField::init(p, k);
         FinFldPolRing { ctx: Arc::clone(&ff.ctx) }
     }
+}
 
-    /// Construct a univariate polynomial over a finite field.
-    pub fn new<T: Into<FinFldPol>>(&self, x: T) -> FinFldPol {
-        x.into()
+impl<T> ParentInit2<T, c_long> for FinFldPolRing where
+    T: PrimInt + Into<Integer>
+{
+    /// Construct the ring of polynomials over the finite field with `p^k` elements.
+    #[inline]
+    fn init(p: T, k: c_long) -> Self {
+        let ff = FiniteField::init(p, k);
+        FinFldPolRing { ctx: Arc::clone(&ff.ctx) }
+    }
+}
+
+impl ParentNew<&IntPol> for FinFldPolRing {
+    /// Construct a polynomial over a finite field.
+    #[inline]
+    fn new(&self, n: &IntPol) -> FinFldPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default_poly::fq_default_poly_set_fmpz_poly(
+                z.as_mut_ptr(),
+                n.as_ptr(),
+                &self.ctx.0
+            );
+            FinFldPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+        }
+    }
+}
+
+impl<T> ParentNew<T> for FinFldPolRing where
+    T: Into<IntPol>
+{
+    /// Construct a polynomial over a finite field.
+    #[inline]
+    fn new(&self, n: T) -> FinFldPol {
+        self.new(&n.into())
     }
 }
 

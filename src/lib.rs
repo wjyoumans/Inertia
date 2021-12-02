@@ -99,7 +99,6 @@ pub mod prelude {
     pub use crate::traits::*;
 
     pub use crate::integer::src::*;
-    pub use crate::integer::traits::IntegerNew;
     pub use super::int;
 
     pub use crate::rational::src::*;
@@ -112,13 +111,9 @@ pub mod prelude {
     pub use super::complex;
 
     pub use crate::intmod::src::*;
-    pub use crate::intmod::traits::IntModRingInit;
-    pub use crate::intmod::traits::IntModRingNew;
     pub use super::intmod;
     
     pub use crate::finfld::src::*;
-    pub use crate::finfld::traits::FiniteFieldInit;
-    pub use crate::finfld::traits::FiniteFieldNew;
     pub use super::finfld;
 
     pub use crate::intpol::src::*;

@@ -29,29 +29,12 @@ use crate::product::src::Product;
 use crate::integer::src::{Integer, IntegerRing};
 use crate::rational::src::Rational;
 
-pub trait IntegerNew<T> {
-    fn new(&self, x: T) -> Integer;
-}
 
 // IntegerRing //
 
 impl Parent for IntegerRing {
     type Data = ();
     type Element = Integer;
-}
-
-impl IntegerNew<&Integer> for IntegerRing {
-    fn new(&self, x: &Integer) -> Integer {
-        Integer { ctx: (), data: x.data }
-    }
-}
-
-impl<T> IntegerNew<T> for IntegerRing where 
-    T: Into<Integer>
-{
-    fn new(&self, x: T) -> Integer {
-        x.into()
-    }
 }
 
 // Integer //

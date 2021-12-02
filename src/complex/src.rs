@@ -32,14 +32,14 @@ pub struct ComplexField {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl ComplexField {
-    /// Construct the complex field with initial precision `prec`.
-    pub fn init(prec: c_long) -> Self {
-        ComplexField { ctx: Arc::new(prec) }
+impl ParentInit1 for ComplexField {
+    fn init(prec: c_long) -> Self {
+        ComplexField { ctx: Arc::new(prec)}
     }
+}
 
-    /// Create a new [Complex].
-    pub fn new<T: Into<Complex>>(&self, x: T) -> Complex {
+impl<T: Into<Complex>> ParentNew<T> for ComplexField {
+    fn new(&self, x: T) -> Complex {
         x.into()
     }
 }

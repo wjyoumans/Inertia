@@ -106,6 +106,26 @@ pub trait Factorizable {
     fn factor(&self) -> Self::Output;
 }
 
+// Traits for implementing different initializations of Parents
+
+pub trait ParentInit: Parent {
+    fn init() -> Self;
+}
+
+pub trait ParentInit1<T>: Parent {
+    fn init(x: T) -> Self;
+}
+
+pub trait ParentInit2<T, U>: Parent {
+    fn init(x: T, y: U) -> Self;
+}
+
+// Traits for implementing different Element constructors for Parents
+
+pub trait ParentNew<T>: Parent {
+    fn new(&self, x: T) -> <Self as Parent>::Element;
+}
+
 /// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
     type Data;
@@ -118,8 +138,8 @@ pub trait Element {
     type Parent: Parent;
 }
 
-/// An element of a `Parent`. We use the thread-safe [Arc] reference counter to avoid cleaning up
-/// the parent until all elements are dropped.
+/// An element of a `Parent`. In cases where the parent holds important context data we use the 
+/// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
     pub ctx: T::Data,
     pub data: <T::Element as Element>::Data,

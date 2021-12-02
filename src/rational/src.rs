@@ -17,7 +17,7 @@
 
 use flint_sys::fmpq::fmpq;
 
-use crate::traits::Elem;
+use crate::traits::*;
 use crate::integer::src::Integer;
 
 // RationalField //
@@ -26,22 +26,18 @@ use crate::integer::src::Integer;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RationalField {}
 
-impl RationalField {
-    /// Construct a rational field. No initialization is needed so this is equivalent to 
-    /// `RationalField {}`, but is provided for consistency with more complex structures.
-    pub fn init() -> Self {
+impl ParentInit for RationalField {
+    fn init() -> Self {
         RationalField {}
     }
-    
-    /// Create a new [Rational]. 
-    pub fn new<'a, T: Into<&'a Integer>>(&self, n: T, d: T) -> Rational {
-        let mut z = Rational::default();
-        unsafe {
-            flint_sys::fmpq::fmpq_set_fmpz_frac(z.as_mut_ptr(), n.into().as_ptr(), d.into().as_ptr());
-        }
-        z
+}
+
+impl<T: Into<Rational>> ParentNew<T> for RationalField {
+    fn new(&self, x: T) -> Rational {
+        x.into()
     }
 }
+
 
 /// An arbitrary precision rational number. The field `data` is a FLINT
 /// [fmpq][flint_sys::fmpq::fmpq].

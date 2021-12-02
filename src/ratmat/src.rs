@@ -21,7 +21,7 @@ use std::mem::MaybeUninit;
 use flint_sys::fmpq_mat::fmpq_mat_struct;
 use libc::c_long;
 
-use crate::traits::Elem;
+use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::intmat::src::IntMat;
 use crate::rational::src::Rational;
@@ -34,16 +34,14 @@ pub struct RatMatSpace {
     cols: c_long,
 }
 
-impl RatMatSpace {
-    /// Construct the space of dimension `m` by `n` [Rational] matrices.
-    #[inline]
-    pub fn init(m: c_long, n: c_long) -> Self {
-        RatMatSpace { rows: m, cols: n }
+impl ParentInit2<c_long, c_long> for RatMatSpace {
+    fn init(m: c_long, n: c_long) -> Self {
+        RatMatSpace { rows: m, cols: n}
     }
+}
 
-    /// Create a new [RatMat].
-    #[inline]
-    pub fn new<T: Into<RatMat>>(&self, x: T) -> RatMat {
+impl<T: Into<RatMat>> ParentNew<T> for RatMatSpace {
+    fn new(&self, x: T) -> RatMat {
         x.into()
     }
 }

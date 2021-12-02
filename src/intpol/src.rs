@@ -23,7 +23,7 @@ use std::ops::Rem;
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
 
-use crate::traits::Elem;
+use crate::traits::*;
 use crate::integer::src::Integer;
 
 // IntPol //
@@ -33,16 +33,14 @@ use crate::integer::src::Integer;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntPolRing {}
 
-impl IntPolRing {
-    /// Construct the ring of polynomials with integer coefficients. No initialization is needed so
-    /// this is equivalent to `IntPolRing {}`, but is provided for consistency with more complex
-    /// structures.
-    pub fn init() -> Self {
+impl ParentInit for IntPolRing {
+    fn init() -> Self {
         IntPolRing {}
     }
-    
-    /// Create a new [IntPol].
-    pub fn new<T: Into<IntPol>>(&self, x: T) -> IntPol {
+}
+
+impl<T: Into<IntPol>> ParentNew<T> for IntPolRing {
+    fn new(&self, x: T) -> IntPol {
         x.into()
     }
 }

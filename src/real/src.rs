@@ -31,14 +31,14 @@ pub struct RealField {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl RealField {
-    /// Construct the real field with initial precision `prec`.
-    pub fn init(prec: c_long) -> Self {
-        RealField { ctx: Arc::new(prec) }
+impl ParentInit1 for RealField {
+    fn init(prec: c_long) -> Self {
+        RealField { ctx: Arc::new(prec)}
     }
+}
 
-    /// Create a new [Real].
-    pub fn new<T: Into<Real>>(&self, x: T) -> Real {
+impl<T: Into<Real>> ParentNew<T> for RealField {
+    fn new(&self, x: T) -> Real {
         x.into()
     }
 }

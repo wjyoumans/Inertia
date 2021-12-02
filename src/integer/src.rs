@@ -23,18 +23,22 @@ use flint_sys::fmpz::fmpz;
 use libc::{c_int, c_long, c_ulong};
 use num_traits::Zero;
 
-use crate::traits::Elem;
+use crate::traits::*;
 use crate::rational::src::Rational;
 
 /// An integer ring that can be used as an [Integer] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
 
-impl IntegerRing {
-    /// Construct an integer ring. No initialization is needed so this is equivalent to
-    /// `IntegerRing {}`, but is provided for consistency with more complex structures.
-    pub fn init() -> Self {
+impl ParentInit for IntegerRing {
+    fn init() -> Self {
         IntegerRing {}
+    }
+}
+
+impl<T: Into<Integer>> ParentNew<T> for IntegerRing {
+    fn new(&self, x: T) -> Integer {
+        x.into()
     }
 }
 
