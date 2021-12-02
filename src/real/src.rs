@@ -31,7 +31,7 @@ pub struct RealField {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl ParentInit1 for RealField {
+impl ParentInit1<c_long> for RealField {
     fn init(prec: c_long) -> Self {
         RealField { ctx: Arc::new(prec)}
     }

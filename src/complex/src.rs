@@ -32,7 +32,7 @@ pub struct ComplexField {
     pub ctx: <Self as Parent>::Data,
 }
 
-impl ParentInit1 for ComplexField {
+impl ParentInit1<c_long> for ComplexField {
     fn init(prec: c_long) -> Self {
         ComplexField { ctx: Arc::new(prec)}
     }
