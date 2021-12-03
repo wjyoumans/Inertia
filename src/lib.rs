@@ -40,7 +40,7 @@
 //! - [ ] \*complex numbers
 //! - [ ] \*integers mod n
 //! - [ ] \*finite fields
-//! - [ ] p-adic/q-adic numbers
+//! - [ ] \*p-adic/q-adic numbers
 //! - [ ] polynomials
 //!     - [x] integer polynomials
 //!     - [x] rational polynomials
@@ -59,7 +59,7 @@
 //!     - [ ] matrices over p-adic/q-adics
 //! - [ ] multivariate polynomials
 //! - [ ] \*rational functions
-//! - [ ] number fields
+//! - [ ] \*number fields
 
 
 #![feature(min_specialization)]
@@ -97,6 +97,8 @@ pub mod intmodmat;
 pub mod finfld;
 pub mod finfldpol;
 pub mod finfldmat;
+
+pub mod padic;
 
 pub mod ratfunc;
 

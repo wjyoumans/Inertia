@@ -40,6 +40,9 @@ macro_rules! default {
     (Neg, matrix, $out_ty:ident, $in:ident) => {
         $out_ty::zero($in.nrows(), $in.ncols())
     };
+    (Neg, matrix_mod, $out_ty:ident, $in:ident) => {
+        $out_ty::zero($in.nrows(), $in.ncols(), &$in.modulus())
+    };
     ($op:ident, $kw:ident, $out_ty:ident, $in:ident) => {
         $out_ty::default()
     };

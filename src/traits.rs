@@ -178,14 +178,55 @@ pub trait MultiplicativeGroupElement: MultiplicativeElement {
     }
 }
 
+pub trait Module: AdditiveGroup {}
+pub trait ModuleElement: AdditiveGroupElement {}
+
+pub trait VectorSpace: Module {}
+pub trait VectorSpaceElement: ModuleElement {}
+
+pub trait MatrixSpace: VectorSpace {}
+pub trait MatrixSpaceElement: VectorSpaceElement {
+    // nrows
+    // ncols
+    // one
+    // zero
+    // get_entry
+    // set_entry
+    // is_empty
+    // is_square
+    // hcat
+    // vcat
+    // solve
+    // rref
+    // nullspace
+}
+
 pub trait Ring: AdditiveGroup + MultiplicativeGroup {}
 pub trait RingElement: AdditiveGroupElement + MultiplicativeGroupElement {}
 
-pub trait Field: Ring {}
-pub trait FieldElement: RingElement {}
+pub trait PolynomialRing<T: Ring>: Ring {
+    // gen
+    // basis (indeterminates)
+}
+pub trait PolynomialRingElement<T: Ring>: RingElement {
+    // len
+    // degree
+    // get_coeff
+    // set_coeff
+    // coefficients
+}
 
-pub trait NumberField: Field {}
-pub trait NumberFieldElement: FieldElement {}
+pub trait Field: Ring {
+    // basis
+    // gen
+}
+pub trait FieldElement: RingElement {
+    // norm(&self)
+    // trace(&self)
+}
+
+pub trait NumberField: Field {} // + PolynomialRing (Q[x]/f)
+pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 
 /// An element of a `Parent`. In cases where the parent holds important context data we use the 
 /// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are dropped.
