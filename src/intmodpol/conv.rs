@@ -28,7 +28,7 @@ impl_from! {
                 flint_sys::fmpz_mod_poly::fmpz_mod_poly_get_fmpz_poly(
                     res.as_mut_ptr(),
                     x.as_ptr(),
-                    x.ctx_ptr(),
+                    x.ctx_as_ptr(),
                 );
             }
             res

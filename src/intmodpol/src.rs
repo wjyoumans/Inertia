@@ -24,15 +24,66 @@ use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
+use crate::intmod::src::{IntMod, IntModRing};
 use crate::intpol::src::IntPol;
-use crate::intmodpol::traits::IntModPolCtx;
+
+
+pub struct IntModPolCtx(fmpz_mod_ctx_struct);
+
+impl Drop for IntModPolCtx {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
+    }
+}
 
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
 pub struct IntModPolRing {
-    pub ctx: <Self as Parent>::Data,
+    ctx: <Self as Parent>::Data,
 }
 
+impl Parent for IntModPolRing {
+    type Data = Arc<IntModPolCtx>;
+    type Element = IntModPol;
+}
+
+impl Additive for IntModPolRing {
+    #[inline]
+    fn zero(&self) -> IntModPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe { 
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_zero(z.as_mut_ptr(), self.as_ptr()); 
+            IntModPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+        }
+    }
+}
+
+impl Multiplicative for IntModPolRing {
+    #[inline]
+    fn one(&self) -> IntModPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe { 
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_one(z.as_mut_ptr(), self.as_ptr()); 
+            IntModPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+        }
+    }
+}
+
+impl AdditiveGroup for IntModPolRing {}
+
+impl MultiplicativeGroup for IntModPolRing {}
+
+impl Ring for IntModPolRing {}
+
+impl PolynomialRing<IntModRing> for IntModPolRing {}
+
 impl IntModPolRing {
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// FLINT via the FFI.
+    #[inline]
+    pub fn as_ptr(&self) -> &fmpz_mod_ctx_struct {
+        &self.ctx.0
+    }
+
     /// Construct the ring of polynomials with coefficients integers mod `n`.
     pub fn init(n: &Integer) -> Self {
         let mut z = MaybeUninit::uninit();
@@ -51,6 +102,37 @@ impl IntModPolRing {
 /// An element of the ring of integers mod `n`.
 pub type IntModPol = Elem<IntModPolRing>;
 
+impl Element for IntModPol {
+    type Data = fmpz_mod_poly_struct;
+    type Parent = IntModPolRing;
+}
+
+impl AdditiveElement for IntModPol {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe {
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_is_zero(self.as_ptr(), self.ctx_as_ptr()) == 1
+        }
+    }
+}
+
+impl MultiplicativeElement for IntModPol {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { 
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_is_one(self.as_ptr(), self.ctx_as_ptr()) == 1 
+        }
+    }
+}
+
+impl AdditiveGroupElement for IntModPol {}
+
+impl MultiplicativeGroupElement for IntModPol {}
+
+impl RingElement for IntModPol {}
+
+impl PolynomialRingElement<IntModRing> for IntModPol {}
+
 impl IntModPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
@@ -68,7 +150,7 @@ impl IntModPol {
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
-    pub fn ctx_ptr(&self) -> &fmpz_mod_ctx_struct {
+    pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
     

@@ -21,44 +21,19 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fmpz_mod_poly::fmpz_mod_poly_struct;
-use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
-
-use crate::traits::*;
 use crate::intpol::src::IntPol;
-use crate::intmodpol::src::{IntModPol, IntModPolRing};
+use crate::intmodpol::src::IntModPol;
 
-// IntModPolRing //
-
-pub struct IntModPolCtx(pub fmpz_mod_ctx_struct);
-
-impl Drop for IntModPolCtx {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
-    }
-}
-
-impl Parent for IntModPolRing {
-    type Data = Arc<IntModPolCtx>;
-    type Element = IntModPol;
-}
-
-// IntModPol //
-
-impl Element for IntModPol {
-    type Data = fmpz_mod_poly_struct;
-    type Parent = IntModPolRing;
-}
 
 impl Clone for IntModPol {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe { 
-            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.ctx_ptr());
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_set(
                 z.as_mut_ptr(), 
                 self.as_ptr(), 
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             ); 
             IntModPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
         }
@@ -73,7 +48,9 @@ impl fmt::Display for IntModPol {
 
 impl Drop for IntModPol {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mod_poly::fmpz_mod_poly_clear(self.as_mut_ptr(), self.ctx_ptr());}
+        unsafe { 
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_clear(self.as_mut_ptr(), self.ctx_as_ptr());
+        }
     }
 }
 
