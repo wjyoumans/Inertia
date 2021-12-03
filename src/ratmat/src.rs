@@ -34,6 +34,33 @@ pub struct RatMatSpace {
     cols: c_long,
 }
 
+impl Parent for RatMatSpace {
+    type Data = ();
+    type Element = RatMat;
+}
+
+impl Additive for RatMatSpace {
+    #[inline]
+    fn zero(&self) -> RatMat {
+        RatMat::zero(self.rows, self.cols)
+    }
+}
+
+impl Multiplicative for RatMatSpace {
+    #[inline]
+    fn one(&self) -> RatMat {
+        RatMat::one(self.rows, self.cols)
+    }
+}
+
+impl AdditiveGroup for RatMatSpace {}
+
+impl Module for RatMatSpace {}
+
+impl VectorSpace for RatMatSpace {}
+
+impl MatrixSpace for RatMatSpace {}
+
 impl ParentInit2<c_long, c_long> for RatMatSpace {
     fn init(m: c_long, n: c_long) -> Self {
         RatMatSpace { rows: m, cols: n}
@@ -49,6 +76,33 @@ impl<T: Into<RatMat>> ParentNew<T> for RatMatSpace {
 /// A matrix of arbitrary precision [Rationals][Rational]. The field `data` is a FLINT
 /// [fmpq_mat_struct][flint_sys::fmpq_mat::fmpq_mat_struct].
 pub type RatMat = Elem<RatMatSpace>;
+
+impl Element for RatMat {
+    type Data = fmpq_mat_struct;
+    type Parent = RatMatSpace;
+}
+
+impl AdditiveElement for RatMat {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpq_mat::fmpq_mat_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for RatMat {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpq_mat::fmpq_mat_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for RatMat {}
+
+impl ModuleElement for RatMat {}
+
+impl VectorSpaceElement for RatMat {}
+
+impl MatrixSpaceElement for RatMat {}
 
 impl RatMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
@@ -221,28 +275,16 @@ impl RatMat {
             RatMat { ctx: (), data: z.assume_init() }
         }
     }
-
-    /// Return the square `m` by `m` rational identity matrix.
+    
+    /// Return an `m` by `n` rational identity matrix, truncated if `m != n`.
     #[inline]
-    pub fn one(m: c_long) -> RatMat {
+    pub fn one(m: c_long, n: c_long) -> RatMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
-            flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, m);
+            flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpq_mat::fmpq_mat_one(z.as_mut_ptr());
             RatMat { ctx: (), data: z.assume_init() }
         }
-    }
-
-    /// Return true if the matrix contains all zeros.
-    #[inline]
-    pub fn is_zero(&self) -> bool {
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_is_zero(self.as_ptr()) == 1 } 
-    }
-    
-    /// Return true if the matrix is the identity.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_is_one(self.as_ptr()) == 1 } 
     }
 
     /// Return true if the number of rows or columns is zero.
@@ -890,3 +932,23 @@ impl RatMat {
         res
     }*/
 }
+
+/* TODO: RatMat 
+impl EvaluateProduct for Product<Integer> {
+    type Output = Rational;
+    fn evaluate(&self) -> Rational {
+        let mut x = Rational::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.pow(k);
+        }
+        x
+    }
+}
+
+impl EvaluateProductMod<Integer> for Product<Integer> {
+    type Output = Result<Integer, ()>;
+    #[inline]
+    fn evaluate_mod(&self, modulus: Integer) -> Result<Integer, ()> {
+        self.evaluate_mod(&modulus)
+    }
+}*/

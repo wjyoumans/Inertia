@@ -21,34 +21,9 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fmpz::fmpz;
-use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
-
-use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::intmod::src::{IntMod, IntModRing};
+use crate::intmod::src::IntMod;
 
-// IntModRing //
-
-pub struct IntModCtx(pub fmpz_mod_ctx_struct);
-
-impl Drop for IntModCtx {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
-    }
-}
-
-impl Parent for IntModRing {
-    type Data = Arc<IntModCtx>;
-    type Element = IntMod;
-}
-
-// IntMod //
-
-impl Element for IntMod {
-    type Data = fmpz;
-    type Parent = IntModRing;
-}
 
 impl Clone for IntMod {
     fn clone(&self) -> Self {
@@ -58,7 +33,7 @@ impl Clone for IntMod {
             flint_sys::fmpz_mod::fmpz_mod_set_fmpz(
                 z.as_mut_ptr(), 
                 self.as_ptr(), 
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             ); 
             IntMod { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
         }

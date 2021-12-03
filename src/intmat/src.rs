@@ -33,13 +33,42 @@ pub struct IntMatSpace {
     cols: c_long,
 }
 
+impl Parent for IntMatSpace {
+    type Data = ();
+    type Element = IntMat;
+}
+
+impl Additive for IntMatSpace {
+    #[inline]
+    fn zero(&self) -> IntMat {
+        IntMat::zero(self.rows, self.cols)
+    }
+}
+
+impl Multiplicative for IntMatSpace {
+    #[inline]
+    fn one(&self) -> IntMat {
+        IntMat::one(self.rows, self.cols)
+    }
+}
+
+impl AdditiveGroup for IntMatSpace {}
+
+impl Module for IntMatSpace {}
+
+impl VectorSpace for IntMatSpace {}
+
+impl MatrixSpace for IntMatSpace {}
+
 impl ParentInit2<c_long, c_long> for IntMatSpace {
+    #[inline]
     fn init(m: c_long, n: c_long) -> Self {
         IntMatSpace { rows: m, cols: n}
     }
 }
 
 impl<T: Into<IntMat>> ParentNew<T> for IntMatSpace {
+    #[inline]
     fn new(&self, x: T) -> IntMat {
         x.into()
     }
@@ -49,6 +78,33 @@ impl<T: Into<IntMat>> ParentNew<T> for IntMatSpace {
 /// A matrix of arbitrary precision [Integer]s. The field `data` is a FLINT
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].
 pub type IntMat = Elem<IntMatSpace>;
+
+impl Element for IntMat {
+    type Data = fmpz_mat_struct;
+    type Parent = IntMatSpace;
+}
+
+impl AdditiveElement for IntMat {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for IntMat {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for IntMat {}
+
+impl ModuleElement for IntMat {}
+
+impl VectorSpaceElement for IntMat {}
+
+impl MatrixSpaceElement for IntMat {}
 
 impl IntMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
@@ -177,12 +233,12 @@ impl IntMat {
         }
     }
 
-    /// Return the square `m` by `m` integer identity matrix.
+    /// Return an `m` by `n` integer identity matrix, truncated if `m != n`.
     #[inline]
-    pub fn one(m: c_long) -> IntMat {
+    pub fn one(m: c_long, n: c_long) -> IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
-            flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, m);
+            flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpz_mat::fmpz_mat_one(z.as_mut_ptr());
             IntMat { ctx: (), data: z.assume_init() }
         }
@@ -846,3 +902,23 @@ impl IntMat {
         res
     }*/
 }
+
+/* TODO: RatMat 
+impl EvaluateProduct for Product<Integer> {
+    type Output = Rational;
+    fn evaluate(&self) -> Rational {
+        let mut x = Rational::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.pow(k);
+        }
+        x
+    }
+}
+
+impl EvaluateProductMod<Integer> for Product<Integer> {
+    type Output = Result<Integer, ()>;
+    #[inline]
+    fn evaluate_mod(&self, modulus: Integer) -> Result<Integer, ()> {
+        self.evaluate_mod(&modulus)
+    }
+}*/

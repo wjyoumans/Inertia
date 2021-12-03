@@ -25,12 +25,47 @@ use num_traits::PrimInt;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::intmod::traits::IntModCtx;
+
+
+pub struct IntModCtx(fmpz_mod_ctx_struct);
+
+impl Drop for IntModCtx {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
+    }
+}
 
 /// The ring of integers mod `n` for any integer `n`.
 pub struct IntModRing {
-    pub ctx: <Self as Parent>::Data,
+    ctx: <Self as Parent>::Data,
 }
+
+impl Parent for IntModRing {
+    type Data = Arc<IntModCtx>;
+    type Element = IntMod;
+}
+
+impl Additive for IntModRing {
+    #[inline]
+    fn zero(&self) -> IntMod {
+        let z = Integer::default();
+        IntMod { ctx: Arc::clone(&self.ctx), data: z.data }
+    }
+}
+
+impl Multiplicative for IntModRing {
+    #[inline]
+    fn one(&self) -> IntMod {
+        let z = Integer::from(1);
+        IntMod { ctx: Arc::clone(&self.ctx), data: z.data }
+    }
+}
+
+impl AdditiveGroup for IntModRing {}
+
+impl MultiplicativeGroup for IntModRing {}
+
+impl Ring for IntModRing {}
 
 impl ParentInit1<&Integer> for IntModRing {
     /// Construct the ring of integers mod `n`.
@@ -71,8 +106,43 @@ impl<T> ParentNew<T> for IntModRing where
         self.new(&n.into())
     }
 }
+
+impl IntModRing {
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// FLINT via the FFI.
+    #[inline]
+    pub fn as_ptr(&self) -> &fmpz_mod_ctx_struct {
+        &self.ctx.0
+    }
+}
+
 /// An element of the ring of integers mod `n`.
 pub type IntMod = Elem<IntModRing>;
+
+impl Element for IntMod {
+    type Data = fmpz;
+    type Parent = IntModRing;
+}
+
+impl AdditiveElement for IntMod {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for IntMod {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for IntMod {}
+
+impl MultiplicativeGroupElement for IntMod {}
+
+impl RingElement for IntMod {}
 
 impl IntMod {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -91,7 +161,7 @@ impl IntMod {
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
-    pub fn ctx_ptr(&self) -> &fmpz_mod_ctx_struct {
+    pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
 }

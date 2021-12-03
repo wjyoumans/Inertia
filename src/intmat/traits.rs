@@ -20,25 +20,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use flint_sys::fmpz_mat::fmpz_mat_struct;
-use libc::c_long;
+use crate::intmat::src::IntMat;
 
-use crate::traits::*;
-use crate::intmat::src::{IntMat, IntMatSpace};
-
-// IntMatSpace //
-
-impl Parent for IntMatSpace {
-    type Data = ();
-    type Element = IntMat;
-}
-
-// IntMat //
-
-impl Element for IntMat {
-    type Data = fmpz_mat_struct;
-    type Parent = IntMatSpace;
-}
 
 impl Clone for IntMat {
     fn clone(&self) -> Self {
@@ -67,23 +50,3 @@ impl Hash for IntMat {
         Vec::from(self).hash(state);
     }
 }
-
-/* TODO: RatMat 
-impl EvaluateProduct for Product<Integer> {
-    type Output = Rational;
-    fn evaluate(&self) -> Rational {
-        let mut x = Rational::from(1);
-        for (p, k) in self.hashmap.iter() {
-            x *= p.pow(k);
-        }
-        x
-    }
-}
-
-impl EvaluateProductMod<Integer> for Product<Integer> {
-    type Output = Result<Integer, ()>;
-    #[inline]
-    fn evaluate_mod(&self, modulus: Integer) -> Result<Integer, ()> {
-        self.evaluate_mod(&modulus)
-    }
-}*/

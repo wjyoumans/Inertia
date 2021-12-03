@@ -16,27 +16,60 @@
  */
 
 
+use std::mem::MaybeUninit;
 use std::ops::Rem;
 
 use flint_sys::flint::{flint_rand_s, flint_bitcnt_t};
 use flint_sys::fmpz::fmpz;
 use libc::{c_int, c_long, c_ulong};
 use num_traits::Zero;
+use rug::ops::Pow;
+use rustc_hash::FxHashMap;
 
 use crate::traits::*;
+use crate::product::src::Product;
 use crate::rational::src::Rational;
 
 /// An integer ring that can be used as an [Integer] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
 
+impl Parent for IntegerRing {
+    type Data = ();
+    type Element = Integer;
+}
+
+impl Additive for IntegerRing {
+    #[inline]
+    fn zero(&self) -> Integer {
+        Integer::default()
+    }
+}
+
+impl Multiplicative for IntegerRing {
+    #[inline]
+    fn one(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz::fmpz_one(res.as_mut_ptr()); }
+        res
+    }
+}
+
+impl AdditiveGroup for IntegerRing {}
+
+impl MultiplicativeGroup for IntegerRing {}
+
+impl Ring for IntegerRing {}
+
 impl ParentInit for IntegerRing {
+    #[inline]
     fn init() -> Self {
         IntegerRing {}
     }
 }
 
 impl<T: Into<Integer>> ParentNew<T> for IntegerRing {
+    #[inline]
     fn new(&self, x: T) -> Integer {
         x.into()
     }
@@ -44,6 +77,31 @@ impl<T: Into<Integer>> ParentNew<T> for IntegerRing {
 
 /// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].
 pub type Integer = Elem<IntegerRing>;
+
+impl Element for Integer {
+    type Data = fmpz;
+    type Parent = IntegerRing;
+}
+
+impl AdditiveElement for Integer {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for Integer {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpz::fmpz_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for Integer {}
+
+impl MultiplicativeGroupElement for Integer {}
+
+impl RingElement for Integer {}
 
 impl Integer {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -931,5 +989,67 @@ impl Integer {
         let mut res = Integer::default();
         unsafe { flint_sys::fmpz::fmpz_divisor_sigma(res.as_mut_ptr(), self.as_ptr(), k);}
         res
+    }
+}
+
+impl Factorizable for Integer {
+    type Output = Product<Integer>;
+    fn factor(&self) -> Self::Output {
+        assert!(self != &0);
+        if self == &1 {
+            return Product::from(Integer::from(1))
+        };
+       
+        let mut fac = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_factor::fmpz_factor_init(fac.as_mut_ptr());
+            let mut fac = fac.assume_init();
+            
+            flint_sys::fmpz_factor::fmpz_factor(&mut fac, self.as_ptr());
+
+            let n = fac.num as usize;
+            let base = std::slice::from_raw_parts(fac.p, n);
+            let exp = std::slice::from_raw_parts(fac.exp, n);
+            
+            let mut hashmap = FxHashMap::<Integer, Integer>::default();
+            for (p, k) in base.iter().zip(exp) {
+                hashmap.insert(Integer { ctx: (), data: p.clone() }, Integer::from(k));
+            }
+            
+            flint_sys::fmpz_factor::fmpz_factor_clear(&mut fac);
+            let fac = Product::<Integer>::from(hashmap);
+            fac
+        }
+    }
+}
+
+impl EvaluateProduct for Product<Integer> {
+    type Output = Rational;
+    fn evaluate(&self) -> Rational {
+        let mut x = Rational::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.pow(k);
+        }
+        x
+    }
+}
+
+impl EvaluateProductMod<Integer> for Product<Integer> {
+    type Output = Result<Integer, ()>;
+    #[inline]
+    fn evaluate_mod(&self, modulus: Integer) -> Result<Integer, ()> {
+        self.evaluate_mod(&modulus)
+    }
+}
+
+impl EvaluateProductMod<&Integer> for Product<Integer> {
+    type Output = Result<Integer, ()>;
+    fn evaluate_mod(&self, modulus: &Integer) -> Result<Integer, ()> {
+        let mut x = Integer::from(1);
+        for (p, k) in self.hashmap.iter() {
+            x *= p.powm(k, modulus)?;
+            x %= modulus;
+        }
+        Ok(x)
     }
 }

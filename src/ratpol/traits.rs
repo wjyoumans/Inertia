@@ -20,25 +20,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use flint_sys::fmpq_poly::fmpq_poly_struct;
+use crate::ratpol::src::RatPol;
 
-use crate::traits::*;
-use crate::rational::src::Rational;
-use crate::ratpol::src::{RatPol, RatPolRing};
-
-// RatPolRing //
-
-impl Parent for RatPolRing {
-    type Data = ();
-    type Element = RatPol;
-}
-
-// RatPol //
-
-impl Element for RatPol {
-    type Data = fmpq_poly_struct;
-    type Parent = RatPolRing;
-}
 
 impl Clone for RatPol {
     fn clone(&self) -> Self {
@@ -79,28 +62,3 @@ impl Hash for RatPol {
     }
 }
 
-impl<T> Evaluate<T> for RatPol where
-    T: Into<Rational>
-{
-    type Output = Rational;
-    #[inline]
-    fn evaluate(&self, x: T) -> Self::Output {
-        self.evaluate(&x.into())
-    }
-}
-
-impl Evaluate<&Rational> for RatPol {
-    type Output = Rational;
-    #[inline]
-    fn evaluate(&self, x: &Rational) -> Self::Output {
-        let mut res = Rational::default();
-        unsafe {
-            flint_sys::fmpq_poly::fmpq_poly_evaluate_fmpq(
-                res.as_mut_ptr(),
-                self.as_ptr(),
-                x.as_ptr()
-            );
-        }
-        res
-    }
-}

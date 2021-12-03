@@ -24,7 +24,9 @@ use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
 
 use crate::traits::*;
-use crate::integer::src::Integer;
+use crate::integer::src::{Integer, IntegerRing};
+use crate::rational::src::Rational;
+use crate::ratpol::src::RatPol;
 
 // IntPol //
 
@@ -33,13 +35,44 @@ use crate::integer::src::Integer;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntPolRing {}
 
+impl Parent for IntPolRing {
+    type Data = ();
+    type Element = IntPol;
+}
+
+impl Additive for IntPolRing {
+    #[inline]
+    fn zero(&self) -> IntPol {
+        IntPol::default()
+    }
+}
+
+impl Multiplicative for IntPolRing {
+    #[inline]
+    fn one(&self) -> IntPol {
+        let mut res = IntPol::default();
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_one(res.as_mut_ptr()); }
+        res
+    }
+}
+
+impl AdditiveGroup for IntPolRing {}
+
+impl MultiplicativeGroup for IntPolRing {}
+
+impl Ring for IntPolRing {}
+
+impl PolynomialRing<IntegerRing> for IntPolRing {}
+
 impl ParentInit for IntPolRing {
+    #[inline]
     fn init() -> Self {
         IntPolRing {}
     }
 }
 
 impl<T: Into<IntPol>> ParentNew<T> for IntPolRing {
+    #[inline]
     fn new(&self, x: T) -> IntPol {
         x.into()
     }
@@ -50,6 +83,33 @@ impl<T: Into<IntPol>> ParentNew<T> for IntPolRing {
 /// A polynomial with [Integer] coefficients. The field `data` is a FLINT
 /// [fmpz_poly][flint_sys::fmpz_poly::fmpz_poly_struct].
 pub type IntPol = Elem<IntPolRing>;
+
+impl Element for IntPol {
+    type Data = fmpz_poly_struct;
+    type Parent = IntPolRing;
+}
+
+impl AdditiveElement for IntPol {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        self == &0
+    }
+}
+
+impl MultiplicativeElement for IntPol {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for IntPol {}
+
+impl MultiplicativeGroupElement for IntPol {}
+
+impl RingElement for IntPol {}
+
+impl PolynomialRingElement<IntegerRing> for IntPol {}
 
 impl IntPol {
 
@@ -90,18 +150,6 @@ impl IntPol {
                 Err(_) => panic!("Flint returned invalid UTF-8!")
             }
         }
-    }
-
-    /// Return true if the polynomial is zero.
-    #[inline]
-    pub fn is_zero(&self) -> bool {
-        self == &0
-    }
-
-    /// Return true if the polynomial is one.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        unsafe {flint_sys::fmpz_poly::fmpz_poly_is_one(self.as_ptr()) == 1}
     }
 
     /// Return true if the polynomial is invertible as a rational function. False is returned only
@@ -871,5 +919,47 @@ impl IntPol {
         let mut res = Integer::default();
         unsafe {flint_sys::fmpz_poly::fmpz_poly_CLD_bound(res.as_mut_ptr(), self.as_ptr(), n);}
         res
+    }
+}
+
+impl<T> Evaluate<T> for IntPol where
+    T: Into<Integer>
+{
+    type Output = Integer;
+    #[inline]
+    fn evaluate(&self, x: T) -> Self::Output {
+        self.evaluate(&x.into())
+    }
+}
+
+impl Evaluate<&Integer> for IntPol {
+    type Output = Integer;
+    #[inline]
+    fn evaluate(&self, x: &Integer) -> Self::Output {
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_evaluate_fmpz(
+                res.as_mut_ptr(),
+                self.as_ptr(),
+                x.as_ptr()
+            );
+        }
+        res
+    }
+}
+
+impl Evaluate<Rational> for IntPol {
+    type Output = Rational;
+    #[inline]
+    fn evaluate(&self, x: Rational) -> Self::Output {
+        RatPol::from(self).evaluate(x)
+    }
+}
+
+impl Evaluate<&Rational> for IntPol {
+    type Output = Rational;
+    #[inline]
+    fn evaluate(&self, x: &Rational) -> Self::Output {
+        RatPol::from(self).evaluate(x)
     }
 }
