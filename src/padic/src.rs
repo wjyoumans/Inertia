@@ -27,7 +27,6 @@ use num_traits::PrimInt;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::finfld::traits::FqCtx;
 
 
 pub struct PadicCtx(padic_ctx_struct);
