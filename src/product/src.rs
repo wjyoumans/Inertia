@@ -26,10 +26,8 @@ pub struct Product<T: Hash> {
 
 impl<T> Product<T> where T: Eq + Hash
 {
-    pub fn new(x: T, k: Integer) -> Self {
-        let mut hashmap = FxHashMap::<T, Integer>::default();
-        hashmap.insert(x, k);
-        Product { hashmap: hashmap }
+    pub fn new() -> Self {
+        Product { hashmap: FxHashMap::<T, Integer>::default() }
     }
     
     pub fn len(&self) -> usize {
