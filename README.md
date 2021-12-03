@@ -24,7 +24,7 @@ additional functions, arithmetic, conversion, etc.
 - [ ] \*complex numbers
 - [ ] \*integers mod n
 - [ ] \*finite fields
-- [ ] p-adic/q-adic numbers
+- [ ] \*p-adic/q-adic numbers
 - [ ] polynomials
     - [x] integer polynomials
     - [x] rational polynomials
@@ -43,4 +43,4 @@ additional functions, arithmetic, conversion, etc.
     - [ ] matrices over p-adic/q-adics
 - [ ] multivariate polynomials
 - [ ] \*rational functions
-- [ ] number fields
+- [ ] \*number fields
