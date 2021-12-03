@@ -27,9 +27,9 @@ use crate::traits::*;
 use crate::integer::src::Integer;
 
 
-pub struct IntModCtx(fmpz_mod_ctx_struct);
+pub struct FmpzModCtx(pub fmpz_mod_ctx_struct);
 
-impl Drop for IntModCtx {
+impl Drop for FmpzModCtx {
     fn drop(&mut self) {
         unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
     }
@@ -41,7 +41,7 @@ pub struct IntModRing {
 }
 
 impl Parent for IntModRing {
-    type Data = Arc<IntModCtx>;
+    type Data = Arc<FmpzModCtx>;
     type Element = IntMod;
 }
 
@@ -74,7 +74,7 @@ impl ParentInit1<&Integer> for IntModRing {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
-            IntModRing { ctx: Arc::new(IntModCtx(z.assume_init())) }
+            IntModRing { ctx: Arc::new(FmpzModCtx(z.assume_init())) }
         }
     }
 }

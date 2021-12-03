@@ -28,13 +28,20 @@ use num_traits::PrimInt;
 use crate::traits::*;
 use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
-use crate::finfld::src::{FinFldElem, FiniteField};
+use crate::finfld::src::{FqCtx, FinFldElem, FiniteField};
+
 
 /// The finite field with `p^k` elements for `p` prime.
 pub struct FinFldPolRing {
     pub ctx: <Self as Parent>::Data,
 }
 
+impl Parent for FinFldPolRing {
+    type Data = Arc<FqCtx>;
+    type Element = FinFldPol;
+}
+
+/*
 impl ParentInit2<&Integer, c_long> for FinFldPolRing {
     /// Construct the ring of polynomials over the finite field with `p^k` elements.
     #[inline]
@@ -54,6 +61,7 @@ impl<T> ParentInit2<T, c_long> for FinFldPolRing where
         FinFldPolRing { ctx: Arc::clone(&ff.ctx) }
     }
 }
+*/
 
 impl ParentNew<&IntPol> for FinFldPolRing {
     /// Construct a polynomial over a finite field.
@@ -83,6 +91,11 @@ impl<T> ParentNew<T> for FinFldPolRing where
 
 /// An element of a finite field.
 pub type FinFldPol = Elem<FinFldPolRing>;
+
+impl Element for FinFldPol {
+    type Data = fq_poly_struct;
+    type Parent = FinFldPolRing;
+}
 
 impl FinFldPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

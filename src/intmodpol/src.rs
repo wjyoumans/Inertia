@@ -24,17 +24,9 @@ use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::intmod::src::{IntMod, IntModRing};
+use crate::intmod::src::{FmpzModCtx, IntMod, IntModRing};
 use crate::intpol::src::IntPol;
 
-
-pub struct IntModPolCtx(fmpz_mod_ctx_struct);
-
-impl Drop for IntModPolCtx {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mod::fmpz_mod_ctx_clear(&mut self.0); }
-    }
-}
 
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
 pub struct IntModPolRing {
@@ -42,7 +34,7 @@ pub struct IntModPolRing {
 }
 
 impl Parent for IntModPolRing {
-    type Data = Arc<IntModPolCtx>;
+    type Data = Arc<FmpzModCtx>;
     type Element = IntModPol;
 }
 
@@ -89,7 +81,7 @@ impl IntModPolRing {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
-            IntModPolRing { ctx: Arc::new(IntModPolCtx(z.assume_init())) }
+            IntModPolRing { ctx: Arc::new(FmpzModCtx(z.assume_init())) }
         }
     }
 

@@ -27,11 +27,24 @@ use num_traits::PrimInt;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::finfld::traits::FqCtx;
+
+
+pub struct FqCtx(pub fq_ctx_struct);
+
+impl Drop for FqCtx {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.0); }
+    }
+}
 
 /// The finite field with `p^k` elements for `p` prime.
 pub struct FiniteField {
-    pub ctx: <Self as Parent>::Data,
+    ctx: <Self as Parent>::Data,
+}
+
+impl Parent for FiniteField {
+    type Data = Arc<FqCtx>;
+    type Element = FinFldElem;
 }
 
 impl ParentInit2<&Integer, c_long> for FiniteField {
@@ -88,6 +101,11 @@ impl<T> ParentNew<T> for FiniteField where
 
 /// An element of a finite field.
 pub type FinFldElem = Elem<FiniteField>;
+
+impl Element for FinFldElem {
+    type Data = fq_struct;
+    type Parent = FiniteField;
+}
 
 impl FinFldElem {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

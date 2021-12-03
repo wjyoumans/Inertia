@@ -21,26 +21,9 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fq_default_poly::fq_default_poly_struct as fq_poly_struct;
-
-use crate::traits::*;
 use crate::intpol::src::IntPol;
-use crate::finfldpol::src::{FinFldPol, FinFldPolRing};
-use crate::finfld::traits::FqCtx;
+use crate::finfldpol::src::FinFldPol;
 
-// FinFldPolRing //
-
-impl Parent for FinFldPolRing {
-    type Data = Arc<FqCtx>;
-    type Element = FinFldPol;
-}
-
-// FinFldPol //
-
-impl Element for FinFldPol {
-    type Data = fq_poly_struct;
-    type Parent = FinFldPolRing;
-}
 
 impl Clone for FinFldPol {
     fn clone(&self) -> Self {

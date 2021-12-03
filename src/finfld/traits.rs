@@ -16,43 +16,14 @@
  */
 
 
-use std::ffi::{CStr, CString};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fq_default::fq_default_struct as fq_struct;
-use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
-use libc::c_long;
-
-use crate::traits::*;
-use crate::integer::src::Integer;
 use crate::intpol::src::IntPol;
-use crate::finfld::src::{FiniteField, FinFldElem};
+use crate::finfld::src::FinFldElem;
 
-
-// FiniteField //
-
-pub struct FqCtx(pub fq_ctx_struct);
-
-impl Drop for FqCtx {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.0); }
-    }
-}
-
-impl Parent for FiniteField {
-    type Data = Arc<FqCtx>;
-    type Element = FinFldElem;
-}
-
-// FinFldElem //
-
-impl Element for FinFldElem {
-    type Data = fq_struct;
-    type Parent = FiniteField;
-}
 
 impl Clone for FinFldElem {
     fn clone(&self) -> Self {
