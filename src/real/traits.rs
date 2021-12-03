@@ -30,19 +30,6 @@ use crate::traits::*;
 //use crate::product::src::Product;
 use crate::real::src::{Real, RealField};
 
-// RealField //
-
-impl Parent for RealField {
-    type Data = Arc<c_long>;
-    type Element = Real;
-}
-
-// Real //
-
-impl Element for Real {
-    type Data = arb_struct;
-    type Parent = RealField;
-}
 
 impl Clone for Real {
     fn clone(&self) -> Self {

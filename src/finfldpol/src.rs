@@ -63,7 +63,7 @@ impl<T> ParentInit2<T, c_long> for FinFldPolRing where
 }
 */
 
-impl ParentNew<&IntPol> for FinFldPolRing {
+impl New<&IntPol> for FinFldPolRing {
     /// Construct a polynomial over a finite field.
     #[inline]
     fn new(&self, n: &IntPol) -> FinFldPol {
@@ -79,7 +79,7 @@ impl ParentNew<&IntPol> for FinFldPolRing {
     }
 }
 
-impl<T> ParentNew<T> for FinFldPolRing where
+impl<T> New<T> for FinFldPolRing where
     T: Into<IntPol>
 {
     /// Construct a polynomial over a finite field.

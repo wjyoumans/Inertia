@@ -17,7 +17,8 @@
 
 use std::ffi::CString;
 
-use crate::integer::src::Integer;
+use crate::traits::New;
+use crate::integer::src::{Integer, IntegerRing};
 
 
 impl_from_unsafe! {

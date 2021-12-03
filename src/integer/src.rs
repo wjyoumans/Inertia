@@ -34,6 +34,29 @@ use crate::rational::src::Rational;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
 
+impl Init for IntegerRing {
+    #[inline]
+    fn init() -> Self {
+        IntegerRing {}
+    }
+}
+
+impl New<&Integer> for IntegerRing {
+    #[inline]
+    fn new(&self, x: &Integer) -> Integer {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for IntegerRing where 
+    T: Into<Integer>
+{
+    #[inline]
+    fn new(&self, x: T) -> Integer {
+        x.into()
+    }
+}
+
 impl Parent for IntegerRing {
     type Data = ();
     type Element = Integer;
@@ -60,20 +83,6 @@ impl AdditiveGroup for IntegerRing {}
 impl MultiplicativeGroup for IntegerRing {}
 
 impl Ring for IntegerRing {}
-
-impl ParentInit for IntegerRing {
-    #[inline]
-    fn init() -> Self {
-        IntegerRing {}
-    }
-}
-
-impl<T: Into<Integer>> ParentNew<T> for IntegerRing {
-    #[inline]
-    fn new(&self, x: T) -> Integer {
-        x.into()
-    }
-}
 
 /// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].
 pub type Integer = Elem<IntegerRing>;

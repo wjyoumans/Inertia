@@ -108,21 +108,21 @@ pub trait Factorizable {
 
 // Traits for implementing different initializations of Parents
 
-pub trait ParentInit: Parent {
+pub trait Init: Parent {
     fn init() -> Self;
 }
 
-pub trait ParentInit1<T>: Parent {
+pub trait Init1<T>: Parent {
     fn init(x: T) -> Self;
 }
 
-pub trait ParentInit2<T, U>: Parent {
+pub trait Init2<T, U>: Parent {
     fn init(x: T, y: U) -> Self;
 }
 
 // Traits for implementing different Element constructors for Parents
 
-pub trait ParentNew<T>: Parent {
+pub trait New<T>: Parent {
     fn new(&self, x: T) -> <Self as Parent>::Element;
 }
 

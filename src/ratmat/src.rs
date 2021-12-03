@@ -34,6 +34,20 @@ pub struct RatMatSpace {
     cols: c_long,
 }
 
+impl Init2<c_long, c_long> for RatMatSpace {
+    fn init(m: c_long, n: c_long) -> Self {
+        RatMatSpace { rows: m, cols: n}
+    }
+}
+
+impl<T> New<T> for RatMatSpace where
+    T: Into<RatMat>
+{
+    fn new(&self, x: T) -> RatMat {
+        x.into()
+    }
+}
+
 impl Parent for RatMatSpace {
     type Data = ();
     type Element = RatMat;
@@ -60,18 +74,6 @@ impl Module for RatMatSpace {}
 impl VectorSpace for RatMatSpace {}
 
 impl MatrixSpace for RatMatSpace {}
-
-impl ParentInit2<c_long, c_long> for RatMatSpace {
-    fn init(m: c_long, n: c_long) -> Self {
-        RatMatSpace { rows: m, cols: n}
-    }
-}
-
-impl<T: Into<RatMat>> ParentNew<T> for RatMatSpace {
-    fn new(&self, x: T) -> RatMat {
-        x.into()
-    }
-}
 
 /// A matrix of arbitrary precision [Rationals][Rational]. The field `data` is a FLINT
 /// [fmpq_mat_struct][flint_sys::fmpq_mat::fmpq_mat_struct].

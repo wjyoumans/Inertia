@@ -100,6 +100,8 @@ pub mod finfldmat;
 
 pub mod padic;
 
+pub mod qadic;
+
 pub mod ratfunc;
 
 pub mod numfld;

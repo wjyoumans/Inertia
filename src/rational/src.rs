@@ -27,6 +27,29 @@ use crate::integer::src::Integer;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RationalField {}
 
+impl Init for RationalField {
+    #[inline]
+    fn init() -> Self {
+        RationalField {}
+    }
+}
+
+impl New<&Rational> for RationalField {
+    #[inline]
+    fn new(&self, x: &Rational) -> Rational {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for RationalField where 
+    T: Into<Rational>
+{
+    #[inline]
+    fn new(&self, x: T) -> Rational {
+        x.into()
+    }
+}
+
 impl Parent for RationalField {
     type Data = ();
     type Element = Rational;
@@ -55,20 +78,6 @@ impl MultiplicativeGroup for RationalField {}
 impl Ring for RationalField {}
 
 impl Field for RationalField {}
-
-impl ParentInit for RationalField {
-    #[inline]
-    fn init() -> Self {
-        RationalField {}
-    }
-}
-
-impl<T: Into<Rational>> ParentNew<T> for RationalField {
-    #[inline]
-    fn new(&self, x: T) -> Rational {
-        x.into()
-    }
-}
 
 
 /// An arbitrary precision rational number. The field `data` is a FLINT

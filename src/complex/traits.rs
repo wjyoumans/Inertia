@@ -30,19 +30,6 @@ use crate::traits::*;
 //use crate::product::src::Product;
 use crate::complex::src::{Complex, ComplexField};
 
-// ComplexField //
-
-impl Parent for ComplexField {
-    type Data = Arc<c_long>;
-    type Element = Complex;
-}
-
-// Complex //
-
-impl Element for Complex {
-    type Data = acb_struct;
-    type Parent = ComplexField;
-}
 
 impl Clone for Complex {
     fn clone(&self) -> Self {

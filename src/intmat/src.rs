@@ -33,6 +33,22 @@ pub struct IntMatSpace {
     cols: c_long,
 }
 
+impl Init2<c_long, c_long> for IntMatSpace {
+    #[inline]
+    fn init(m: c_long, n: c_long) -> Self {
+        IntMatSpace { rows: m, cols: n}
+    }
+}
+
+impl<T> New<T> for IntMatSpace where 
+    T: Into<IntMat>
+{
+    #[inline]
+    fn new(&self, x: T) -> IntMat {
+        x.into()
+    }
+}
+
 impl Parent for IntMatSpace {
     type Data = ();
     type Element = IntMat;
@@ -59,21 +75,6 @@ impl Module for IntMatSpace {}
 impl VectorSpace for IntMatSpace {}
 
 impl MatrixSpace for IntMatSpace {}
-
-impl ParentInit2<c_long, c_long> for IntMatSpace {
-    #[inline]
-    fn init(m: c_long, n: c_long) -> Self {
-        IntMatSpace { rows: m, cols: n}
-    }
-}
-
-impl<T: Into<IntMat>> ParentNew<T> for IntMatSpace {
-    #[inline]
-    fn new(&self, x: T) -> IntMat {
-        x.into()
-    }
-}
-
 
 /// A matrix of arbitrary precision [Integer]s. The field `data` is a FLINT
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].

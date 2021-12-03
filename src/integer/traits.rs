@@ -20,7 +20,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use crate::integer::src::Integer;
+use crate::traits::Init;
+use crate::integer::src::{Integer, IntegerRing};
 
 
 impl Clone for Integer {

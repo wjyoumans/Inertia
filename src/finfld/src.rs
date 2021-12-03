@@ -47,7 +47,7 @@ impl Parent for FiniteField {
     type Element = FinFldElem;
 }
 
-impl ParentInit2<&Integer, c_long> for FiniteField {
+impl Init2<&Integer, c_long> for FiniteField {
     /// Construct the finite field with `p^k` elements.
     #[inline]
     fn init(p: &Integer, k: c_long) -> Self {
@@ -63,7 +63,7 @@ impl ParentInit2<&Integer, c_long> for FiniteField {
     }
 }
 
-impl<T> ParentInit2<T, c_long> for FiniteField where
+impl<T> Init2<T, c_long> for FiniteField where
     T: PrimInt + Into<Integer>
 {
     /// Construct the finite field with `p^k` elements.
@@ -73,7 +73,7 @@ impl<T> ParentInit2<T, c_long> for FiniteField where
     }
 }
 
-impl ParentNew<&Integer> for FiniteField {
+impl New<&Integer> for FiniteField {
     /// Construct an element of a finite field.
     #[inline]
     fn new(&self, n: &Integer) -> FinFldElem {
@@ -89,7 +89,7 @@ impl ParentNew<&Integer> for FiniteField {
     }
 }
 
-impl<T> ParentNew<T> for FiniteField where
+impl<T> New<T> for FiniteField where
     T: PrimInt + Into<Integer>
 {
     /// Construct an element of a finite field.

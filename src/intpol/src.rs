@@ -35,6 +35,29 @@ use crate::ratpol::src::RatPol;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntPolRing {}
 
+impl Init for IntPolRing {
+    #[inline]
+    fn init() -> Self {
+        IntPolRing {}
+    }
+}
+
+impl New<&IntPol> for IntPolRing {
+    #[inline]
+    fn new(&self, x: &IntPol) -> IntPol {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for IntPolRing where 
+    T: Into<IntPol>
+{
+    #[inline]
+    fn new(&self, x: T) -> IntPol {
+        x.into()
+    }
+}
+
 impl Parent for IntPolRing {
     type Data = ();
     type Element = IntPol;
@@ -64,19 +87,6 @@ impl Ring for IntPolRing {}
 
 impl PolynomialRing<IntegerRing> for IntPolRing {}
 
-impl ParentInit for IntPolRing {
-    #[inline]
-    fn init() -> Self {
-        IntPolRing {}
-    }
-}
-
-impl<T: Into<IntPol>> ParentNew<T> for IntPolRing {
-    #[inline]
-    fn new(&self, x: T) -> IntPol {
-        x.into()
-    }
-}
 
 // IntPol //
 

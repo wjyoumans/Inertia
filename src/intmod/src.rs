@@ -67,7 +67,7 @@ impl MultiplicativeGroup for IntModRing {}
 
 impl Ring for IntModRing {}
 
-impl ParentInit1<&Integer> for IntModRing {
+impl Init1<&Integer> for IntModRing {
     /// Construct the ring of integers mod `n`.
     #[inline]
     fn init(n: &Integer) -> Self {
@@ -79,7 +79,7 @@ impl ParentInit1<&Integer> for IntModRing {
     }
 }
 
-impl<T> ParentInit1<T> for IntModRing where
+impl<T> Init1<T> for IntModRing where
     T: PrimInt + Into<Integer>
 {
     /// Construct the ring of integers mod `n`.
@@ -89,7 +89,7 @@ impl<T> ParentInit1<T> for IntModRing where
     }
 }
 
-impl ParentNew<&Integer> for IntModRing {
+impl New<&Integer> for IntModRing {
     /// Construct an element of the ring of integers mod `n`.
     #[inline]
     fn new(&self, n: &Integer) -> IntMod {
@@ -97,7 +97,7 @@ impl ParentNew<&Integer> for IntModRing {
     }
 }
 
-impl<T> ParentNew<T> for IntModRing where
+impl<T> New<T> for IntModRing where
     T: PrimInt + Into<Integer>
 {
     /// Construct an element of the ring of integers mod `n`.
