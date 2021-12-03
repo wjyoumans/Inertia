@@ -15,20 +15,15 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt;
 use std::hash::Hash;
 
 use rustc_hash::FxHashMap;
 
-use crate::traits::One;
 use crate::product::src::Product;
 use crate::integer::src::Integer;
 
-/*
-impl<T> Default for Product<T> where T: Eq + Hash + One {
+impl<T> Default for Product<T> where T: Eq + Hash {
     fn default() -> Self {
-        let mut hashmap = FxHashMap::<T, Integer>::default();
-        hashmap.insert(T::one(), Integer::from(1));
-        Product { hashmap: hashmap }
+        Product { hashmap: FxHashMap::<T, Integer>::default() }
     }
-}*/
+}

@@ -25,4 +25,6 @@ pub mod conv;
 
 /// Definition and general implementation.
 pub mod src;
-//pub mod traits;
+
+/// Implementation of traits not involving operations.
+pub mod traits;
