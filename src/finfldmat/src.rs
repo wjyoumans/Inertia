@@ -26,16 +26,8 @@ use libc::c_long;
 
 use crate::traits::*;
 use crate::integer::src::Integer;
-use crate::finfld::src::{FinFldElem, FiniteField};
+use crate::finfld::src::{FqCtx, FinFldElem, FiniteField};
 
-
-pub struct FqMatCtx(fq_default_ctx_struct);
-
-impl Drop for FqMatCtx {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fq_default::fq_default_ctx_clear(&mut self.0); }
-    }
-}
 
 /// The vector space of matrices with entries in a finite field.
 pub struct FinFldMatSpace {
@@ -45,7 +37,7 @@ pub struct FinFldMatSpace {
 }
 
 impl Parent for FinFldMatSpace {
-    type Data = Arc<FqMatCtx>;
+    type Data = Arc<FqCtx>;
     type Element = FinFldMat;
 }
 
@@ -108,7 +100,7 @@ impl FinFldMatSpace {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fq_default::fq_default_ctx_init(z.as_mut_ptr(), p.as_ptr(), k, var.as_ptr());
-            FinFldMatSpace { rows: rows, cols: cols, ctx: Arc::new(FqMatCtx(z.assume_init())) }
+            FinFldMatSpace { rows: rows, cols: cols, ctx: Arc::new(FqCtx(z.assume_init())) }
         }
     }
 
