@@ -38,8 +38,8 @@ additional functions, arithmetic, conversion, etc.
     - [x] rational matrices
     - [ ] real matrices
     - [ ] complex matrices 
-    - [ ] matrices over integers mod n
-    - [ ] matrices over finite fields
+    - [ ] \*matrices over integers mod n
+    - [ ] \*matrices over finite fields
     - [ ] matrices over p-adic/q-adics
 - [ ] multivariate polynomials
 - [ ] \*rational functions

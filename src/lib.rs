@@ -54,8 +54,8 @@
 //!     - [x] rational matrices
 //!     - [ ] real matrices
 //!     - [ ] complex matrices 
-//!     - [ ] matrices over integers mod n
-//!     - [ ] matrices over finite fields
+//!     - [ ] \*matrices over integers mod n
+//!     - [ ] \*matrices over finite fields
 //!     - [ ] matrices over p-adic/q-adics
 //! - [ ] multivariate polynomials
 //! - [ ] \*rational functions
@@ -79,20 +79,26 @@ pub mod traits;
 pub mod product;
 
 pub mod integer;
-pub mod rational;
-pub mod real;
-pub mod complex;
-pub mod intmod;
-pub mod finfld;
-
+pub mod intpol;
 pub mod intmat;
+
+pub mod rational;
+pub mod ratpol;
 pub mod ratmat;
 
-pub mod intpol;
-pub mod ratpol;
-pub mod ratfunc;
+pub mod real;
+
+pub mod complex;
+
+pub mod intmod;
 pub mod intmodpol;
+pub mod intmodmat;
+
+pub mod finfld;
 pub mod finfldpol;
+pub mod finfldmat;
+
+pub mod ratfunc;
 
 pub mod numfld;
 
