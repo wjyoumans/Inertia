@@ -19,68 +19,8 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use flint_sys::fmpq::fmpq;
+use crate::rational::src::Rational;
 
-use crate::traits::*;
-use crate::product::src::Product;
-use crate::integer::src::Integer;
-use crate::rational::src::{Rational, RationalField};
-
-// RationalField //
-
-impl Parent for RationalField {
-    type Data = ();
-    type Element = Rational;
-}
-
-impl Additive for RationalField {
-    fn zero(&self) -> Rational {
-        Rational::default()
-    }
-}
-
-impl Multiplicative for RationalField {
-    fn one(&self) -> Rational {
-        let mut res = Rational::default();
-        unsafe { flint_sys::fmpq::fmpq_one(res.as_mut_ptr()); }
-        res
-    }
-}
-
-impl AdditiveGroup for RationalField {}
-
-impl MultiplicativeGroup for RationalField {}
-
-impl Ring for RationalField {}
-
-impl Field for RationalField {}
-
-// Rational //
-
-impl Element for Rational {
-    type Data = fmpq;
-    type Parent = RationalField;
-}
-
-impl AdditiveElement for Rational {
-    fn is_zero(&self) -> bool {
-        unsafe { flint_sys::fmpq::fmpq_is_zero(self.as_ptr()) == 1 }
-    }
-}
-
-impl MultiplicativeElement for Rational {
-    fn is_one(&self) -> bool {
-        unsafe { flint_sys::fmpq::fmpq_is_one(self.as_ptr()) == 1 }
-    }
-}
-
-impl AdditiveGroupElement for Rational {}
-
-impl MultiplicativeGroupElement for Rational {}
-
-impl RingElement for Rational {}
-
-impl FieldElement for Rational {}
 
 impl Clone for Rational {
     fn clone(&self) -> Self {
@@ -122,15 +62,3 @@ impl Hash for Rational {
     }
 }
 
-impl Factorizable for Rational {
-    type Output = Product<Integer>;
-    fn factor(&self) -> Self::Output {
-        assert!(self != &0);
-        
-        if self == &1 {
-            Product::from(Integer::from(1))
-        } else { 
-            self.numerator().factor() * self.denominator().factor().inv()
-        }
-    }
-}

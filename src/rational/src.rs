@@ -18,6 +18,7 @@
 use flint_sys::fmpq::fmpq;
 
 use crate::traits::*;
+use crate::product::src::Product;
 use crate::integer::src::Integer;
 
 // RationalField //
@@ -26,13 +27,44 @@ use crate::integer::src::Integer;
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RationalField {}
 
+impl Parent for RationalField {
+    type Data = ();
+    type Element = Rational;
+}
+
+impl Additive for RationalField {
+    #[inline]
+    fn zero(&self) -> Rational {
+        Rational::default()
+    }
+}
+
+impl Multiplicative for RationalField {
+    #[inline]
+    fn one(&self) -> Rational {
+        let mut res = Rational::default();
+        unsafe { flint_sys::fmpq::fmpq_one(res.as_mut_ptr()); }
+        res
+    }
+}
+
+impl AdditiveGroup for RationalField {}
+
+impl MultiplicativeGroup for RationalField {}
+
+impl Ring for RationalField {}
+
+impl Field for RationalField {}
+
 impl ParentInit for RationalField {
+    #[inline]
     fn init() -> Self {
         RationalField {}
     }
 }
 
 impl<T: Into<Rational>> ParentNew<T> for RationalField {
+    #[inline]
     fn new(&self, x: T) -> Rational {
         x.into()
     }
@@ -42,6 +74,33 @@ impl<T: Into<Rational>> ParentNew<T> for RationalField {
 /// An arbitrary precision rational number. The field `data` is a FLINT
 /// [fmpq][flint_sys::fmpq::fmpq].
 pub type Rational = Elem<RationalField>;
+
+impl Element for Rational {
+    type Data = fmpq;
+    type Parent = RationalField;
+}
+
+impl AdditiveElement for Rational {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe { flint_sys::fmpq::fmpq_is_zero(self.as_ptr()) == 1 }
+    }
+}
+
+impl MultiplicativeElement for Rational {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { flint_sys::fmpq::fmpq_is_one(self.as_ptr()) == 1 }
+    }
+}
+
+impl AdditiveGroupElement for Rational {}
+
+impl MultiplicativeGroupElement for Rational {}
+
+impl RingElement for Rational {}
+
+impl FieldElement for Rational {}
 
 impl Rational {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -154,4 +213,17 @@ impl Rational {
     }*/
     
     // TODO: Random, enumeration, continued fractions, special functions, dedekind sums.
+}
+
+impl Factorizable for Rational {
+    type Output = Product<Integer>;
+    fn factor(&self) -> Self::Output {
+        assert!(self != &0);
+        
+        if self == &1 {
+            Product::from(Integer::from(1))
+        } else { 
+            self.numerator().factor() * self.denominator().factor().inv()
+        }
+    }
 }
