@@ -270,12 +270,12 @@ impl Ring for ComplexField {}
 impl Field for ComplexField {}
 
 impl ComplexField {
-    /// Return the default working precision of the real field.
+    /// Return the default working precision of the complex field.
     pub fn precision(&self) -> c_long {
         *self.ctx
     }
     
-    /// Update the default working precision of the real field. This affects all elements of the
+    /// Update the default working precision of the complex field. This affects all elements of the
     /// particular field.
     pub fn set_precision<T>(&mut self, prec: T) where 
         T: TryInto<c_long>
@@ -359,6 +359,22 @@ impl Complex {
     #[inline]
     pub fn imag_as_mut_ptr(&mut self) -> &mut arb_struct {
         &mut self.data.imag
+    }
+    
+    /// Return the default working precision of the complex field.
+    pub fn precision(&self) -> c_long {
+        *self.ctx
+    }
+    
+    /// Update the default working precision of the complex field. This affects all elements of the
+    /// particular field.
+    pub fn set_precision<T>(&mut self, prec: T) where 
+        T: TryInto<c_long>
+    {
+        match prec.try_into() {
+            Ok(v) => *Arc::get_mut(&mut self.ctx).unwrap() = v,
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
     }
     
     /// Return a [String] representation of the complex number.
