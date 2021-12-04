@@ -39,8 +39,45 @@ impl Drop for FqCtx {
 
 /// The finite field with `p^k` elements for `p` prime.
 pub struct FiniteField {
-    ctx: <Self as Parent>::Data,
+    pub ctx: <Self as Parent>::Data,
 }
+
+impl Parent for FiniteField {
+    type Data = Arc<FqCtx>;
+    type Element = FinFldElem;
+}
+
+impl Additive for FiniteField {
+    #[inline]
+    fn zero(&self) -> FinFldElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
+            flint_sys::fq_default::fq_default_zero(z.as_mut_ptr(), self.as_ptr());
+            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+        }
+    }
+}
+
+impl Multiplicative for FiniteField {
+    #[inline]
+    fn one(&self) -> FinFldElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
+            flint_sys::fq_default::fq_default_one(z.as_mut_ptr(), self.as_ptr());
+            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+        }
+    }
+}
+
+impl AdditiveGroup for FiniteField {}
+
+impl MultiplicativeGroup for FiniteField {}
+
+impl Ring for FiniteField {}
+
+impl Field for FiniteField {}
 
 impl<T> Init3<&Integer, T, &str> for FiniteField where
     T: TryInto<c_long>
@@ -154,43 +191,6 @@ impl_new! {
     IntModPol
     flint_sys::fq_default::fq_default_set_fmpz_mod_poly
 }
-
-impl Parent for FiniteField {
-    type Data = Arc<FqCtx>;
-    type Element = FinFldElem;
-}
-
-impl Additive for FiniteField {
-    #[inline]
-    fn zero(&self) -> FinFldElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-            flint_sys::fq_default::fq_default_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
-    }
-}
-
-impl Multiplicative for FiniteField {
-    #[inline]
-    fn one(&self) -> FinFldElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-            flint_sys::fq_default::fq_default_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
-    }
-}
-
-impl AdditiveGroup for FiniteField {}
-
-impl MultiplicativeGroup for FiniteField {}
-
-impl Ring for FiniteField {}
-
-impl Field for FiniteField {}
 
 impl FiniteField {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
