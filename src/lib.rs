@@ -112,11 +112,21 @@ pub mod prelude {
     pub use rug::ops::*;
     pub use crate::traits::*;
 
+    pub use crate::product::src::*;
+
     pub use crate::integer::src::*;
     pub use super::int;
+    pub use crate::intpol::src::*;
+    pub use super::intpol;
+    pub use crate::intmat::src::*;
+    //pub use super::intmat;
 
     pub use crate::rational::src::*;
     pub use super::rat;
+    pub use crate::ratpol::src::*;
+    pub use super::ratpol;
+    pub use crate::ratmat::src::*;
+    //pub use super::ratmat;
     
     pub use crate::real::src::*;
     pub use super::real;
@@ -126,24 +136,26 @@ pub mod prelude {
 
     pub use crate::intmod::src::*;
     pub use super::intmod;
+    pub use crate::intmodpol::src::*;
+    //pub use super::intmodpol;
+    pub use crate::intmodmat::src::*;
+    //pub use super::intmodmat;
     
     pub use crate::finfld::src::*;
     pub use super::finfld;
+    pub use crate::finfldpol::src::*;
+    //pub use super::finfldpol;
+    pub use crate::finfldmat::src::*;
+    //pub use super::finfldmat;
 
-    pub use crate::intpol::src::*;
-    pub use super::intpol;
+    pub use crate::padic::src::*;
 
-    pub use crate::ratpol::src::*;
-    pub use super::ratpol;
-    
+    pub use crate::qadic::src::*;
+
     pub use crate::ratfunc::src::*;
     //pub use super::ratfunc;
 
-    pub use crate::intmat::src::*;
-    //pub use super::intmat;
-    
-    pub use crate::ratmat::src::*;
-    //pub use super::ratmat;
+    pub use crate::numfld::src::*; 
 }
 
 pub use prelude::*;

@@ -120,6 +120,10 @@ pub trait Init2<T, U>: Parent {
     fn init(x: T, y: U) -> Self;
 }
 
+pub trait Init3<T, U, V>: Parent {
+    fn init(x: T, y: U, z: V) -> Self;
+}
+
 // Traits for implementing different Element constructors for Parents
 
 pub trait New<T>: Parent {
