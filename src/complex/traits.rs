@@ -19,16 +19,14 @@
 use std::fmt;
 //use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use arb_sys::acb::acb_struct;
 use libc::c_long;
 //use rug::ops::Pow;
 //use rustc_hash::FxHashMap;
 
-use crate::traits::*;
-//use crate::product::src::Product;
-use crate::complex::src::{Complex, ComplexField};
+use crate::*;
 
 
 impl Clone for Complex {
@@ -47,7 +45,7 @@ impl Default for Complex {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
-            Complex { ctx: Arc::new(crate::REAL_DEFAULT_PREC), data: z.assume_init() }
+            Complex { ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), data: z.assume_init() }
         }
     }
 }

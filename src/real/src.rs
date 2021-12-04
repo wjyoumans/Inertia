@@ -19,7 +19,7 @@
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use arb_sys::arb::arb_struct;
 use libc::{c_int, c_long, c_ulong};
@@ -37,7 +37,7 @@ impl<T> Init1<T> for RealField where
 {
     fn init(prec: T) -> Self {
         match prec.try_into() {
-            Ok(v) => RealField { ctx: Arc::new(v) },
+            Ok(v) => RealField { ctx: Arc::new(RwLock::new(v)) },
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -126,7 +126,7 @@ impl New<Rational> for RealField {
 }
 
 impl Parent for RealField {
-    type Data = Arc<c_long>;
+    type Data = Arc<RwLock<c_long>>;
     type Element = Real;
 }
 
@@ -165,16 +165,16 @@ impl Field for RealField {}
 impl RealField {
     /// Return the default working precision of the real field.
     pub fn precision(&self) -> c_long {
-        *self.ctx
+        *self.ctx.read().unwrap()
     }
     
     /// Update the default working precision of the real field. This affects all elements of the
     /// particular field.
-    pub fn set_precision<T>(&mut self, prec: T) where 
+    pub fn set_precision<T>(&self, prec: T) where 
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *Arc::get_mut(&mut self.ctx).unwrap() = v,
+            Ok(v) => *self.ctx.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -229,16 +229,16 @@ impl Real {
     
     /// Return the default working precision of the real field.
     pub fn precision(&self) -> c_long {
-        *self.ctx
+        *self.ctx.read().unwrap()
     }
     
     /// Update the default working precision of the real field. This affects all elements of the
     /// particular field.
-    pub fn set_precision<T>(&mut self, prec: T) where 
+    pub fn set_precision<T>(&self, prec: T) where 
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *Arc::get_mut(&mut self.ctx).unwrap() = v,
+            Ok(v) => *self.ctx.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }

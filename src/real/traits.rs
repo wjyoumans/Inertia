@@ -19,16 +19,14 @@
 use std::fmt;
 //use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use arb_sys::arb::arb_struct;
 use libc::c_long;
 //use rug::ops::Pow;
 //use rustc_hash::FxHashMap;
 
-use crate::traits::*;
-//use crate::product::src::Product;
-use crate::real::src::{Real, RealField};
+use crate::*;
 
 
 impl Clone for Real {
@@ -47,7 +45,7 @@ impl Default for Real {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
-            Real { ctx: Arc::new(crate::REAL_DEFAULT_PREC), data: z.assume_init() }
+            Real { ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), data: z.assume_init() }
         }
     }
 }

@@ -19,7 +19,7 @@
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use arb_sys::acb::acb_struct;
 use arb_sys::arb::arb_struct;
@@ -38,7 +38,7 @@ impl<T> Init1<T> for ComplexField where
 {
     fn init(prec: T) -> Self {
         match prec.try_into() {
-            Ok(v) => ComplexField { ctx: Arc::new(v) },
+            Ok(v) => ComplexField { ctx: Arc::new(RwLock::new(v)) },
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -135,7 +135,7 @@ impl_new_arr! {
 impl New<[&Rational; 2]> for ComplexField {
     #[inline]
     fn new(&self, x: [&Rational; 2]) -> Complex {
-        let rr = RealField::init(*self.ctx);
+        let rr = RealField::init(self.precision());
         self.new([rr.new(x[0]), rr.new(x[1])])
     }
 }
@@ -233,7 +233,7 @@ impl New<Rational> for ComplexField {
 }
 
 impl Parent for ComplexField {
-    type Data = Arc<c_long>;
+    type Data = Arc<RwLock<c_long>>;
     type Element = Complex;
 }
 
@@ -272,16 +272,16 @@ impl Field for ComplexField {}
 impl ComplexField {
     /// Return the default working precision of the complex field.
     pub fn precision(&self) -> c_long {
-        *self.ctx
+        *self.ctx.read().unwrap()
     }
     
     /// Update the default working precision of the complex field. This affects all elements of the
     /// particular field.
-    pub fn set_precision<T>(&mut self, prec: T) where 
+    pub fn set_precision<T>(&self, prec: T) where 
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *Arc::get_mut(&mut self.ctx).unwrap() = v,
+            Ok(v) => *self.ctx.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -363,16 +363,16 @@ impl Complex {
     
     /// Return the default working precision of the complex field.
     pub fn precision(&self) -> c_long {
-        *self.ctx
+        *self.ctx.read().unwrap()
     }
     
     /// Update the default working precision of the complex field. This affects all elements of the
     /// particular field.
-    pub fn set_precision<T>(&mut self, prec: T) where 
+    pub fn set_precision<T>(&self, prec: T) where 
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *Arc::get_mut(&mut self.ctx).unwrap() = v,
+            Ok(v) => *self.ctx.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }

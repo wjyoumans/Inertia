@@ -52,7 +52,7 @@ impl_from! {
     String, Real
     {
         fn from(x: &Real) -> String {
-           format!("{}", &x.get_str(*x.ctx))
+           format!("{}", &x.get_str(x.precision()))
         }
     }
 }

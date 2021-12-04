@@ -60,7 +60,7 @@ impl_from! {
     String, Complex
     {
         fn from(x: &Complex) -> String {
-           format!("{}", &x.get_str(*x.ctx))
+           format!("{}", &x.get_str(x.precision()))
         }
     }
 }
