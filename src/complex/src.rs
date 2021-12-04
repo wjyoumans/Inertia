@@ -26,10 +26,7 @@ use arb_sys::arb::arb_struct;
 use libc::{c_int, c_long, c_ulong};
 use num_traits::{Zero, PrimInt, Signed, Unsigned};
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::rational::src::Rational;
-use crate::real::src::Real;
+use crate::*;
 
 /// The field of complex numbers with initial precision given by `ctx`.
 pub struct ComplexField {
@@ -49,26 +46,6 @@ impl<T> Init1<T> for ComplexField where
 
 macro_rules! impl_new_arr {
     (
-        $($t:ident)*;
-        $func:path
-    ) => ($(
-        impl New<[$t; 2]> for ComplexField {
-            #[inline]
-            fn new(&self, x: [$t; 2]) -> Complex {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    arb_sys::acb::acb_init(z.as_mut_ptr());
-                    $func(
-                        z.as_mut_ptr(), 
-                        Integer::from(x[0]).as_ptr(),
-                        Integer::from(x[1]).as_ptr()
-                    );
-                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-                }        
-            }
-        }
-    )*);
-    (
         $cast:ident {$($t:ident)*};
         $func:path
     ) => ($(
@@ -87,7 +64,47 @@ macro_rules! impl_new_arr {
                 }        
             }
         }
-    )*)
+    )*);
+    (
+        $t:ident
+        $func:path
+    ) => (
+        impl New<[$t; 2]> for ComplexField {
+            #[inline]
+            fn new(&self, x: [$t; 2]) -> Complex {
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    arb_sys::acb::acb_init(z.as_mut_ptr());
+                    $func(
+                        z.as_mut_ptr(), 
+                        x[0].as_ptr(),
+                        x[1].as_ptr()
+                    );
+                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                }        
+            }
+        }
+    );
+    (
+        $($t:ident)+;
+        $func:path
+    ) => ($(
+        impl New<[$t; 2]> for ComplexField {
+            #[inline]
+            fn new(&self, x: [$t; 2]) -> Complex {
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    arb_sys::acb::acb_init(z.as_mut_ptr());
+                    $func(
+                        z.as_mut_ptr(), 
+                        Integer::from(x[0]).as_ptr(),
+                        Integer::from(x[1]).as_ptr()
+                    );
+                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                }        
+            }
+        }
+    )+);
 }
 
 impl_new_arr! {
@@ -100,32 +117,26 @@ impl_new_arr! {
     arb_sys::acb::acb_set_si_si
 }
 
-
-impl New<[f64; 2]> for ComplexField {
-    #[inline]
-    fn new(&self, x: [f64; 2]) -> Complex {
-        Complex::from(x)
-    }
+impl_new_arr! {
+    f64 {f64};
+    arb_sys::acb::acb_set_d_d
 }
 
-impl New<[&Integer; 2]> for ComplexField {
-    #[inline]
-    fn new(&self, x: [&Integer; 2]) -> Complex {
-        Complex::from(x)
-    }
+impl_new_arr! {
+    Integer
+    arb_sys::acb::acb_set_fmpz_fmpz
+}
+
+impl_new_arr! {
+    Real
+    arb_sys::acb::acb_set_arb_arb
 }
 
 impl New<[&Rational; 2]> for ComplexField {
     #[inline]
     fn new(&self, x: [&Rational; 2]) -> Complex {
-        Complex::from(x)
-    }
-}
-
-impl New<[&Real; 2]> for ComplexField {
-    #[inline]
-    fn new(&self, x: [&Real; 2]) -> Complex {
-        Complex::from(x)
+        let rr = RealField::init(*self.ctx);
+        self.new([rr.new(x[0]), rr.new(x[1])])
     }
 }
 
@@ -149,6 +160,32 @@ macro_rules! impl_new {
             }
         }
     )*);
+    (
+        $t:ident
+        $func:path
+    ) => (
+        impl New<&$t> for ComplexField {
+            #[inline]
+            fn new(&self, x: &$t) -> Complex {
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    arb_sys::acb::acb_init(z.as_mut_ptr());
+                    $func(
+                        z.as_mut_ptr(), 
+                        x.as_ptr(),
+                    );
+                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                }        
+            }
+        }
+
+        impl New<$t> for ComplexField {
+            #[inline]
+            fn new(&self, x: $t) -> Complex {
+                self.new(&x)
+            }
+        }
+    );
 }
 
 impl_new! {
@@ -161,28 +198,19 @@ impl_new! {
     arb_sys::acb::acb_set_si
 }
 
-impl New<f64> for ComplexField {
-    #[inline]
-    fn new(&self, x: f64) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_set_d(z.as_mut_ptr(), x);
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
-    }
+impl_new! {
+    f64 {f64};
+    arb_sys::acb::acb_set_d
 }
 
-impl New<&Integer> for ComplexField {
-    #[inline]
-    fn new(&self, x: &Integer) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_set_fmpz(z.as_mut_ptr(), x.as_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
-    }
+impl_new! {
+    Integer
+    arb_sys::acb::acb_set_fmpz
+}
+
+impl_new! {
+    Real
+    arb_sys::acb::acb_set_arb
 }
 
 impl New<&Rational> for ComplexField {
@@ -197,16 +225,10 @@ impl New<&Rational> for ComplexField {
     }
 }
 
-
-impl New<&Real> for ComplexField {
+impl New<Rational> for ComplexField {
     #[inline]
-    fn new(&self, x: &Real) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_set_arb(z.as_mut_ptr(), x.as_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
+    fn new(&self, x: Rational) -> Complex {
+        self.new(&x)
     }
 }
 
