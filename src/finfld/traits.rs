@@ -21,19 +21,18 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::intpol::src::IntPol;
-use crate::finfld::src::FinFldElem;
+use crate::*;
 
 
 impl Clone for FinFldElem {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe { 
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_ptr());
+            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fq_default::fq_default_set(
                 z.as_mut_ptr(), 
                 self.as_ptr(),
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             ); 
             FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
         }
@@ -48,7 +47,9 @@ impl fmt::Display for FinFldElem {
 
 impl Drop for FinFldElem {
     fn drop(&mut self) {
-        unsafe { flint_sys::fq_default::fq_default_clear(self.as_mut_ptr(), self.ctx_ptr());}
+        unsafe { 
+            flint_sys::fq_default::fq_default_clear(self.as_mut_ptr(), self.ctx_as_ptr());
+        }
     }
 }
 
