@@ -16,6 +16,7 @@
  */
 
 use std::fmt;
+use std::sync::Arc;
 
 /// Traits for operations and algebraic structures.
 
@@ -112,16 +113,20 @@ pub trait Init: Parent {
     fn init() -> Self;
 }
 
-pub trait Init1<T>: Parent {
-    fn init(x: T) -> Self;
+pub trait Init1<A>: Parent {
+    fn init(a: A) -> Self;
 }
 
-pub trait Init2<T, U>: Parent {
-    fn init(x: T, y: U) -> Self;
+pub trait Init2<A, B>: Parent {
+    fn init(a: A, b: B) -> Self;
 }
 
-pub trait Init3<T, U, V>: Parent {
-    fn init(x: T, y: U, z: V) -> Self;
+pub trait Init3<A, B, C>: Parent {
+    fn init(a: A, b: B, c: C) -> Self;
+}
+
+pub trait Init4<A, B, C, D>: Parent {
+    fn init(a: A, b: B, c: C, d: D) -> Self;
 }
 
 // Traits for implementing different Element constructors for Parents
@@ -205,8 +210,8 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
     // nullspace
 }
 
-pub trait Ring: AdditiveGroup + MultiplicativeGroup {}
-pub trait RingElement: AdditiveGroupElement + MultiplicativeGroupElement {}
+pub trait Ring: AdditiveGroup + Multiplicative {}
+pub trait RingElement: AdditiveGroupElement + MultiplicativeElement {}
 
 pub trait PolynomialRing<T: Ring>: Ring {
     // gen
@@ -244,6 +249,22 @@ impl<T: Parent> Drop for Elem<T> {
 }
 
 impl<T: Parent> fmt::Debug for Elem<T> {
+    default fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Debug not implemented.")
+    }
+}
+
+pub struct Poly<T: Parent> {
+    pub ctx: T::Data,
+    pub x: Arc<String>,
+    pub data: <T::Element as Element>::Data,
+}
+
+impl<T: Parent> Drop for Poly<T> {
+    default fn drop(&mut self) {}
+}
+
+impl<T: Parent> fmt::Debug for Poly<T> {
     default fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Debug not implemented.")
     }
