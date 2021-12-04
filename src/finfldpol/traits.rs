@@ -29,13 +29,13 @@ impl Clone for FinFldPol {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe { 
-            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.ctx_ptr());
+            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fq_default_poly::fq_default_poly_set(
                 z.as_mut_ptr(), 
                 self.as_ptr(),
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             ); 
-            FinFldPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldPol { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.x), data: z.assume_init() }
         }
     }
 }
@@ -49,7 +49,7 @@ impl fmt::Display for FinFldPol {
 impl Drop for FinFldPol {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::fq_default_poly::fq_default_poly_clear(self.as_mut_ptr(), self.ctx_ptr());
+            flint_sys::fq_default_poly::fq_default_poly_clear(self.as_mut_ptr(), self.ctx_as_ptr());
         }
     }
 }

@@ -16,6 +16,7 @@
  */
 
 
+use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
@@ -25,15 +26,12 @@ use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
 use libc::c_long;
 use num_traits::PrimInt;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
-use crate::finfld::src::{FqCtx, FinFldElem, FiniteField};
+use crate::*;
 
-
-/// The finite field with `p^k` elements for `p` prime.
+/// The ring of polynomials over the finite field with `p^k` elements.
 pub struct FinFldPolRing {
-    pub ctx: <Self as Parent>::Data,
+    ctx: <Self as Parent>::Data,
+    x: Arc<String>,
 }
 
 impl Parent for FinFldPolRing {
@@ -41,61 +39,240 @@ impl Parent for FinFldPolRing {
     type Element = FinFldPol;
 }
 
-/*
-impl ParentInit2<&Integer, c_long> for FinFldPolRing {
-    /// Construct the ring of polynomials over the finite field with `p^k` elements.
+impl Additive for FinFldPolRing {
     #[inline]
-    fn init(p: &Integer, k: c_long) -> Self {
-        let ff = FiniteField::init(p, k);
-        FinFldPolRing { ctx: Arc::clone(&ff.ctx) }
-    }
-}
-
-impl<T> ParentInit2<T, c_long> for FinFldPolRing where
-    T: PrimInt + Into<Integer>
-{
-    /// Construct the ring of polynomials over the finite field with `p^k` elements.
-    #[inline]
-    fn init(p: T, k: c_long) -> Self {
-        let ff = FiniteField::init(p, k);
-        FinFldPolRing { ctx: Arc::clone(&ff.ctx) }
-    }
-}
-*/
-
-impl New<&IntPol> for FinFldPolRing {
-    /// Construct a polynomial over a finite field.
-    #[inline]
-    fn new(&self, n: &IntPol) -> FinFldPol {
+    fn zero(&self) -> FinFldPol {
         let mut z = MaybeUninit::uninit();
         unsafe {
-            flint_sys::fq_default_poly::fq_default_poly_set_fmpz_poly(
-                z.as_mut_ptr(),
-                n.as_ptr(),
-                &self.ctx.0
-            );
-            FinFldPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
+            flint_sys::fq_default_poly::fq_default_poly_zero(z.as_mut_ptr(), self.as_ptr());
+            FinFldPol { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.x), data: z.assume_init() }
         }
     }
 }
 
-impl<T> New<T> for FinFldPolRing where
-    T: Into<IntPol>
-{
-    /// Construct a polynomial over a finite field.
+impl Multiplicative for FinFldPolRing {
     #[inline]
-    fn new(&self, n: T) -> FinFldPol {
-        self.new(&n.into())
+    fn one(&self) -> FinFldPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
+            flint_sys::fq_default_poly::fq_default_poly_one(z.as_mut_ptr(), self.as_ptr());
+            FinFldPol { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.x), data: z.assume_init() }
+        }
+    }
+}
+
+impl AdditiveGroup for FinFldPolRing {}
+
+impl Ring for FinFldPolRing {}
+
+impl<T> Init4<&Integer, T, &str, &str> for FinFldPolRing where 
+    T: TryInto<c_long>,
+{
+    /// Construct the ring of polynomials over the finite field with `p^k` elements.
+    #[inline]
+    fn init(p: &Integer, k: T, var: &str, x: &str) -> Self { 
+        match k.try_into() {
+            Ok(k) => {
+                assert!(p.is_prime());
+                assert!(k > 0);
+            
+                let tmp = CString::new(var).unwrap();
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    flint_sys::fq_default::fq_default_ctx_init(
+                        z.as_mut_ptr(), 
+                        p.as_ptr(), 
+                        k, 
+                        tmp.as_ptr()
+                    );
+                    FinFldPolRing { ctx: Arc::new(FqCtx(z.assume_init())), x: Arc::new(x.to_owned()) }
+                }
+            },
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
+    }
+}
+
+impl<T, U> Init4<T, U, &str, &str> for FinFldPolRing where 
+    T: PrimInt + Into<Integer>,
+    U: TryInto<c_long>,
+{
+    /// Construct the ring of polynomials over the finite field with `p^k` elements.
+    #[inline]
+    fn init(p: T, k: U, var: &str, x: &str) -> Self {
+        Self::init(&p.into(), k, var, x)
+    }
+}
+
+macro_rules! impl_new {
+    (
+        $($t:ident)*;
+        $func:path
+    ) => ($(
+        impl New<$t> for FinFldPolRing {
+            #[inline]
+            fn new(&self, x: $t) -> FinFldPol {
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
+                    $func(
+                        z.as_mut_ptr(),
+                        0 as c_long,
+                        Integer::from(x).as_ptr(),
+                        self.as_ptr()
+                    );
+                    FinFldPol { 
+                        ctx: Arc::clone(&self.ctx), 
+                        x: Arc::clone(&self.x), 
+                        data: z.assume_init() 
+                    }
+                }        
+            }
+        }
+    )*);
+    (
+        base_ring
+        $t:ident
+        $func:path
+    ) => (
+        impl New<&$t> for FinFldPolRing {
+            #[inline]
+            fn new(&self, x: &$t) -> FinFldPol {
+                let ff = self.base_ring();
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
+                    $func(
+                        z.as_mut_ptr(),
+                        ff.new(x).as_ptr(),
+                        self.as_ptr()
+                    );
+                    FinFldPol { 
+                        ctx: Arc::clone(&self.ctx), 
+                        x: Arc::clone(&self.x), 
+                        data: z.assume_init() 
+                    }
+                }        
+            }
+        }
+        
+        impl New<$t> for FinFldPolRing {
+            #[inline]
+            fn new(&self, x: $t) -> FinFldPol {
+                self.new(&x)
+            }
+        }
+    );
+    (
+        $t:ident
+        $func:path
+    ) => (
+        impl New<&$t> for FinFldPolRing {
+            #[inline]
+            fn new(&self, x: &$t) -> FinFldPol {
+                let mut z = MaybeUninit::uninit();
+                unsafe {
+                    flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
+                    $func(
+                        z.as_mut_ptr(),
+                        x.as_ptr(),
+                        self.as_ptr()
+                    );
+                    FinFldPol { 
+                        ctx: Arc::clone(&self.ctx), 
+                        x: Arc::clone(&self.x), 
+                        data: z.assume_init() 
+                    }
+                }        
+            }
+        }
+        
+        impl New<$t> for FinFldPolRing {
+            #[inline]
+            fn new(&self, x: $t) -> FinFldPol {
+                self.new(&x)
+            }
+        }
+    );
+}
+
+impl_new! {
+    u64 u32 u16 u8 i64 i32 i16 i8;
+    flint_sys::fq_default_poly::fq_default_poly_set_coeff_fmpz
+}
+
+impl_new! {
+    base_ring
+    Integer
+    flint_sys::fq_default_poly::fq_default_poly_set_fq_default
+}
+
+impl_new! {
+    IntPol
+    flint_sys::fq_default_poly::fq_default_poly_set_fmpz_poly
+}
+
+impl_new! {
+    IntModPol
+    flint_sys::fq_default_poly::fq_default_poly_set_fmpz_mod_poly
+}
+
+impl_new! {
+    FinFldElem
+    flint_sys::fq_default_poly::fq_default_poly_set_fq_default
+}
+
+impl FinFldPolRing {
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// FLINT via the FFI.
+    #[inline]
+    pub fn as_ptr(&self) -> &fq_ctx_struct {
+        &self.ctx.0
+    }
+
+    #[inline]
+    pub fn base_ring(&self) -> FiniteField {
+        FiniteField { ctx: Arc::clone(&self.ctx) }
     }
 }
 
 /// An element of a finite field.
-pub type FinFldPol = Elem<FinFldPolRing>;
+pub type FinFldPol = Poly<FinFldPolRing>;
 
 impl Element for FinFldPol {
     type Data = fq_poly_struct;
     type Parent = FinFldPolRing;
 }
+
+impl AdditiveElement for FinFldPol {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe { 
+            flint_sys::fq_default_poly::fq_default_poly_is_zero(
+                self.as_ptr(), 
+                self.ctx_as_ptr()
+            ) == 1 
+        }
+    }
+}
+
+impl MultiplicativeElement for FinFldPol {
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe { 
+            flint_sys::fq_default_poly::fq_default_poly_is_one(
+                self.as_ptr(), 
+                self.ctx_as_ptr()
+            ) == 1 
+        }
+    }
+}
+
+impl AdditiveGroupElement for FinFldPol {}
+
+impl RingElement for FinFldPol {}
 
 impl FinFldPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -114,7 +291,7 @@ impl FinFldPol {
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
-    pub fn ctx_ptr(&self) -> &fq_ctx_struct {
+    pub fn ctx_as_ptr(&self) -> &fq_ctx_struct {
         &self.ctx.0
     }
     
@@ -124,7 +301,7 @@ impl FinFldPol {
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str(
                 self.as_ptr(),
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             );
             match CStr::from_ptr(s).to_str() {
                 Ok(s) => s.to_owned(),
@@ -135,13 +312,13 @@ impl FinFldPol {
     
     /// Return a pretty-printed [String] representation of a polynomial over a finite field.
     #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
+    pub fn get_str_pretty(&self) -> String {
+        let x = CString::new((*self.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
                 self.as_ptr(), 
-                v.as_ptr(),
-                self.ctx_ptr()
+                x.as_ptr(),
+                self.ctx_as_ptr()
             );
             match CStr::from_ptr(s).to_str() {
                 Ok(s) => s.to_owned(),
@@ -155,7 +332,7 @@ impl FinFldPol {
         unsafe {
             flint_sys::fq_default_poly::fq_default_poly_length(
                 self.as_ptr(),
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             )
         }
     }
@@ -165,12 +342,12 @@ impl FinFldPol {
     pub fn get_coeff(&self, i: usize) -> FinFldElem {
         let mut z = MaybeUninit::uninit();
         unsafe {
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_ptr());
+            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fq_default_poly::fq_default_poly_get_coeff(
                 z.as_mut_ptr(), 
                 self.as_ptr(), 
                 i as i64,
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             );
             FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
         }
@@ -184,7 +361,7 @@ impl FinFldPol {
                 self.as_mut_ptr(), 
                 i as c_long, 
                 coeff.as_ptr(),
-                self.ctx_ptr()
+                self.ctx_as_ptr()
             );
         }
     }

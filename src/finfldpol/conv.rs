@@ -22,7 +22,7 @@ impl_from! {
     String, FinFldPol
     {
         fn from(x: &FinFldPol) -> String {
-            x.get_str_pretty("x")
+            x.get_str_pretty()
         }
     }
 }
