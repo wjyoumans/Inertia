@@ -36,6 +36,11 @@ macro_rules! op_guard {
 }*/
 
 macro_rules! default {
+    // From/conversion
+    (From, matrix, $out_ty:ident, $in:ident) => {
+        $out_ty::zero($in.nrows(), $in.ncols())
+    };
+
     // Unary ops
     (Neg, matrix, $out_ty:ident, $in:ident) => {
         $out_ty::zero($in.nrows(), $in.ncols())
@@ -1249,6 +1254,7 @@ macro_rules! impl_from {
 macro_rules! impl_from_unsafe {
     (
         // a -> b
+        $kw:ident
         $t1:ident, $t2:ident
         $func:path
     ) => (
@@ -1256,7 +1262,7 @@ macro_rules! impl_from_unsafe {
             $t1, $t2
             {
                 fn from(src: &$t2) -> $t1 {
-                    let mut res = <$t1>::default();
+                    let mut res = default!(From, $kw, $t1, src);
                     unsafe { $func(res.as_mut_ptr(), src.as_ptr()); }
                     res
                 }
@@ -1265,6 +1271,7 @@ macro_rules! impl_from_unsafe {
     );
     (
         // a -> b, with third argument (precision, context, etc)
+        $kw:ident
         $t1:ident, $t2:ident, $arg:expr;
         $func:path
     ) => (
@@ -1272,7 +1279,7 @@ macro_rules! impl_from_unsafe {
             $t1, $t2
             {
                 fn from(src: &$t2) -> $t1 {
-                    let mut res = <$t1>::default();
+                    let mut res = default!(From, $kw, $t1, src);
                     unsafe { $func(res.as_mut_ptr(), src.as_ptr(), $arg); }
                     res
                 }
@@ -1281,6 +1288,7 @@ macro_rules! impl_from_unsafe {
     );
     (
         // a -> b, a primitive
+        $kw:ident
         $t1:ident, $cast:ident {$($t2:ident)*}
         $func:path
     ) => ($(
@@ -1288,7 +1296,7 @@ macro_rules! impl_from_unsafe {
             $t1, $t2
             {
                 fn from(src: &$t2) -> $t1 {
-                    let mut res = <$t1>::default();
+                    let mut res = default!(From, $kw, $t1, src);
                     unsafe { $func(res.as_mut_ptr(), *src as $cast); }
                     res
                 }

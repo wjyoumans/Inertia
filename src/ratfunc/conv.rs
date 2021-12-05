@@ -24,6 +24,7 @@ impl_from_unsafe! {
 }*/
 
 impl_from_unsafe! {
+    None
     RatFunc, i64 {isize i64 i32 i16 i8} 
     flint_sys::fmpz_poly_q::fmpz_poly_q_set_si
 }

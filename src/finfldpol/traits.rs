@@ -21,8 +21,7 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::intpol::src::IntPol;
-use crate::finfldpol::src::FinFldPol;
+use crate::*;
 
 
 impl Clone for FinFldPol {

@@ -19,26 +19,31 @@ use crate::*;
 
 
 impl_from_unsafe! {
+    None
     RatPol, u64 {usize u64 u32 u16 u8} 
     flint_sys::fmpq_poly::fmpq_poly_set_ui
 }
 
 impl_from_unsafe! {
+    None
     RatPol, i64 {isize i64 i32 i16 i8} 
     flint_sys::fmpq_poly::fmpq_poly_set_si
 }
 
 impl_from_unsafe! {
+    None
     RatPol, Integer
     flint_sys::fmpq_poly::fmpq_poly_set_fmpz
 }
 
 impl_from_unsafe! {
+    None
     RatPol, Rational
     flint_sys::fmpq_poly::fmpq_poly_set_fmpq
 }
 
 impl_from_unsafe! {
+    None
     RatPol, IntPol
     flint_sys::fmpq_poly::fmpq_poly_set_fmpz_poly
 }

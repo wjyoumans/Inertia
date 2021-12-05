@@ -27,31 +27,37 @@ use crate::complex::src::Complex;
 
 
 impl_from_unsafe! {
+    None
     Complex, u64 {usize u64 u32 u16 u8}
     arb_sys::acb::acb_set_ui
 }
 
 impl_from_unsafe! {
+    None
     Complex, i64 {isize i64 i32 i16 i8}
     arb_sys::acb::acb_set_si
 }
 
 impl_from_unsafe! {
+    None
     Complex, f64 {f64}
     arb_sys::acb::acb_set_d
 }
 
 impl_from_unsafe! {
+    None
     Complex, Integer
     arb_sys::acb::acb_set_fmpz
 }
 
 impl_from_unsafe! {
+    None
     Complex, Rational, crate::REAL_DEFAULT_PREC;
     arb_sys::acb::acb_set_fmpq
 }
 
 impl_from_unsafe! {
+    None
     Complex, Real
     arb_sys::acb::acb_set_arb
 }

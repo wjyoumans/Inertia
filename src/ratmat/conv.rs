@@ -21,6 +21,21 @@ use libc::c_long;
 use crate::*;
 
 
+impl_from_unsafe! {
+    matrix
+    RatMat, IntMat
+    flint_sys::fmpq_mat::fmpq_mat_set_fmpz_mat
+}
+
+impl_from! {
+    RatMat, IntModMat
+    {
+        fn from(x: &IntModMat) -> RatMat {
+            RatMat::from(IntMat::from(x))
+        }
+    }
+}
+
 impl_from! {
     String, RatMat
     {

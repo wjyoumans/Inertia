@@ -19,16 +19,19 @@ use crate::*;
 
 
 impl_from_unsafe! {
+    None
     IntPol, u64 {usize u64 u32 u16 u8}
     flint_sys::fmpz_poly::fmpz_poly_set_ui
 }
 
 impl_from_unsafe! {
+    None
     IntPol, i64 {isize i64 i32 i16 i8}
     flint_sys::fmpz_poly::fmpz_poly_set_si
 }
 
 impl_from_unsafe! {
+    None
     IntPol, Integer
     flint_sys::fmpz_poly::fmpz_poly_set_fmpz
 }
@@ -56,6 +59,23 @@ impl_from! {
                     res.as_mut_ptr(),
                     x.as_ptr(),
                     x.ctx_as_ptr(),
+                );
+            }
+            res
+        }
+    }
+}
+
+impl_from! {
+    IntPol, FinFldElem
+    {
+        fn from(x: &FinFldElem) -> IntPol {
+            let mut res = IntPol::default();
+            unsafe {
+                flint_sys::fq_default::fq_default_get_fmpz_poly(
+                    res.as_mut_ptr(), 
+                    x.as_ptr(), 
+                    x.ctx_as_ptr()
                 );
             }
             res

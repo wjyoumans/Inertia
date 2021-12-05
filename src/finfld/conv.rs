@@ -18,22 +18,6 @@
 
 use crate::*;
 
-impl_from! {
-    IntPol, FinFldElem
-    {
-        fn from(x: &FinFldElem) -> IntPol {
-            let mut res = IntPol::default();
-            unsafe {
-                flint_sys::fq_default::fq_default_get_fmpz_poly(
-                    res.as_mut_ptr(), 
-                    x.as_ptr(), 
-                    x.ctx_as_ptr()
-                );
-            }
-            res
-        }
-    }
-}
 
 impl_from! {
     String, FinFldElem

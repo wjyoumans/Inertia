@@ -20,11 +20,13 @@ use crate::*;
 
 
 impl_from_unsafe! {
+    None
     Integer, u64 {usize u64 u32 u16 u8}
     flint_sys::fmpz::fmpz_set_ui
 }
 
 impl_from_unsafe! {
+    None
     Integer, i64 {isize i64 i32 i16 i8}
     flint_sys::fmpz::fmpz_set_si
 }

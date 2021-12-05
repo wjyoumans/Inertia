@@ -21,16 +21,19 @@ use num_traits::PrimInt;
 use crate::*;
 
 impl_from_unsafe! {
+    None
     Rational, u64 {usize u64 u32 u16 u8}
     flint_sys::fmpq::fmpq_set_ui_den1
 }
 
 impl_from_unsafe! {
+    None
     Rational, i64 {isize i64 i32 i16 i8}
     flint_sys::fmpq::fmpq_set_si_den1
 }
 
 impl_from_unsafe! {
+    None
     Rational, Integer
     flint_sys::fmpq::fmpq_set_fmpz_den1
 }

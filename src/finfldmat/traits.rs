@@ -21,7 +21,7 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::finfldmat::src::FinFldMat;
+use crate::*;
 
 
 impl Clone for FinFldMat {

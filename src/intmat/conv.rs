@@ -21,6 +21,15 @@ use libc::c_long;
 use crate::*;
 
 impl_from! {
+    IntMat, IntModMat
+    {
+        fn from(x: &IntModMat) -> IntMat {
+            IntMat { ctx: (), extra: (), data: x.data.mat[0].clone() }
+        }
+    }
+}
+
+impl_from! {
     String, IntMat
     {
         fn from(x: &IntMat) -> String {
@@ -43,12 +52,6 @@ impl_from! {
             }
             out.join("")
         }
-    }
-}
-
-impl From<&IntModMat> for IntMat {
-    fn from(x: &IntModMat) -> IntMat {
-        IntMat { ctx: (), extra: (), data: x.data.mat[0].clone() }
     }
 }
 
