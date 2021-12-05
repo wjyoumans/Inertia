@@ -15,8 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
+use crate::*;
 
 
 impl_from_unsafe! {
@@ -35,10 +34,40 @@ impl_from_unsafe! {
 }
 
 impl_from! {
+    IntPol, IntMod
+    {
+        fn from(x: &IntMod) -> IntPol {
+            let mut res = IntPol::default();
+            unsafe {
+                flint_sys::fmpz_poly::fmpz_poly_set_fmpz(res.as_mut_ptr(), x.as_ptr());
+            }
+            res
+        }
+    }
+}
+
+impl_from! {
+    IntPol, IntModPol
+    {
+        fn from(x: &IntModPol) -> IntPol {
+            let mut res = IntPol::default();
+            unsafe { 
+                flint_sys::fmpz_mod_poly::fmpz_mod_poly_get_fmpz_poly(
+                    res.as_mut_ptr(),
+                    x.as_ptr(),
+                    x.ctx_as_ptr(),
+                );
+            }
+            res
+        }
+    }
+}
+
+impl_from! {
     String, IntPol
     {
         fn from(x: &IntPol) -> String {
-            x.get_str_pretty("x")
+            x.get_str_pretty()
         }
     }
 }

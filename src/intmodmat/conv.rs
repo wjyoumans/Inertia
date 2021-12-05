@@ -16,8 +16,6 @@
  */
 
 
-use crate::intmat::src::IntMat;
-use crate::intmodmat::src::IntModMat;
 
 /*
 impl_from! {

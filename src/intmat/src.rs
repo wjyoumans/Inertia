@@ -16,14 +16,13 @@
  */
 
 
+use std::convert::TryInto;
 use std::mem::MaybeUninit;
 
 use flint_sys::fmpz_mat::fmpz_mat_struct;
 use libc::c_long;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
+use crate::*;
 
 
 /// The vector space of `rows` by `cols` [Integer] matrices.
@@ -31,22 +30,6 @@ use crate::intpol::src::IntPol;
 pub struct IntMatSpace {
     rows: c_long,
     cols: c_long,
-}
-
-impl Init2<c_long, c_long> for IntMatSpace {
-    #[inline]
-    fn init(m: c_long, n: c_long) -> Self {
-        IntMatSpace { rows: m, cols: n}
-    }
-}
-
-impl<T> New<T> for IntMatSpace where 
-    T: Into<IntMat>
-{
-    #[inline]
-    fn new(&self, x: T) -> IntMat {
-        x.into()
-    }
 }
 
 impl Parent for IntMatSpace {
@@ -76,6 +59,37 @@ impl Module for IntMatSpace {}
 impl VectorSpace for IntMatSpace {}
 
 impl MatrixSpace for IntMatSpace {}
+
+impl<T> Init2<T, T> for IntMatSpace where 
+    T: TryInto<c_long>,
+{
+    #[inline]
+    fn init(r: T, c: T) -> Self {
+        match r.try_into() {
+            Ok(rr) =>
+                match c.try_into() {
+                    Ok(cc) => IntMatSpace { rows: rr, cols: cc},
+                    Err(_) => panic!("Input cannot be converted into a signed long!"),
+                },
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
+    }
+}
+
+impl New<&IntMat> for IntMatSpace {
+    fn new(&self, x: &IntMat) -> IntMat {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for IntMatSpace where 
+    T: Into<IntMat>
+{
+    #[inline]
+    fn new(&self, x: T) -> IntMat {
+        x.into()
+    }
+}
 
 /// A matrix of arbitrary precision [Integer]s. The field `data` is a FLINT
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].

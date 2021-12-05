@@ -20,7 +20,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use crate::ratmat::src::RatMat;
+use crate::*;
 
 
 impl Clone for RatMat {

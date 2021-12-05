@@ -16,25 +16,8 @@
  */
 
 
-use crate::intpol::src::IntPol;
-use crate::intmodpol::src::IntModPol;
+use crate::*;
 
-impl_from! {
-    IntPol, IntModPol
-    {
-        fn from(x: &IntModPol) -> IntPol {
-            let mut res = IntPol::default();
-            unsafe { 
-                flint_sys::fmpz_mod_poly::fmpz_mod_poly_get_fmpz_poly(
-                    res.as_mut_ptr(),
-                    x.as_ptr(),
-                    x.ctx_as_ptr(),
-                );
-            }
-            res
-        }
-    }
-}
 
 impl_from! {
     String, IntModPol

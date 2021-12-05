@@ -23,8 +23,7 @@ use flint_sys::fmpz::fmpz;
 use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 use num_traits::PrimInt;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
+use crate::*;
 
 
 pub struct FmpzModCtx(pub fmpz_mod_ctx_struct);
@@ -87,6 +86,14 @@ impl<T> Init1<T> for IntModRing where
     #[inline]
     fn init(n: T) -> Self {
         Self::init(&n.into())
+    }
+}
+
+impl New<&IntMod> for IntModRing {
+    /// Construct an element of the ring of integers mod `n`.
+    #[inline]
+    fn new(&self, n: &IntMod) -> IntMod {
+        IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: n.data }
     }
 }
 

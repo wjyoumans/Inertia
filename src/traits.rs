@@ -242,6 +242,8 @@ pub trait FieldElement: RingElement {
 pub trait NumberField: Field {} // + PolynomialRing (Q[x]/f)
 pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 
+
+
 /// An element of a `Parent`. In cases where the parent holds important context data we use the 
 /// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
@@ -259,3 +261,7 @@ impl<T: Parent> fmt::Debug for Elem<T> {
         f.write_str("Debug not implemented.")
     }
 }
+
+/* Changing poly ring defs to this causes compiler crash
+pub struct PolyRing<T: Ring> {}
+*/

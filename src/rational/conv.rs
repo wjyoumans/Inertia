@@ -18,11 +18,7 @@
 use std::ffi::CString;
 
 use num_traits::PrimInt;
-
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::rational::src::Rational;
-
+use crate::*;
 
 impl_from_unsafe! {
     Rational, u64 {usize u64 u32 u16 u8}
@@ -37,6 +33,17 @@ impl_from_unsafe! {
 impl_from_unsafe! {
     Rational, Integer
     flint_sys::fmpq::fmpq_set_fmpz_den1
+}
+
+impl_from! {
+    Rational, IntMod
+    {
+        fn from(x: &IntMod) -> Rational {
+            let mut res = Rational::default();
+            unsafe { flint_sys::fmpq::fmpq_set_fmpz_den1(res.as_mut_ptr(), x.as_ptr()); }
+            res
+        }
+    }
 }
 
 impl_from! {

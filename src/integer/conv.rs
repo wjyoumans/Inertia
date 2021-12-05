@@ -16,9 +16,7 @@
  */
 
 use std::ffi::CString;
-
-use crate::traits::New;
-use crate::integer::src::{Integer, IntegerRing};
+use crate::*;
 
 
 impl_from_unsafe! {
@@ -29,6 +27,15 @@ impl_from_unsafe! {
 impl_from_unsafe! {
     Integer, i64 {isize i64 i32 i16 i8}
     flint_sys::fmpz::fmpz_set_si
+}
+
+impl_from! {
+    Integer, IntMod
+    {
+        fn from(x: &IntMod) -> Integer {
+            Integer { ctx: (), extra: (), data: x.data }
+        }
+    }
 }
 
 impl_from! {

@@ -16,17 +16,8 @@
  */
 
 
-use crate::integer::src::Integer;
-use crate::intmod::src::IntMod;
+use crate::*;
 
-impl_from! {
-    Integer, IntMod
-    {
-        fn from(x: &IntMod) -> Integer {
-            Integer { ctx: (), extra: (), data: x.data }
-        }
-    }
-}
 
 impl_from! {
     String, IntMod

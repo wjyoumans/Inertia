@@ -21,7 +21,7 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::intmodmat::src::IntModMat;
+use crate::*;
 
 
 impl Clone for IntModMat {

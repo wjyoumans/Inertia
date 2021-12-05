@@ -18,8 +18,7 @@
 
 use libc::c_long;
 
-use crate::rational::src::Rational;
-use crate::ratmat::src::RatMat;
+use crate::*;
 
 
 impl_from! {

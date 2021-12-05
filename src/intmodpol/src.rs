@@ -21,6 +21,7 @@ use std::sync::Arc;
 
 use flint_sys::fmpz_mod_poly::fmpz_mod_poly_struct;
 use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
+use num_traits::PrimInt;
 
 use crate::*;
 
@@ -28,11 +29,12 @@ use crate::*;
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
 pub struct IntModPolRing {
     ctx: <Self as Parent>::Data,
+    x: Arc<String>,
 }
 
 impl Parent for IntModPolRing {
     type Data = Arc<FmpzModCtx>;
-    type Extra = ();
+    type Extra = Arc<String>;
     type Element = IntModPol;
 }
 
@@ -41,8 +43,13 @@ impl Additive for IntModPolRing {
     fn zero(&self) -> IntModPol {
         let mut z = MaybeUninit::uninit();
         unsafe { 
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.as_ptr());
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_zero(z.as_mut_ptr(), self.as_ptr()); 
-            IntModPol { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            IntModPol { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: Arc::clone(&self.x), 
+                data: z.assume_init() 
+            }
         }
     }
 }
@@ -52,8 +59,13 @@ impl Multiplicative for IntModPolRing {
     fn one(&self) -> IntModPol {
         let mut z = MaybeUninit::uninit();
         unsafe { 
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.as_ptr());
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_one(z.as_mut_ptr(), self.as_ptr()); 
-            IntModPol { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            IntModPol { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: Arc::clone(&self.x), 
+                data: z.assume_init() 
+            }
         }
     }
 }
@@ -66,26 +78,101 @@ impl Ring for IntModPolRing {}
 
 impl PolynomialRing<IntModRing> for IntModPolRing {}
 
+impl Init2<&Integer, &str> for IntModPolRing {
+    #[inline]
+    fn init(n: &Integer, x: &str) -> Self {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
+            IntModPolRing { ctx: Arc::new(FmpzModCtx(z.assume_init())), x: Arc::new(x.to_owned()) }
+        }
+    }
+}
+
+impl<T> Init2<T, &str> for IntModPolRing where 
+    T: PrimInt + Into<Integer>
+{
+    #[inline]
+    fn init(n: T, x: &str) -> Self {
+        Self::init(&n.into(), x)
+    }
+}
+
+impl New<&IntModPol> for IntModPolRing {
+    #[inline]
+    fn new(&self, x: &IntModPol) -> IntModPol {
+        IntModPol { ctx: Arc::clone(&self.ctx), extra: Arc::clone(&self.x), data: x.data }
+    }
+}
+
+impl New<IntModPol> for IntModPolRing {
+    fn new(&self, x: IntModPol) -> IntModPol {
+        self.new(&x)
+    }
+}
+
+impl New<&IntMod> for IntModPolRing {
+    #[inline]
+    fn new(&self, x: &IntMod) -> IntModPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.as_ptr());
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz(
+                z.as_mut_ptr(), 
+                x.as_ptr(), 
+                self.as_ptr()
+            );
+            IntModPol { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: Arc::clone(&self.x), 
+                data: z.assume_init() 
+            }
+        }
+    }
+}
+
+impl New<IntMod> for IntModPolRing {
+    fn new(&self, x: IntMod) -> IntModPol {
+        self.new(&x)
+    }
+}
+
+impl New<&Integer> for IntModPolRing {
+    #[inline]
+    fn new(&self, x: &Integer) -> IntModPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.as_ptr());
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz(
+                z.as_mut_ptr(), 
+                x.as_ptr(), 
+                self.as_ptr()
+            );
+            IntModPol { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: Arc::clone(&self.x), 
+                data: z.assume_init()
+            }
+        }
+    }
+}
+
+impl<T> New<T> for IntModPolRing where
+    T: PrimInt + Into<Integer>
+{
+    /// Construct an element of the ring of integers mod `n`.
+    #[inline]
+    fn new(&self, n: T) -> IntModPol {
+        self.new(&n.into())
+    }
+}
+
 impl IntModPolRing {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
-    }
-
-    /// Construct the ring of polynomials with coefficients integers mod `n`.
-    pub fn init(n: &Integer) -> Self {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fmpz_mod::fmpz_mod_ctx_init(z.as_mut_ptr(), n.as_ptr());
-            IntModPolRing { ctx: Arc::new(FmpzModCtx(z.assume_init())) }
-        }
-    }
-
-    /// Create a new polynomial over integers mod `n`.
-    pub fn new<T: Into<IntModPol>>(&self, x: T) -> IntModPol {
-        x.into()
     }
 }
 
@@ -153,6 +240,6 @@ impl IntModPol {
     /// Return a pretty-printed [String] representation of a finite field element.
     #[inline]
     pub fn get_str_pretty(&self) -> String {
-        IntPol::from(self).get_str_pretty("x")
+        IntPol::from(self).get_str_pretty()
     }
 }

@@ -21,8 +21,7 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::intpol::src::IntPol;
-use crate::intmodpol::src::IntModPol;
+use crate::*;
 
 
 impl Clone for IntModPol {
@@ -35,7 +34,11 @@ impl Clone for IntModPol {
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             ); 
-            IntModPol { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            IntModPol { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: Arc::clone(&self.extra), 
+                data: z.assume_init() 
+            }
         }
     }
 }

@@ -26,36 +26,11 @@ use num_traits::Zero;
 use rug::ops::Pow;
 use rustc_hash::FxHashMap;
 
-use crate::traits::*;
-use crate::product::src::Product;
-use crate::rational::src::Rational;
+use crate::*;
 
 /// An integer ring that can be used as an [Integer] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
-
-impl Init for IntegerRing {
-    #[inline]
-    fn init() -> Self {
-        IntegerRing {}
-    }
-}
-
-impl New<&Integer> for IntegerRing {
-    #[inline]
-    fn new(&self, x: &Integer) -> Integer {
-        x.clone()
-    }
-}
-
-impl<T> New<T> for IntegerRing where 
-    T: Into<Integer>
-{
-    #[inline]
-    fn new(&self, x: T) -> Integer {
-        x.into()
-    }
-}
 
 impl Parent for IntegerRing {
     type Data = ();
@@ -84,6 +59,29 @@ impl AdditiveGroup for IntegerRing {}
 impl MultiplicativeGroup for IntegerRing {}
 
 impl Ring for IntegerRing {}
+
+impl Init for IntegerRing {
+    #[inline]
+    fn init() -> Self {
+        IntegerRing {}
+    }
+}
+
+impl New<&Integer> for IntegerRing {
+    #[inline]
+    fn new(&self, x: &Integer) -> Integer {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for IntegerRing where 
+    T: Into<Integer>
+{
+    #[inline]
+    fn new(&self, x: T) -> Integer {
+        x.into()
+    }
+}
 
 /// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].
 pub type Integer = Elem<IntegerRing>;

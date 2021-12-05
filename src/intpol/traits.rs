@@ -18,8 +18,9 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
+use std::sync::Arc;
 
-use crate::intpol::src::IntPol;
+use crate::*;
 
 
 impl Clone for IntPol {
@@ -28,7 +29,7 @@ impl Clone for IntPol {
         unsafe { 
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
             flint_sys::fmpz_poly::fmpz_poly_set(z.as_mut_ptr(), &self.data); 
-            IntPol { ctx: (), extra: (), data: z.assume_init() }
+            IntPol { ctx: (), extra: Arc::clone(&self.extra), data: z.assume_init() }
         }
     }
 }
@@ -38,7 +39,7 @@ impl Default for IntPol {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPol { ctx: (), extra: (), data: z.assume_init() }
+            IntPol { ctx: (), extra: Arc::new("x".to_owned()), data: z.assume_init() }
         }
     }
 }

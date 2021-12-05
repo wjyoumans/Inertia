@@ -15,10 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::integer::src::Integer;
-use crate::intpol::src::IntPol;
-use crate::rational::src::Rational;
-use crate::ratpol::src::RatPol;
+use crate::*;
 
 
 impl_from_unsafe! {
@@ -46,11 +43,25 @@ impl_from_unsafe! {
     flint_sys::fmpq_poly::fmpq_poly_set_fmpz_poly
 }
 
+
+impl_from! {
+    RatPol, IntMod
+    {
+        fn from(x: &IntMod) -> RatPol {
+            let mut res = RatPol::default();
+            unsafe {
+                flint_sys::fmpq_poly::fmpq_poly_set_fmpz(res.as_mut_ptr(), x.as_ptr());
+            }
+            res
+        }
+    }
+}
+
 impl_from! {
     String, RatPol
     {
         fn from(x: &RatPol) -> String {
-            x.get_str_pretty("x")
+            x.get_str_pretty()
         }
     }
 }

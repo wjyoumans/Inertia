@@ -17,38 +17,13 @@
 
 use flint_sys::fmpq::fmpq;
 
-use crate::traits::*;
-use crate::product::src::Product;
-use crate::integer::src::Integer;
+use crate::*;
 
 // RationalField //
 
 /// A rational field that can be used as a [Rational] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct RationalField {}
-
-impl Init for RationalField {
-    #[inline]
-    fn init() -> Self {
-        RationalField {}
-    }
-}
-
-impl New<&Rational> for RationalField {
-    #[inline]
-    fn new(&self, x: &Rational) -> Rational {
-        x.clone()
-    }
-}
-
-impl<T> New<T> for RationalField where 
-    T: Into<Rational>
-{
-    #[inline]
-    fn new(&self, x: T) -> Rational {
-        x.into()
-    }
-}
 
 impl Parent for RationalField {
     type Data = ();
@@ -80,6 +55,28 @@ impl Ring for RationalField {}
 
 impl Field for RationalField {}
 
+impl Init for RationalField {
+    #[inline]
+    fn init() -> Self {
+        RationalField {}
+    }
+}
+
+impl New<&Rational> for RationalField {
+    #[inline]
+    fn new(&self, x: &Rational) -> Rational {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for RationalField where 
+    T: Into<Rational>
+{
+    #[inline]
+    fn new(&self, x: T) -> Rational {
+        x.into()
+    }
+}
 
 /// An arbitrary precision rational number. The field `data` is a FLINT
 /// [fmpq][flint_sys::fmpq::fmpq].

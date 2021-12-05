@@ -19,48 +19,25 @@
 
 use std::ffi::{CStr, CString};
 use std::ops::Rem;
+use std::sync::Arc;
 
 use flint_sys::fmpz_poly::fmpz_poly_struct;
 use libc::{c_int, c_long, c_ulong};
 
-use crate::traits::*;
-use crate::integer::src::{Integer, IntegerRing};
-use crate::rational::src::Rational;
-use crate::ratpol::src::RatPol;
+use crate::*;
 
 // IntPol //
 
 /// The ring of polynomials with [Integer] coefficients that can be used as an integer polynomial
 /// "actory".
-#[derive(Default, Debug, Hash, Clone, Copy)]
-pub struct IntPolRing {}
-
-impl Init for IntPolRing {
-    #[inline]
-    fn init() -> Self {
-        IntPolRing {}
-    }
-}
-
-impl New<&IntPol> for IntPolRing {
-    #[inline]
-    fn new(&self, x: &IntPol) -> IntPol {
-        x.clone()
-    }
-}
-
-impl<T> New<T> for IntPolRing where 
-    T: Into<IntPol>
-{
-    #[inline]
-    fn new(&self, x: T) -> IntPol {
-        x.into()
-    }
+#[derive(Default, Debug, Hash, Clone)]
+pub struct IntPolRing {
+    pub x: Arc<String>,
 }
 
 impl Parent for IntPolRing {
     type Data = ();
-    type Extra = ();
+    type Extra = Arc<String>;
     type Element = IntPol;
 }
 
@@ -88,6 +65,28 @@ impl Ring for IntPolRing {}
 
 impl PolynomialRing<IntegerRing> for IntPolRing {}
 
+impl Init1<&str> for IntPolRing {
+    #[inline]
+    fn init(x: &str) -> Self {
+        IntPolRing { x: Arc::new(x.to_owned()) }
+    }
+}
+
+impl New<&IntPol> for IntPolRing {
+    #[inline]
+    fn new(&self, x: &IntPol) -> IntPol {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for IntPolRing where 
+    T: Into<IntPol>
+{
+    #[inline]
+    fn new(&self, x: T) -> IntPol {
+        x.into()
+    }
+}
 
 // IntPol //
 
@@ -152,8 +151,8 @@ impl IntPol {
     
     /// Return a pretty-printed [String] representation of an integer polynomial.
     #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
+    pub fn get_str_pretty(&self) -> String {
+        let v = CString::new((*self.extra).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpz_poly::fmpz_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {

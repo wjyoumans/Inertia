@@ -19,8 +19,9 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
+use std::sync::Arc;
 
-use crate::ratpol::src::RatPol;
+use crate::*;
 
 
 impl Clone for RatPol {
@@ -29,7 +30,7 @@ impl Clone for RatPol {
         unsafe { 
             flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
             flint_sys::fmpq_poly::fmpq_poly_set(z.as_mut_ptr(), &self.data); 
-            RatPol { ctx: (), extra: (), data: z.assume_init() }
+            RatPol { ctx: (), extra: Arc::clone(&self.extra), data: z.assume_init() }
         }
     }
 }
@@ -39,7 +40,7 @@ impl Default for RatPol {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
-            RatPol { ctx: (), extra: (), data: z.assume_init() }
+            RatPol { ctx: (), extra: Arc::new("x".to_owned()), data: z.assume_init() }
         }
     }
 }

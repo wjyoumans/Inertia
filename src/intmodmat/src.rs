@@ -16,22 +16,21 @@
  */
 
 
+use std::convert::TryInto;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
 use flint_sys::fmpz::fmpz;
 use flint_sys::fmpz_mod_mat::fmpz_mod_mat_struct;
 use libc::c_long;
+use num_traits::PrimInt;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::intmod::src::{IntMod, IntModRing};
-use crate::intpol::src::IntPol;
+use crate::*;
 
 
-pub struct IntModMatCtx(fmpz);
+pub struct FmpzModMatCtx(fmpz);
 
-impl Drop for IntModMatCtx {
+impl Drop for FmpzModMatCtx {
     fn drop(&mut self) {
         unsafe { flint_sys::fmpz::fmpz_clear(&mut self.0); }
     }
@@ -45,7 +44,7 @@ pub struct IntModMatSpace {
 }
 
 impl Parent for IntModMatSpace {
-    type Data = Arc<IntModMatCtx>;
+    type Data = Arc<FmpzModMatCtx>;
     type Extra = ();
     type Element = IntModMat;
 }
@@ -92,6 +91,87 @@ impl VectorSpace for IntModMatSpace {}
 
 impl MatrixSpace for IntModMatSpace {}
 
+impl<T> Init3<T, T, &Integer> for IntModMatSpace where 
+    T: TryInto<c_long>,
+{
+    #[inline]
+    fn init(r: T, c: T, n: &Integer) -> Self {
+        match r.try_into() {
+            Ok(rr) =>
+                match c.try_into() {
+                    Ok(cc) => IntModMatSpace { 
+                        rows: rr, 
+                        cols: cc, 
+                        ctx: Arc::new(FmpzModMatCtx(n.data))
+                    },
+                    Err(_) => panic!("Input cannot be converted into a signed long!"),
+                },
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
+    }
+}
+
+impl<T, U> Init3<T, T, U> for IntModMatSpace where 
+    T: TryInto<c_long>,
+    U: PrimInt + Into<Integer>,
+{
+    fn init(r: T, c: T, n: U) -> Self {
+        Self::init(r, c, &n.into())
+    }
+}
+
+impl New<&IntModMat> for IntModMatSpace {
+    fn new(&self, x: &IntModMat) -> IntModMat {
+        let mut res = x.clone();
+        unsafe {
+            flint_sys::fmpz_mod_mat::_fmpz_mod_mat_set_mod(res.as_mut_ptr(), self.as_ptr());
+            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: res.data }
+        }
+    }
+}
+
+impl New<IntModMat> for IntModMatSpace {
+    #[inline]
+    fn new(&self, x: IntModMat) -> IntModMat {
+        self.new(&x)
+    }
+}
+
+impl New<&IntMat> for IntModMatSpace {
+    #[inline]
+    fn new(&self, x: &IntMat) -> IntModMat {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(
+                z.as_mut_ptr(), 
+                self.rows, 
+                self.cols, 
+                self.as_ptr()
+            );
+            let mut z = z.assume_init();
+            z.mat[0] = x.data;
+            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z }
+        }
+    }
+}
+
+impl New<IntMat> for IntModMatSpace {
+    #[inline]
+    fn new(&self, x: IntMat) -> IntModMat {
+        self.new(&x)
+    }
+}
+
+impl<'a, T> New<&'a [Vec<T>]> for IntModMatSpace where
+    &'a [Vec<T>]: Into<IntMat>,
+{
+    #[inline]
+    fn new(&self, x: &'a [Vec<T>]) -> IntModMat {
+        self.new(&x.into())
+
+    }
+}
+
 impl IntModMatSpace {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
@@ -100,15 +180,16 @@ impl IntModMatSpace {
         &self.ctx.0
     }
 
+    /*
     /// Construct the ring of polynomials with coefficients integers mod `n`.
     pub fn init(rows: c_long, cols: c_long, n: &Integer) -> Self {
-        IntModMatSpace { rows: rows, cols: cols, ctx: Arc::new(IntModMatCtx(n.data)) }
+        IntModMatSpace { rows: rows, cols: cols, ctx: Arc::new(FmpzModMatCtx(n.data)) }
     }
 
     /// Create a new polynomial over integers mod `n`.
     pub fn new<T: Into<IntModMat>>(&self, x: T) -> IntModMat {
         x.into()
-    }
+    }*/
 
     pub fn modulus(&self) -> Integer {
         Integer { ctx: (), extra: (), data: self.ctx.0 }
@@ -178,7 +259,7 @@ impl IntModMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
-            IntModMat { ctx: Arc::new(IntModMatCtx(n.data)), extra: (), data: z.assume_init() }
+            IntModMat { ctx: Arc::new(FmpzModMatCtx(n.data)), extra: (), data: z.assume_init() }
         }
     }
 
@@ -189,7 +270,7 @@ impl IntModMat {
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
-            IntModMat { ctx: Arc::new(IntModMatCtx(n.data)), extra: (), data: z.assume_init() }
+            IntModMat { ctx: Arc::new(FmpzModMatCtx(n.data)), extra: (), data: z.assume_init() }
         }
     }
 

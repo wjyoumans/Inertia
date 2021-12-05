@@ -22,9 +22,7 @@ use std::ops::*;
 use libc::{c_long, c_ulong};
 use rug::ops::*;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::rational::src::Rational;
+use crate::*;
 
 impl_cmp_unsafe! {
     eq

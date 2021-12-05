@@ -17,46 +17,23 @@
 
 
 use std::ffi::{CStr, CString};
+use std::sync::Arc;
 
 use flint_sys::fmpq_poly::fmpq_poly_struct;
 use libc::{c_long, c_ulong};
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::rational::src::{Rational, RationalField};
-use crate::intpol::src::IntPol;
+use crate::*;
 
 // RatPol //
 
-#[derive(Default, Debug, Hash, Clone, Copy)]
-pub struct RatPolRing {}
-
-impl Init for RatPolRing {
-    #[inline]
-    fn init() -> Self {
-        RatPolRing {}
-    }
-}
-
-impl New<&RatPol> for RatPolRing {
-    #[inline]
-    fn new(&self, x: &RatPol) -> RatPol {
-        x.clone()
-    }
-}
-
-impl<T> New<T> for RatPolRing where 
-    T: Into<RatPol>
-{
-    #[inline]
-    fn new(&self, x: T) -> RatPol {
-        x.into()
-    }
+#[derive(Default, Debug, Hash, Clone)]
+pub struct RatPolRing {
+    pub x: Arc<String>,
 }
 
 impl Parent for RatPolRing {
     type Data = ();
-    type Extra = ();
+    type Extra = Arc<String>;
     type Element = RatPol;
 }
 
@@ -83,6 +60,30 @@ impl MultiplicativeGroup for RatPolRing {}
 impl Ring for RatPolRing {}
 
 impl PolynomialRing<RationalField> for RatPolRing {}
+
+impl Init1<&str> for RatPolRing {
+    #[inline]
+    fn init(x: &str) -> Self {
+        RatPolRing { x: Arc::new(x.to_owned()) }
+    }
+}
+
+impl New<&RatPol> for RatPolRing {
+    #[inline]
+    fn new(&self, x: &RatPol) -> RatPol {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for RatPolRing where 
+    T: Into<RatPol>
+{
+    #[inline]
+    fn new(&self, x: T) -> RatPol {
+        x.into()
+    }
+}
+
 
 // RatPol //
 
@@ -142,8 +143,8 @@ impl RatPol {
     }
     
     #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
+    pub fn get_str_pretty(&self) -> String {
+        let v = CString::new((*self.extra).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpq_poly::fmpq_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {

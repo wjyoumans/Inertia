@@ -21,10 +21,7 @@ use std::mem::MaybeUninit;
 use flint_sys::fmpq_mat::fmpq_mat_struct;
 use libc::c_long;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::intmat::src::IntMat;
-use crate::rational::src::Rational;
+use crate::*;
 
 
 /// The vector space of `rows` by `cols` [Rational] matrices.
@@ -32,20 +29,6 @@ use crate::rational::src::Rational;
 pub struct RatMatSpace {
     rows: c_long,
     cols: c_long,
-}
-
-impl Init2<c_long, c_long> for RatMatSpace {
-    fn init(m: c_long, n: c_long) -> Self {
-        RatMatSpace { rows: m, cols: n}
-    }
-}
-
-impl<T> New<T> for RatMatSpace where
-    T: Into<RatMat>
-{
-    fn new(&self, x: T) -> RatMat {
-        x.into()
-    }
 }
 
 impl Parent for RatMatSpace {
@@ -75,6 +58,35 @@ impl Module for RatMatSpace {}
 impl VectorSpace for RatMatSpace {}
 
 impl MatrixSpace for RatMatSpace {}
+
+impl<T> Init2<T, T> for RatMatSpace where 
+    T: TryInto<c_long>,
+{
+    fn init(r: T, c: T) -> Self {
+        match r.try_into() {
+            Ok(rr) =>
+                match c.try_into() {
+                    Ok(cc) => RatMatSpace { rows: rr, cols: cc},
+                    Err(_) => panic!("Input cannot be converted into a signed long!"),
+                },
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
+    }
+}
+
+impl New<&RatMat> for RatMatSpace {
+    fn new(&self, x: &RatMat) -> RatMat {
+        x.clone()
+    }
+}
+
+impl<T> New<T> for RatMatSpace where
+    T: Into<RatMat>
+{
+    fn new(&self, x: T) -> RatMat {
+        x.into()
+    }
+}
 
 /// A matrix of arbitrary precision [Rationals][Rational]. The field `data` is a FLINT
 /// [fmpq_mat_struct][flint_sys::fmpq_mat::fmpq_mat_struct].
