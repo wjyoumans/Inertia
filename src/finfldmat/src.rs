@@ -24,9 +24,7 @@ use flint_sys::fq_default::fq_default_ctx_struct;
 use flint_sys::fq_default_mat::fq_default_mat_struct;
 use libc::c_long;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::finfld::src::{FqCtx, FinFldElem, FiniteField};
+use crate::*;
 
 
 /// The vector space of matrices with entries in a finite field.
@@ -38,6 +36,7 @@ pub struct FinFldMatSpace {
 
 impl Parent for FinFldMatSpace {
     type Data = Arc<FqCtx>;
+    type Extra = ();
     type Element = FinFldMat;
 }
 
@@ -53,7 +52,7 @@ impl Additive for FinFldMatSpace {
                 self.as_ptr()
             );
             flint_sys::fq_default_mat::fq_default_mat_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldMat { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -70,7 +69,7 @@ impl Multiplicative for FinFldMatSpace {
                 self.as_ptr()
             );
             flint_sys::fq_default_mat::fq_default_mat_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldMat { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -83,31 +82,97 @@ impl VectorSpace for FinFldMatSpace {}
 
 impl MatrixSpace for FinFldMatSpace {}
 
+impl<T> Init5<T, T, &Integer, T, &str> for FinFldMatSpace where
+    T: TryInto<c_long>
+{
+    fn init(r: T, c: T, p: &Integer, k: T, var: &str) -> FinFldMatSpace {
+        let ff = FiniteField::init(p, k, var);
+        match r.try_into() {
+            Ok(rr) => 
+                match c.try_into() {
+                    Ok(cc) => 
+                        FinFldMatSpace { 
+                            rows: rr, 
+                            cols: cc, 
+                            ctx: Arc::clone(&ff.ctx)
+                        },
+                    Err(_) => panic!("Input cannot be converted into a signed long!"),
+                },
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
+    }
+}
+
+impl<T, U> Init5<T, T, U, T, &str> for FinFldMatSpace where
+    T: TryInto<c_long>,
+    U : Into<Integer>,
+{
+    #[inline]
+    fn init(r: T, c: T, p: U, k: T, var: &str) -> FinFldMatSpace {
+        Self::init(r, c, &p.into(), k, var)
+    }
+}
+
+impl<'a, T> New<&'a [Vec<T>]> for FinFldMatSpace where
+    &'a [Vec<T>]: Into<IntMat>,
+{
+    #[inline]
+    fn new(&self, x: &'a [Vec<T>]) -> FinFldMat {
+        self.new(x.into())
+
+    }
+}
+
+impl New<&IntMat> for FinFldMatSpace {
+    #[inline]
+    fn new(&self, x: &IntMat) -> FinFldMat {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default_mat::fq_default_mat_set_fmpz_mat(
+                z.as_mut_ptr(),
+                x.as_ptr(),
+                self.as_ptr()
+            );
+            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
+}
+
+impl New<IntMat> for FinFldMatSpace {
+    #[inline]
+    fn new(&self, x: IntMat) -> FinFldMat {
+        self.new(&x)
+    }
+}
+
+impl New<&IntModMat> for FinFldMatSpace {
+    #[inline]
+    fn new(&self, x: &IntModMat) -> FinFldMat {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default_mat::fq_default_mat_set_fmpz_mod_mat(
+                z.as_mut_ptr(),
+                x.as_ptr(),
+                self.as_ptr()
+            );
+            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
+}
+
+impl New<IntModMat> for FinFldMatSpace {
+    #[inline]
+    fn new(&self, x: IntModMat) -> FinFldMat {
+        self.new(&x)
+    }
+}
+
 impl FinFldMatSpace {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_default_ctx_struct {
         &self.ctx.0
-    }
-
-    /// Construct the ring of polynomials with coefficients integers mod `n`.
-    pub fn init(rows: c_long, cols: c_long, p: &Integer, k: c_long) -> Self {
-        assert!(p.is_prime());
-        assert!(k > 0);
-    
-        let var = CString::new("o").unwrap();
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default::fq_default_ctx_init(z.as_mut_ptr(), p.as_ptr(), k, var.as_ptr());
-            FinFldMatSpace { rows: rows, cols: cols, ctx: Arc::new(FqCtx(z.assume_init())) }
-        }
-    }
-
-    /// Create a new polynomial over integers mod `n`.
-    #[inline]
-    pub fn new<T: Into<FinFldMat>>(&self, x: T) -> FinFldMat {
-        x.into()
     }
 
     /*
@@ -177,6 +242,7 @@ impl FinFldMat {
         Integer { ctx: (), data: self.ctx.0 }
     }*/
 
+    /*
     /// Return an `r` by `c` zero matrix with entries in the finite field with `p^k` elements.
     #[inline]
     pub fn zero(r: c_long, c: c_long, p: &Integer, k: c_long) -> FinFldMat {
@@ -199,7 +265,7 @@ impl FinFldMat {
             flint_sys::fq_default_mat::fq_default_mat_one(z.as_mut_ptr(), ff.as_ptr());
             FinFldMat { ctx: Arc::clone(&ff.ctx), data: z.assume_init() }
         }
-    }
+    }*/
 
     /// Return the number of rows of a matrix with entries in a finite field.
     #[inline]

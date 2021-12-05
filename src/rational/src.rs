@@ -52,6 +52,7 @@ impl<T> New<T> for RationalField where
 
 impl Parent for RationalField {
     type Data = ();
+    type Extra = ();
     type Element = Rational;
 }
 
@@ -132,6 +133,7 @@ impl Rational {
     pub fn numerator(&self) -> Integer {
         Integer {
             ctx: (),
+            extra: (),
             data: self.data.num
         }
     }
@@ -142,6 +144,7 @@ impl Rational {
     pub fn denominator(&self) -> Integer {
         Integer {
             ctx: (),
+            extra: (),
             data: self.data.den
         }
     }

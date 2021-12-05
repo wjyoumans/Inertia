@@ -34,7 +34,7 @@ impl Clone for PadicElem {
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            PadicElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

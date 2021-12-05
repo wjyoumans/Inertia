@@ -28,7 +28,7 @@ impl Clone for IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init_set(z.as_mut_ptr(), &self.data);
-            IntMat { ctx: (), data: z.assume_init() }
+            IntMat { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }

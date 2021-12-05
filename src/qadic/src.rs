@@ -44,6 +44,7 @@ pub struct QadicField {
 
 impl Parent for QadicField {
     type Data = Arc<QadicCtx>;
+    type Extra = ();
     type Element = QadicElem;
 }
 
@@ -54,7 +55,7 @@ impl Additive for QadicField {
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
             flint_sys::qadic::qadic_zero(z.as_mut_ptr());
-            QadicElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -66,7 +67,7 @@ impl Multiplicative for QadicField {
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
             flint_sys::qadic::qadic_one(z.as_mut_ptr());
-            QadicElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

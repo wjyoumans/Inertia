@@ -29,7 +29,7 @@ impl Clone for IntModMat {
         let mut z = MaybeUninit::uninit();
         unsafe { 
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init_set(z.as_mut_ptr(), self.as_ptr());
-            IntModMat { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

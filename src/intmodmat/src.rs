@@ -46,6 +46,7 @@ pub struct IntModMatSpace {
 
 impl Parent for IntModMatSpace {
     type Data = Arc<IntModMatCtx>;
+    type Extra = ();
     type Element = IntModMat;
 }
 
@@ -61,7 +62,7 @@ impl Additive for IntModMatSpace {
                 self.as_ptr()
             );
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_zero(z.as_mut_ptr());
-            IntModMat { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -78,7 +79,7 @@ impl Multiplicative for IntModMatSpace {
                 self.as_ptr()
             );
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
-            IntModMat { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -110,7 +111,7 @@ impl IntModMatSpace {
     }
 
     pub fn modulus(&self) -> Integer {
-        Integer { ctx: (), data: self.ctx.0 }
+        Integer { ctx: (), extra: (), data: self.ctx.0 }
     }
 }
 
@@ -168,7 +169,7 @@ impl IntModMat {
    
     /// Return the modulus `n` of a matrix with entries in integers mod `n`.
     pub fn modulus(&self) -> Integer {
-        Integer { ctx: (), data: self.ctx.0 }
+        Integer { ctx: (), extra: (), data: self.ctx.0 }
     }
 
     /// Return an `r` by `c` zero matrix with entries in integers mod `n`.
@@ -177,7 +178,7 @@ impl IntModMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
-            IntModMat { ctx: Arc::new(IntModMatCtx(n.data)), data: z.assume_init() }
+            IntModMat { ctx: Arc::new(IntModMatCtx(n.data)), extra: (), data: z.assume_init() }
         }
     }
 
@@ -188,7 +189,7 @@ impl IntModMat {
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
-            IntModMat { ctx: Arc::new(IntModMatCtx(n.data)), data: z.assume_init() }
+            IntModMat { ctx: Arc::new(IntModMatCtx(n.data)), extra: (), data: z.assume_init() }
         }
     }
 

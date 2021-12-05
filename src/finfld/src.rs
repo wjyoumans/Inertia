@@ -44,6 +44,7 @@ pub struct FiniteField {
 
 impl Parent for FiniteField {
     type Data = Arc<FqCtx>;
+    type Extra = ();
     type Element = FinFldElem;
 }
 
@@ -54,7 +55,7 @@ impl Additive for FiniteField {
         unsafe {
             flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
             flint_sys::fq_default::fq_default_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -66,7 +67,7 @@ impl Multiplicative for FiniteField {
         unsafe {
             flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
             flint_sys::fq_default::fq_default_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -133,7 +134,7 @@ macro_rules! impl_new {
                         x as $cast,
                         self.as_ptr()
                     );
-                    FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }
@@ -153,7 +154,7 @@ macro_rules! impl_new {
                         x.as_ptr(),
                         self.as_ptr()
                     );
-                    FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }

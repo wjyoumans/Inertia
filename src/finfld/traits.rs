@@ -34,7 +34,7 @@ impl Clone for FinFldElem {
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

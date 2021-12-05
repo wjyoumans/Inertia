@@ -33,6 +33,44 @@ pub struct ComplexField {
     pub ctx: <Self as Parent>::Data,
 }
 
+impl Parent for ComplexField {
+    type Data = Arc<RwLock<c_long>>;
+    type Extra = ();
+    type Element = Complex;
+}
+
+impl Additive for ComplexField {
+    #[inline]
+    fn zero(&self) -> Complex {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            arb_sys::acb::acb_init(z.as_mut_ptr());
+            arb_sys::acb::acb_zero(z.as_mut_ptr());
+            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
+}
+
+impl Multiplicative for ComplexField {
+    #[inline]
+    fn one(&self) -> Complex {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            arb_sys::acb::acb_init(z.as_mut_ptr());
+            arb_sys::acb::acb_one(z.as_mut_ptr());
+            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
+}
+
+impl AdditiveGroup for ComplexField {}
+
+impl MultiplicativeGroup for ComplexField {}
+
+impl Ring for ComplexField {}
+
+impl Field for ComplexField {}
+
 impl<T> Init1<T> for ComplexField where
     T: TryInto<c_long>
 {
@@ -60,7 +98,7 @@ macro_rules! impl_new_arr {
                         x[0] as $cast,
                         x[1] as $cast
                     );
-                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }
@@ -80,7 +118,7 @@ macro_rules! impl_new_arr {
                         x[0].as_ptr(),
                         x[1].as_ptr()
                     );
-                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }
@@ -100,7 +138,7 @@ macro_rules! impl_new_arr {
                         Integer::from(x[0]).as_ptr(),
                         Integer::from(x[1]).as_ptr()
                     );
-                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }
@@ -155,7 +193,7 @@ macro_rules! impl_new {
                         z.as_mut_ptr(), 
                         x as $cast,
                     );
-                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }
@@ -174,7 +212,7 @@ macro_rules! impl_new {
                         z.as_mut_ptr(), 
                         x.as_ptr(),
                     );
-                    Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+                    Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
                 }        
             }
         }
@@ -220,7 +258,7 @@ impl New<&Rational> for ComplexField {
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
             arb_sys::acb::acb_set_fmpq(z.as_mut_ptr(), x.as_ptr(), self.precision());
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -231,43 +269,6 @@ impl New<Rational> for ComplexField {
         self.new(&x)
     }
 }
-
-impl Parent for ComplexField {
-    type Data = Arc<RwLock<c_long>>;
-    type Element = Complex;
-}
-
-impl Additive for ComplexField {
-    #[inline]
-    fn zero(&self) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_zero(z.as_mut_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
-    }
-}
-
-impl Multiplicative for ComplexField {
-    #[inline]
-    fn one(&self) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_one(z.as_mut_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
-        }
-    }
-}
-
-impl AdditiveGroup for ComplexField {}
-
-impl MultiplicativeGroup for ComplexField {}
-
-impl Ring for ComplexField {}
-
-impl Field for ComplexField {}
 
 impl ComplexField {
     /// Return the default working precision of the complex field.

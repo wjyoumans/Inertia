@@ -59,6 +59,7 @@ impl<T> New<T> for IntegerRing where
 
 impl Parent for IntegerRing {
     type Data = ();
+    type Extra = ();
     type Element = Integer;
 }
 
@@ -1022,7 +1023,7 @@ impl Factorizable for Integer {
             
             let mut hashmap = FxHashMap::<Integer, Integer>::default();
             for (p, k) in base.iter().zip(exp) {
-                hashmap.insert(Integer { ctx: (), data: p.clone() }, Integer::from(k));
+                hashmap.insert(Integer { ctx: (), extra: (), data: p.clone() }, Integer::from(k));
             }
             
             flint_sys::fmpz_factor::fmpz_factor_clear(&mut fac);

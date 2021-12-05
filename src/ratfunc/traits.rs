@@ -30,6 +30,7 @@ use crate::ratfunc::src::{RatFunc, RatFuncField};
 
 impl Parent for RatFuncField {
     type Data = ();
+    type Extra = ();
     type Element = RatFunc;
 }
 
@@ -46,7 +47,7 @@ impl Clone for RatFunc {
         unsafe { 
             flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
             flint_sys::fmpz_poly_q::fmpz_poly_q_set(z.as_mut_ptr(), self.as_ptr()); 
-            RatFunc { ctx: (), data: z.assume_init() }
+            RatFunc { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -56,7 +57,7 @@ impl Default for RatFunc {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
-            RatFunc { ctx: (), data: z.assume_init() }
+            RatFunc { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }

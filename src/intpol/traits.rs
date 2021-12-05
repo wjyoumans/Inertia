@@ -28,7 +28,7 @@ impl Clone for IntPol {
         unsafe { 
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
             flint_sys::fmpz_poly::fmpz_poly_set(z.as_mut_ptr(), &self.data); 
-            IntPol { ctx: (), data: z.assume_init() }
+            IntPol { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -38,7 +38,7 @@ impl Default for IntPol {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPol { ctx: (), data: z.assume_init() }
+            IntPol { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }

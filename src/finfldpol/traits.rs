@@ -35,7 +35,11 @@ impl Clone for FinFldPol {
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            FinFldPol { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.x), data: z.assume_init() }
+            FinFldPol { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: Arc::clone(&self.extra), 
+                data: z.assume_init() 
+            }
         }
     }
 }

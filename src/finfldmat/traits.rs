@@ -33,7 +33,7 @@ impl Clone for FinFldMat {
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             );
-            FinFldMat { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

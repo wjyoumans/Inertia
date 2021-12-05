@@ -36,6 +36,7 @@ pub struct FinFldPolRing {
 
 impl Parent for FinFldPolRing {
     type Data = Arc<FqCtx>;
+    type Extra = Arc<String>;
     type Element = FinFldPol;
 }
 
@@ -46,7 +47,7 @@ impl Additive for FinFldPolRing {
         unsafe {
             flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
             flint_sys::fq_default_poly::fq_default_poly_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldPol { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.x), data: z.assume_init() }
+            FinFldPol { ctx: Arc::clone(&self.ctx), extra: Arc::clone(&self.x), data: z.assume_init() }
         }
     }
 }
@@ -58,7 +59,7 @@ impl Multiplicative for FinFldPolRing {
         unsafe {
             flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
             flint_sys::fq_default_poly::fq_default_poly_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldPol { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.x), data: z.assume_init() }
+            FinFldPol { ctx: Arc::clone(&self.ctx), extra: Arc::clone(&self.x), data: z.assume_init() }
         }
     }
 }
@@ -125,7 +126,7 @@ macro_rules! impl_new {
                     );
                     FinFldPol { 
                         ctx: Arc::clone(&self.ctx), 
-                        x: Arc::clone(&self.x), 
+                        extra: Arc::clone(&self.x), 
                         data: z.assume_init() 
                     }
                 }        
@@ -151,7 +152,7 @@ macro_rules! impl_new {
                     );
                     FinFldPol { 
                         ctx: Arc::clone(&self.ctx), 
-                        x: Arc::clone(&self.x), 
+                        extra: Arc::clone(&self.x), 
                         data: z.assume_init() 
                     }
                 }        
@@ -182,7 +183,7 @@ macro_rules! impl_new {
                     );
                     FinFldPol { 
                         ctx: Arc::clone(&self.ctx), 
-                        x: Arc::clone(&self.x), 
+                        extra: Arc::clone(&self.x), 
                         data: z.assume_init() 
                     }
                 }        
@@ -239,7 +240,7 @@ impl FinFldPolRing {
 }
 
 /// An element of a finite field.
-pub type FinFldPol = Poly<FinFldPolRing>;
+pub type FinFldPol = Elem<FinFldPolRing>;
 
 impl Element for FinFldPol {
     type Data = fq_poly_struct;
@@ -313,7 +314,7 @@ impl FinFldPol {
     /// Return a pretty-printed [String] representation of a polynomial over a finite field.
     #[inline]
     pub fn get_str_pretty(&self) -> String {
-        let x = CString::new((*self.x).clone()).unwrap();
+        let x = CString::new((*self.extra).clone()).unwrap();
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
                 self.as_ptr(), 
@@ -349,7 +350,7 @@ impl FinFldPol {
                 i as i64,
                 self.ctx_as_ptr()
             );
-            FinFldElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
     

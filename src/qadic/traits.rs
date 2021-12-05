@@ -34,7 +34,7 @@ impl Clone for QadicElem {
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            QadicElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

@@ -42,6 +42,7 @@ pub struct IntModRing {
 
 impl Parent for IntModRing {
     type Data = Arc<FmpzModCtx>;
+    type Extra = ();
     type Element = IntMod;
 }
 
@@ -49,7 +50,7 @@ impl Additive for IntModRing {
     #[inline]
     fn zero(&self) -> IntMod {
         let z = Integer::default();
-        IntMod { ctx: Arc::clone(&self.ctx), data: z.data }
+        IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: z.data }
     }
 }
 
@@ -57,7 +58,7 @@ impl Multiplicative for IntModRing {
     #[inline]
     fn one(&self) -> IntMod {
         let z = Integer::from(1);
-        IntMod { ctx: Arc::clone(&self.ctx), data: z.data }
+        IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: z.data }
     }
 }
 
@@ -93,7 +94,7 @@ impl New<&Integer> for IntModRing {
     /// Construct an element of the ring of integers mod `n`.
     #[inline]
     fn new(&self, n: &Integer) -> IntMod {
-        IntMod { ctx: Arc::clone(&self.ctx), data: n.data }
+        IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: n.data }
     }
 }
 

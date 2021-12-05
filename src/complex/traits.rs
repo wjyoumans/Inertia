@@ -35,7 +35,7 @@ impl Clone for Complex {
         unsafe { 
             arb_sys::acb::acb_init(z.as_mut_ptr());
             arb_sys::acb::acb_set(z.as_mut_ptr(), self.as_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -45,7 +45,11 @@ impl Default for Complex {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
-            Complex { ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), data: z.assume_init() }
+            Complex { 
+                ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), 
+                extra: (), 
+                data: z.assume_init() 
+            }
         }
     }
 }

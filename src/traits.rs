@@ -129,6 +129,10 @@ pub trait Init4<A, B, C, D>: Parent {
     fn init(a: A, b: B, c: C, d: D) -> Self;
 }
 
+pub trait Init5<A, B, C, D, E>: Parent {
+    fn init(a: A, b: B, c: C, d: D, e: E) -> Self;
+}
+
 // Traits for implementing different Element constructors for Parents
 
 pub trait New<T>: Parent {
@@ -138,6 +142,7 @@ pub trait New<T>: Parent {
 /// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
     type Data;
+    type Extra;
     type Element: Element;
 }
 
@@ -241,6 +246,7 @@ pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 /// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are dropped.
 pub struct Elem<T: Parent> {
     pub ctx: T::Data,
+    pub extra: T::Extra,
     pub data: <T::Element as Element>::Data,
 }
 
@@ -249,22 +255,6 @@ impl<T: Parent> Drop for Elem<T> {
 }
 
 impl<T: Parent> fmt::Debug for Elem<T> {
-    default fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Debug not implemented.")
-    }
-}
-
-pub struct Poly<T: Parent> {
-    pub ctx: T::Data,
-    pub x: Arc<String>,
-    pub data: <T::Element as Element>::Data,
-}
-
-impl<T: Parent> Drop for Poly<T> {
-    default fn drop(&mut self) {}
-}
-
-impl<T: Parent> fmt::Debug for Poly<T> {
     default fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Debug not implemented.")
     }

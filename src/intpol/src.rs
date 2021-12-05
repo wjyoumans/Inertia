@@ -60,6 +60,7 @@ impl<T> New<T> for IntPolRing where
 
 impl Parent for IntPolRing {
     type Data = ();
+    type Extra = ();
     type Element = IntPol;
 }
 

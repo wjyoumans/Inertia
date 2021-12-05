@@ -35,7 +35,7 @@ impl Clone for Real {
         unsafe { 
             arb_sys::arb::arb_init(z.as_mut_ptr());
             arb_sys::arb::arb_set(z.as_mut_ptr(), self.as_ptr());
-            Real { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -45,7 +45,11 @@ impl Default for Real {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
-            Real { ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), data: z.assume_init() }
+            Real { 
+                ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), 
+                extra: (),
+                data: z.assume_init() 
+            }
         }
     }
 }

@@ -50,6 +50,7 @@ impl<T> New<T> for RatMatSpace where
 
 impl Parent for RatMatSpace {
     type Data = ();
+    type Extra = ();
     type Element = RatMat;
 }
 
@@ -274,7 +275,7 @@ impl RatMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, n);
-            RatMat { ctx: (), data: z.assume_init() }
+            RatMat { ctx: (), extra: (), data: z.assume_init() }
         }
     }
     
@@ -285,7 +286,7 @@ impl RatMat {
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpq_mat::fmpq_mat_one(z.as_mut_ptr());
-            RatMat { ctx: (), data: z.assume_init() }
+            RatMat { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 

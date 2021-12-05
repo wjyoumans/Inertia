@@ -56,6 +56,7 @@ impl<T> New<T> for RatPolRing where
 
 impl Parent for RatPolRing {
     type Data = ();
+    type Extra = ();
     type Element = RatPol;
 }
 

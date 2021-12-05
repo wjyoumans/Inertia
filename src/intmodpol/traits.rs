@@ -35,7 +35,7 @@ impl Clone for IntModPol {
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             ); 
-            IntModPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntModPol { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

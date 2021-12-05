@@ -37,7 +37,7 @@ impl Default for Rational {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
-            Rational { ctx: (), data: z.assume_init() }
+            Rational { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }

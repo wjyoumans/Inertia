@@ -22,10 +22,7 @@ use std::sync::Arc;
 use flint_sys::fmpz_mod_poly::fmpz_mod_poly_struct;
 use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::intmod::src::{FmpzModCtx, IntMod, IntModRing};
-use crate::intpol::src::IntPol;
+use crate::*;
 
 
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
@@ -35,6 +32,7 @@ pub struct IntModPolRing {
 
 impl Parent for IntModPolRing {
     type Data = Arc<FmpzModCtx>;
+    type Extra = ();
     type Element = IntModPol;
 }
 
@@ -44,7 +42,7 @@ impl Additive for IntModPolRing {
         let mut z = MaybeUninit::uninit();
         unsafe { 
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_zero(z.as_mut_ptr(), self.as_ptr()); 
-            IntModPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntModPol { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -55,7 +53,7 @@ impl Multiplicative for IntModPolRing {
         let mut z = MaybeUninit::uninit();
         unsafe { 
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_one(z.as_mut_ptr(), self.as_ptr()); 
-            IntModPol { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntModPol { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

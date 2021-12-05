@@ -29,7 +29,7 @@ impl Clone for RatPol {
         unsafe { 
             flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
             flint_sys::fmpq_poly::fmpq_poly_set(z.as_mut_ptr(), &self.data); 
-            RatPol { ctx: (), data: z.assume_init() }
+            RatPol { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -39,7 +39,7 @@ impl Default for RatPol {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
-            RatPol { ctx: (), data: z.assume_init() }
+            RatPol { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }

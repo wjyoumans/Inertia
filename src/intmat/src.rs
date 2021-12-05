@@ -51,6 +51,7 @@ impl<T> New<T> for IntMatSpace where
 
 impl Parent for IntMatSpace {
     type Data = ();
+    type Extra = ();
     type Element = IntMat;
 }
 
@@ -230,7 +231,7 @@ impl IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
-            IntMat { ctx: (), data: z.assume_init() }
+            IntMat { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 
@@ -241,7 +242,7 @@ impl IntMat {
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpz_mat::fmpz_mat_one(z.as_mut_ptr());
-            IntMat { ctx: (), data: z.assume_init() }
+            IntMat { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 

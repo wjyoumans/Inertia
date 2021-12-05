@@ -44,6 +44,7 @@ pub struct PadicField {
 
 impl Parent for PadicField {
     type Data = Arc<PadicCtx>;
+    type Extra = ();
     type Element = PadicElem;
 }
 
@@ -54,7 +55,7 @@ impl Additive for PadicField {
         unsafe {
             flint_sys::padic::padic_init(z.as_mut_ptr());
             flint_sys::padic::padic_zero(z.as_mut_ptr());
-            PadicElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -66,7 +67,7 @@ impl Multiplicative for PadicField {
         unsafe {
             flint_sys::padic::padic_init(z.as_mut_ptr());
             flint_sys::padic::padic_one(z.as_mut_ptr());
-            PadicElem { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }

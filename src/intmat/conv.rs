@@ -18,9 +18,7 @@
 
 use libc::c_long;
 
-use crate::integer::src::Integer;
-use crate::intmat::src::IntMat;
-
+use crate::*;
 
 impl_from! {
     String, IntMat
@@ -48,6 +46,27 @@ impl_from! {
     }
 }
 
+impl From<&IntModMat> for IntMat {
+    fn from(x: &IntModMat) -> IntMat {
+        IntMat { ctx: (), extra: (), data: x.data.mat[0].clone() }
+    }
+}
+
+impl<'a, T> From<&'a [Vec<T>]> for IntMat where &'a T: Into<Integer> {
+    fn from(mat: &'a [Vec<T>]) -> IntMat {
+        let m = mat.len() as c_long;
+        let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+
+        let mut res = IntMat::zero(m, n);
+        for (i, row) in mat.iter().enumerate() {
+            for (j, x) in row.iter().enumerate() {
+                res.set_entry(i, j, &x.into());
+            }
+        }
+        res
+    }
+}
+
 impl From<&IntMat> for Vec<Integer> {
     fn from(x: &IntMat) -> Vec<Integer> {
         let r = x.nrows() as usize;
@@ -66,21 +85,6 @@ impl From<&IntMat> for Vec<Integer> {
 impl From<IntMat> for Vec<Integer> {
     fn from(x: IntMat) -> Vec<Integer> {
         Vec::from(&x)
-    }
-}
-
-impl<'a, T> From<&'a [Vec<T>]> for IntMat where &'a T: Into<Integer> {
-    fn from(mat: &'a [Vec<T>]) -> IntMat {
-        let m = mat.len() as c_long;
-        let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
-
-        let mut res = IntMat::zero(m, n);
-        for (i, row) in mat.iter().enumerate() {
-            for (j, x) in row.iter().enumerate() {
-                res.set_entry(i, j, &x.into());
-            }
-        }
-        res
     }
 }
 

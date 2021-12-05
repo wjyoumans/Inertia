@@ -40,6 +40,7 @@ impl Drop for NfCtx {
 
 impl Parent for NumberField {
     type Data = Arc<NfCtx>;
+    type Extra = ();
     type Element = NumFldElem;
 }
 
@@ -52,7 +53,7 @@ impl Element for NumFldElem {
 
 impl Clone for NumFldElem {
     fn clone(&self) -> Self {
-        NumFldElem { ctx: Arc::clone(&self.ctx), data: self.data.clone() }
+        NumFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: self.data.clone() }
     }
 }
 

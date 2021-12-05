@@ -29,7 +29,7 @@ impl Clone for Integer {
         let mut z = MaybeUninit::uninit();
         unsafe { 
             flint_sys::fmpz::fmpz_init_set(z.as_mut_ptr(), &self.data); 
-            Integer { ctx: (), data: z.assume_init() }
+            Integer { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }
@@ -39,7 +39,7 @@ impl Default for Integer {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
-            Integer { ctx: (), data: z.assume_init() }
+            Integer { ctx: (), extra: (), data: z.assume_init() }
         }
     }
 }

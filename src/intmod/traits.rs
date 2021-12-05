@@ -21,8 +21,7 @@ use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::integer::src::Integer;
-use crate::intmod::src::IntMod;
+use crate::*;
 
 
 impl Clone for IntMod {
@@ -35,7 +34,7 @@ impl Clone for IntMod {
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             ); 
-            IntMod { ctx: Arc::clone(&self.ctx), data: z.assume_init() }
+            IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
     }
 }
