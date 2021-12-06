@@ -25,8 +25,7 @@ use flint_sys::qadic::qadic_struct;
 use libc::c_long;
 use num_traits::PrimInt;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
+use crate::*;
 
 
 pub struct QadicCtx(pub qadic_ctx_struct);
@@ -39,7 +38,7 @@ impl Drop for QadicCtx {
 
 /// An unramified extension of the p-adic numbers.
 pub struct QadicField {
-    pub ctx: <Self as Parent>::Data,
+    ctx: <Self as Parent>::Data,
 }
 
 impl Parent for QadicField {
@@ -55,7 +54,11 @@ impl Additive for QadicField {
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
             flint_sys::qadic::qadic_zero(z.as_mut_ptr());
-            QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            QadicElem { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: (), 
+                data: z.assume_init() 
+            }
         }
     }
 }
@@ -67,7 +70,11 @@ impl Multiplicative for QadicField {
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
             flint_sys::qadic::qadic_one(z.as_mut_ptr());
-            QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            QadicElem { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: (), 
+                data: z.assume_init() 
+            }
         }
     }
 }
@@ -79,6 +86,77 @@ impl MultiplicativeGroup for QadicField {}
 impl Ring for QadicField {}
 
 impl Field for QadicField {}
+
+impl<T> Init4<&Integer, T, T, &str> for QadicField where
+    T: TryInto<c_long>
+{
+    fn init(p: &Integer, k: T, deg: T, var: &str) -> Self {
+        match k.try_into() {
+            Ok(kk) => match deg.try_into() {
+                Ok(d) => {
+                    let tmp = CString::new(var).unwrap();
+                    let mut z = MaybeUninit::uninit();
+                    unsafe {
+                        flint_sys::qadic::qadic_ctx_init(
+                            z.as_mut_ptr(), 
+                            p.as_ptr(), 
+                            d,
+                            0,
+                            kk,
+                            tmp.as_ptr(),
+                            PADIC_DEFAULT_PRINT_MODE
+                        );
+                        QadicField { ctx: Arc::new(QadicCtx(z.assume_init())) }
+                    }
+                },
+                Err(_) => panic!("Input cannot be converted into a signed long!"),
+            },
+            Err(_) => panic!("Input cannot be converted into a signed long!"),
+        }
+    }
+}
+
+impl<T, U> Init4<T, U, U, &str> for QadicField where
+    T: Into<Integer>,
+    U: TryInto<c_long>
+{
+    #[inline]
+    fn init(p: T, k: U, deg: U, var: &str) -> Self {
+        Self::init(&p.into(), k, deg, var)
+    }
+}
+
+impl New<&IntPol> for QadicField {
+    fn new(&self, x: &IntPol) -> QadicElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::qadic::qadic_init(z.as_mut_ptr());
+            flint_sys::qadic::qadic_set_fmpz_poly(z.as_mut_ptr(), x.as_ptr(), self.as_ptr());
+            QadicElem { 
+                ctx: Arc::clone(&self.ctx), 
+                extra: (), 
+                data: z.assume_init() 
+            }
+        }
+    }
+}
+
+impl<T> New<T> for QadicField where
+    T: Into<IntPol>,
+{
+    fn new(&self, x: T) -> QadicElem {
+        self.new(&x.into())
+    }
+}
+
+impl QadicField {
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// FLINT via the FFI.
+    #[inline]
+    pub fn as_ptr(&self) -> &qadic_ctx_struct {
+        &self.ctx.0
+    }
+}
 
 /// An element of a q-adic field.
 pub type QadicElem = Elem<QadicField>;

@@ -22,7 +22,7 @@
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::padic::src::PadicElem;
+use crate::*;
 
 impl Clone for PadicElem {
     fn clone(&self) -> Self {

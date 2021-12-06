@@ -50,6 +50,20 @@ impl_from! {
 }
 
 impl_from! {
+    Rational, PadicElem
+    {
+        fn from(x: &PadicElem) -> Rational {
+            let mut res = Rational::default();
+            unsafe {
+                flint_sys::padic::padic_get_fmpq(res.as_mut_ptr(), x.as_ptr(), x.ctx_as_ptr());
+            }
+            res
+        }
+    }
+}
+
+
+impl_from! {
     String, Rational
     {
         fn from(x: &Rational) -> String {

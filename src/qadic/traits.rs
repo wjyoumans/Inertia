@@ -22,7 +22,7 @@
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use crate::qadic::src::QadicElem;
+use crate::*;
 
 impl Clone for QadicElem {
     fn clone(&self) -> Self {

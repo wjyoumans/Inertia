@@ -64,7 +64,14 @@
 
 #![feature(min_specialization)]
 
-const REAL_DEFAULT_PREC: libc::c_long = 10;
+use libc::{c_long, c_uint};
+
+const REAL_DEFAULT_PREC: c_long = 10;
+
+const PADIC_PRINT_TERSE: c_uint = 0;
+const PADIC_PRINT_SERIES: c_uint = 1;
+const PADIC_PRINT_VAL_UNIT: c_uint = 2;
+const PADIC_DEFAULT_PRINT_MODE: c_uint = PADIC_PRINT_TERSE;
 
 #[macro_use]
 pub(crate) mod macros;

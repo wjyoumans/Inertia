@@ -32,6 +32,19 @@ impl_from_unsafe! {
 }
 
 impl_from! {
+    Integer, PadicElem
+    {
+        fn from(x: &PadicElem) -> Integer {
+            let mut res = Integer::default();
+            unsafe {
+                flint_sys::padic::padic_get_fmpz(res.as_mut_ptr(), x.as_ptr(), x.ctx_as_ptr());
+            }
+            res
+        }
+    }
+}
+
+impl_from! {
     Integer, IntMod
     {
         fn from(x: &IntMod) -> Integer {
