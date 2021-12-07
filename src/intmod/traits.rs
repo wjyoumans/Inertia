@@ -39,6 +39,16 @@ impl Clone for IntMod {
     }
 }
 
+impl fmt::Debug for IntMod {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("IntMod")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl fmt::Display for IntMod {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
@@ -54,5 +64,6 @@ impl Drop for IntMod {
 impl Hash for IntMod {
     fn hash<H: Hasher>(&self, state: &mut H) {
         Integer::from(self).hash(state);
+        self.modulus().hash(state);
     }
 }

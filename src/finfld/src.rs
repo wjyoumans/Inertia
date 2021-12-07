@@ -29,6 +29,7 @@ use num_traits::PrimInt;
 use crate::*;
 
 
+#[derive(Debug)]
 pub struct FqCtx(pub fq_ctx_struct);
 
 impl Drop for FqCtx {

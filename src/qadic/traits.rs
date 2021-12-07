@@ -17,7 +17,7 @@
 
 
 //use std::ffi::{CStr, CString};
-//use std::fmt;
+use std::fmt;
 //use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
@@ -36,6 +36,16 @@ impl Clone for QadicElem {
             ); 
             QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+    }
+}
+
+impl fmt::Debug for QadicElem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("QadicElem")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
     }
 }
 

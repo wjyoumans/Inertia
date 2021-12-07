@@ -38,6 +38,17 @@ impl Clone for FinFldMat {
     }
 }
 
+impl fmt::Debug for FinFldMat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("FinFldMat")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
+
 /*
 impl fmt::Display for IntModMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

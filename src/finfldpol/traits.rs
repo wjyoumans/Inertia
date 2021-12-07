@@ -43,6 +43,16 @@ impl Clone for FinFldPol {
     }
 }
 
+impl fmt::Debug for FinFldPol {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("FinFldPol")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &String::from(self))
+            .finish()
+    }
+}
+
 impl fmt::Display for FinFldPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))

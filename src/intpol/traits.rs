@@ -34,6 +34,16 @@ impl Clone for IntPol {
     }
 }
 
+impl fmt::Debug for IntPol {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("IntPol")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl Default for IntPol {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();

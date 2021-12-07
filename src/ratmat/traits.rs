@@ -33,6 +33,16 @@ impl Clone for RatMat {
     }
 }
 
+impl fmt::Debug for RatMat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("RatMat")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl fmt::Display for RatMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))

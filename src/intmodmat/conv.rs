@@ -16,6 +16,7 @@
  */
 
 
+use crate::*;
 
 /*
 impl_from! {
@@ -34,12 +35,13 @@ impl_from! {
         }
     }
 }
+*/
 
 impl_from! {
-    String, IntModPol
+    String, IntModMat
     {
-        fn from(x: &IntModPol) -> String {
-            String::from(IntPol::from(x))
+        fn from(x: &IntModMat) -> String {
+            String::from(x.get_str())
         }
     }
-}*/
+}

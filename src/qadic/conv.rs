@@ -16,3 +16,15 @@
  */
 
 
+use crate::*;
+
+/*
+impl_from! {
+    String, QadicElem
+    {
+        fn from(x: &QadicElem) -> String {
+            x.get_str()
+        }
+    }
+}*/
+

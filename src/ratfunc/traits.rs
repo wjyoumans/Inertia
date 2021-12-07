@@ -52,6 +52,16 @@ impl Clone for RatFunc {
     }
 }
 
+impl fmt::Debug for RatFunc {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("RatFunc")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl Default for RatFunc {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();

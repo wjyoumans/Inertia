@@ -34,12 +34,21 @@ impl Clone for IntModMat {
     }
 }
 
-/*
+impl fmt::Debug for IntModMat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("IntModMat")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl fmt::Display for IntModMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
-}*/
+}
 
 impl Drop for IntModMat {
     fn drop(&mut self) {
@@ -49,9 +58,9 @@ impl Drop for IntModMat {
     }
 }
 
-/*
 impl Hash for IntModMat {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        IntPol::from(self).hash(state);
+        IntMat::from(self).hash(state);
+        self.modulus().hash(state);
     }
-}*/
+}

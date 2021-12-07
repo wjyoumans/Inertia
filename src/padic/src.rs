@@ -28,6 +28,7 @@ use num_traits::PrimInt;
 use crate::*;
 
 
+#[derive(Debug)]
 pub struct PadicCtx(padic_ctx_struct);
 
 impl Drop for PadicCtx {
@@ -244,5 +245,21 @@ impl PadicElem {
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &padic_ctx_struct {
         &self.ctx.0
+    }
+
+    /// Return a [String] representation of a padic number.
+    #[inline]
+    pub fn get_str(&self) -> String {
+        unsafe {
+            let s = flint_sys::padic::padic_get_str(
+                std::ptr::null(), 
+                self.as_ptr(), 
+                self.ctx_as_ptr()
+            );
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
     }
 }

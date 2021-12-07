@@ -20,21 +20,13 @@ use std::convert::TryInto;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fmpz::fmpz;
+use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 use flint_sys::fmpz_mod_mat::fmpz_mod_mat_struct;
 use libc::c_long;
 use num_traits::PrimInt;
 
 use crate::*;
 
-
-pub struct FmpzModMatCtx(fmpz);
-
-impl Drop for FmpzModMatCtx {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz::fmpz_clear(&mut self.0); }
-    }
-}
 
 /// The vector space of matrices with entries integers mod `n`.
 pub struct IntModMatSpace {
@@ -44,7 +36,7 @@ pub struct IntModMatSpace {
 }
 
 impl Parent for IntModMatSpace {
-    type Data = Arc<FmpzModMatCtx>;
+    type Data = Arc<FmpzModCtx>;
     type Extra = ();
     type Element = IntModMat;
 }
@@ -58,7 +50,7 @@ impl Additive for IntModMatSpace {
                 z.as_mut_ptr(), 
                 self.rows, 
                 self.cols, 
-                self.as_ptr()
+                self.modulus().as_ptr()
             );
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_zero(z.as_mut_ptr());
             IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
@@ -75,7 +67,7 @@ impl Multiplicative for IntModMatSpace {
                 z.as_mut_ptr(), 
                 self.rows, 
                 self.cols, 
-                self.as_ptr()
+                self.modulus().as_ptr()
             );
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
             IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
@@ -87,9 +79,16 @@ impl AdditiveGroup for IntModMatSpace {}
 
 impl Module for IntModMatSpace {}
 
-impl VectorSpace for IntModMatSpace {}
+/*
+impl VectorSpace for IntModMatSpace {
+    type BaseRing = IntModRing;
+    fn base_ring(&self) -> IntModRing {
+        IntModRing { ctx: Arc}
+    }
+}
 
 impl MatrixSpace for IntModMatSpace {}
+*/
 
 impl<T> Init3<T, T, &Integer> for IntModMatSpace where 
     T: TryInto<c_long>,
@@ -102,7 +101,7 @@ impl<T> Init3<T, T, &Integer> for IntModMatSpace where
                     Ok(cc) => IntModMatSpace { 
                         rows: rr, 
                         cols: cc, 
-                        ctx: Arc::new(FmpzModMatCtx(n.data))
+                        ctx: Arc::clone(&IntModRing::init(n).ctx)
                     },
                     Err(_) => panic!("Input cannot be converted into a signed long!"),
                 },
@@ -124,7 +123,10 @@ impl New<&IntModMat> for IntModMatSpace {
     fn new(&self, x: &IntModMat) -> IntModMat {
         let mut res = x.clone();
         unsafe {
-            flint_sys::fmpz_mod_mat::_fmpz_mod_mat_set_mod(res.as_mut_ptr(), self.as_ptr());
+            flint_sys::fmpz_mod_mat::_fmpz_mod_mat_set_mod(
+                res.as_mut_ptr(), 
+                self.modulus().as_ptr()
+            );
             IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: res.data }
         }
     }
@@ -146,7 +148,7 @@ impl New<&IntMat> for IntModMatSpace {
                 z.as_mut_ptr(), 
                 self.rows, 
                 self.cols, 
-                self.as_ptr()
+                self.modulus().as_ptr()
             );
             let mut z = z.assume_init();
             z.mat[0] = x.data;
@@ -176,23 +178,18 @@ impl IntModMatSpace {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
-    pub fn as_ptr(&self) -> &fmpz {
+    pub fn as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
 
-    /*
-    /// Construct the ring of polynomials with coefficients integers mod `n`.
-    pub fn init(rows: c_long, cols: c_long, n: &Integer) -> Self {
-        IntModMatSpace { rows: rows, cols: cols, ctx: Arc::new(FmpzModMatCtx(n.data)) }
-    }
-
-    /// Create a new polynomial over integers mod `n`.
-    pub fn new<T: Into<IntModMat>>(&self, x: T) -> IntModMat {
-        x.into()
-    }*/
-
+    /// Return the modulus `n` of the integers mod `n`.
     pub fn modulus(&self) -> Integer {
-        Integer { ctx: (), extra: (), data: self.ctx.0 }
+        let mut res = Integer::default();
+        unsafe { 
+            let n = flint_sys::fmpz_mod::fmpz_mod_ctx_modulus(self.as_ptr()); 
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), n);
+        }
+        res
     }
 }
 
@@ -223,9 +220,44 @@ impl AdditiveGroupElement for IntModMat {}
 
 impl ModuleElement for IntModMat {}
 
-impl VectorSpaceElement for IntModMat {}
+impl VectorSpaceElement for IntModMat {
+    type BaseRingElement = IntMod;
+}
 
-impl MatrixSpaceElement for IntModMat {}
+impl MatrixSpaceElement for IntModMat {
+    /// Return the number of rows of a matrix with entries in integers mod `n`.
+    #[inline]
+    fn nrows(&self) -> c_long {
+        unsafe {
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_nrows(self.as_ptr())
+        }
+    }
+
+    /// Return the number of columns of a matrix with entries in integers mod `n`.
+    #[inline]
+    fn ncols(&self) -> c_long {
+        unsafe {
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_ncols(self.as_ptr())
+        }
+    }
+
+    /// Get the `(i, j)`-th entry of an integer matrix.
+    #[inline]
+    fn get_entry(&self, i: usize, j: usize) -> IntMod {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_get_entry(
+                z.as_mut_ptr(), 
+                self.as_ptr(),
+                i as c_long, 
+                j as c_long
+            );
+            IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() } 
+        }
+    }
+
+}
 
 impl IntModMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -244,13 +276,18 @@ impl IntModMat {
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
-    pub fn ctx_as_ptr(&self) -> &fmpz {
+    pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
    
     /// Return the modulus `n` of a matrix with entries in integers mod `n`.
     pub fn modulus(&self) -> Integer {
-        Integer { ctx: (), extra: (), data: self.ctx.0 }
+        let mut res = Integer::default();
+        unsafe { 
+            let n = flint_sys::fmpz_mod::fmpz_mod_ctx_modulus(self.ctx_as_ptr()); 
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), n);
+        }
+        res
     }
 
     /// Return an `r` by `c` zero matrix with entries in integers mod `n`.
@@ -259,7 +296,11 @@ impl IntModMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
-            IntModMat { ctx: Arc::new(FmpzModMatCtx(n.data)), extra: (), data: z.assume_init() }
+            IntModMat { 
+                ctx: Arc::clone(&IntModRing::init(n).ctx), 
+                extra: (), 
+                data: z.assume_init() 
+            }
         }
     }
 
@@ -270,23 +311,11 @@ impl IntModMat {
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
-            IntModMat { ctx: Arc::new(FmpzModMatCtx(n.data)), extra: (), data: z.assume_init() }
-        }
-    }
-
-    /// Return the number of rows of a matrix with entries in integers mod `n`.
-    #[inline]
-    pub fn nrows(&self) -> c_long {
-        unsafe {
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_nrows(self.as_ptr())
-        }
-    }
-
-    /// Return the number of columns of a matrix with entries in integers mod `n`.
-    #[inline]
-    pub fn ncols(&self) -> c_long {
-        unsafe {
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_ncols(self.as_ptr())
+            IntModMat { 
+                ctx: Arc::clone(&IntModRing::init(n).ctx), 
+                extra: (), 
+                data: z.assume_init() 
+            }
         }
     }
 }

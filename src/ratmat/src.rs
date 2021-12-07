@@ -55,7 +55,12 @@ impl AdditiveGroup for RatMatSpace {}
 
 impl Module for RatMatSpace {}
 
-impl VectorSpace for RatMatSpace {}
+impl VectorSpace for RatMatSpace {
+    type BaseRing = RationalField;
+    fn base_ring(&self) -> RationalField {
+        RationalField {}
+    }
+}
 
 impl MatrixSpace for RatMatSpace {}
 
@@ -115,9 +120,38 @@ impl AdditiveGroupElement for RatMat {}
 
 impl ModuleElement for RatMat {}
 
-impl VectorSpaceElement for RatMat {}
+impl VectorSpaceElement for RatMat {
+    type BaseRingElement = Rational;
+}
 
-impl MatrixSpaceElement for RatMat {}
+impl MatrixSpaceElement for RatMat {
+    /// Return the number of rows of a rational matrix.
+    #[inline]
+    fn nrows(&self) -> c_long {
+        unsafe {
+            flint_sys::fmpq_mat::fmpq_mat_nrows(self.as_ptr())
+        }
+    }
+
+    /// Return the number of columns of an rational matrix.
+    #[inline]
+    fn ncols(&self) -> c_long {
+        unsafe {
+            flint_sys::fmpq_mat::fmpq_mat_ncols(self.as_ptr())
+        }
+    }
+
+    /// Get the `(i, j)`-th entry of an rational matrix.
+    #[inline]
+    fn get_entry(&self, i: usize, j: usize) -> Rational {
+        let mut res = Rational::default();
+        unsafe {
+            let x = flint_sys::fmpq_mat::fmpq_mat_entry(self.as_ptr(), i as c_long, j as c_long);
+            flint_sys::fmpq::fmpq_set(res.as_mut_ptr(), x);
+        }
+        res
+    }
+}
 
 impl RatMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
@@ -133,33 +167,6 @@ impl RatMat {
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_mat_struct {
         &mut self.data
     }
-
-    /* No `get_str` for matrices in FLINT
-    /// Return a [String] representation of an integer polynomial.
-    #[inline]
-    pub fn get_str(&self) -> String {
-        unsafe {
-            let s = flint_sys::fmpz_mat::fmpz_mat_get_str(self.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }
-    
-    /// Return a pretty-printed [String] representation of an integer polynomial.
-    #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
-        unsafe {
-            let s = flint_sys::fmpz_mat::fmpz_mat_get_str_pretty(self.as_ptr(), v.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }*/
-
 
     /// Return two integer matrices containing the numerator and denominator of each entry of a
     /// rational matrix.
@@ -334,22 +341,6 @@ impl RatMat {
         self.col(i).is_zero()
     }
 
-    /// Return the number of rows of a rational matrix.
-    #[inline]
-    pub fn nrows(&self) -> c_long {
-        unsafe {
-            flint_sys::fmpq_mat::fmpq_mat_nrows(self.as_ptr())
-        }
-    }
-
-    /// Return the number of columns of an rational matrix.
-    #[inline]
-    pub fn ncols(&self) -> c_long {
-        unsafe {
-            flint_sys::fmpq_mat::fmpq_mat_ncols(self.as_ptr())
-        }
-    }
-
     /// Return the transpose of an rational matrix.
     #[inline]
     pub fn transpose(&self) -> RatMat {
@@ -367,17 +358,6 @@ impl RatMat {
         unsafe { flint_sys::fmpq_mat::fmpq_mat_transpose(self.as_mut_ptr(), self.as_ptr()); }
     }
     
-    /// Get the `(i, j)`-th entry of an rational matrix.
-    #[inline]
-    pub fn get_entry(&self, i: usize, j: usize) -> Rational {
-        let mut res = Rational::default();
-        unsafe {
-            let x = flint_sys::fmpq_mat::fmpq_mat_entry(self.as_ptr(), i as c_long, j as c_long);
-            flint_sys::fmpq::fmpq_set(res.as_mut_ptr(), x);
-        }
-        res
-    }
-
     /// Get the `(i, j)`-th entry of an rational matrix and assign it to `out`. Avoids extra
     /// allocation.
     #[inline]

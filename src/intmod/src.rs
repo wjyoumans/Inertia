@@ -26,6 +26,7 @@ use num_traits::PrimInt;
 use crate::*;
 
 
+#[derive(Debug)]
 pub struct FmpzModCtx(pub fmpz_mod_ctx_struct);
 
 impl Drop for FmpzModCtx {
@@ -36,7 +37,7 @@ impl Drop for FmpzModCtx {
 
 /// The ring of integers mod `n` for any integer `n`.
 pub struct IntModRing {
-    ctx: <Self as Parent>::Data,
+    pub ctx: <Self as Parent>::Data,
 }
 
 impl Parent for IntModRing {
@@ -122,6 +123,16 @@ impl IntModRing {
     pub fn as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
+
+    /// Return the modulus `n` of the integers mod `n`.
+    pub fn modulus(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { 
+            let n = flint_sys::fmpz_mod::fmpz_mod_ctx_modulus(self.as_ptr()); 
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), n);
+        }
+        res
+    }
 }
 
 /// An element of the ring of integers mod `n`.
@@ -171,5 +182,15 @@ impl IntMod {
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
+    }
+    
+    /// Return the modulus `n` of the integers mod `n`.
+    pub fn modulus(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { 
+            let n = flint_sys::fmpz_mod::fmpz_mod_ctx_modulus(self.ctx_as_ptr()); 
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), n);
+        }
+        res
     }
 }

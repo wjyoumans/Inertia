@@ -32,6 +32,16 @@ impl Clone for Rational {
     }
 }
 
+impl fmt::Debug for Rational {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Rational")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl Default for Rational {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();

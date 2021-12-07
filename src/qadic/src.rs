@@ -28,6 +28,7 @@ use num_traits::PrimInt;
 use crate::*;
 
 
+#[derive(Debug)]
 pub struct QadicCtx(pub qadic_ctx_struct);
 
 impl Drop for QadicCtx {
@@ -82,11 +83,11 @@ impl Multiplicative for QadicField {
 impl AdditiveGroup for QadicField {}
 
 impl MultiplicativeGroup for QadicField {}
-
+/*
 impl Ring for QadicField {}
 
 impl Field for QadicField {}
-
+*/
 impl<T> Init4<&Integer, T, T, &str> for QadicField where
     T: TryInto<c_long>
 {
@@ -184,9 +185,11 @@ impl AdditiveGroupElement for QadicElem {}
 
 impl MultiplicativeGroupElement for QadicElem {}
 
+/*
 impl RingElement for QadicElem {}
 
 impl FieldElement for QadicElem {}
+*/
 
 impl QadicElem {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -208,4 +211,22 @@ impl QadicElem {
     pub fn ctx_as_ptr(&self) -> &qadic_ctx_struct {
         &self.ctx.0
     }
+
+    /*
+    /// Return a [String] representation of a qadic number.
+    #[inline]
+    pub fn get_str(&self) -> String {
+        unsafe {
+            let s = flint_sys::padic::padic_get_str(
+                std::ptr::null(), 
+                self.as_ptr(), 
+                self.ctx_as_ptr()
+            );
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
+    }*/
+
 }

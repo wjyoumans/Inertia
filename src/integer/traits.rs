@@ -33,6 +33,16 @@ impl Clone for Integer {
     }
 }
 
+impl fmt::Debug for Integer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Integer")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl Default for Integer {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();

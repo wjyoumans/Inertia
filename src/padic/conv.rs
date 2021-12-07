@@ -16,3 +16,13 @@
  */
 
 
+use crate::*;
+
+impl_from! {
+    String, PadicElem
+    {
+        fn from(x: &PadicElem) -> String {
+            x.get_str()
+        }
+    }
+}

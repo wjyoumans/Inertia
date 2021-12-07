@@ -78,7 +78,12 @@ impl AdditiveGroup for FinFldMatSpace {}
 
 impl Module for FinFldMatSpace {}
 
-impl VectorSpace for FinFldMatSpace {}
+impl VectorSpace for FinFldMatSpace {
+    type BaseRing = FiniteField;
+    fn base_ring(&self) -> FiniteField {
+        FiniteField { ctx: Arc::clone(&self.ctx) }
+    }
+}
 
 impl MatrixSpace for FinFldMatSpace {}
 
@@ -211,9 +216,11 @@ impl AdditiveGroupElement for FinFldMat {}
 
 impl ModuleElement for FinFldMat {}
 
-impl VectorSpaceElement for FinFldMat {}
+impl VectorSpaceElement for FinFldMat {
+    type BaseRingElement = FinFldElem;
+}
 
-impl MatrixSpaceElement for FinFldMat {}
+//impl MatrixSpaceElement for FinFldMat {}
 
 impl FinFldMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -282,4 +289,24 @@ impl FinFldMat {
             flint_sys::fq_default_mat::fq_default_mat_ncols(self.as_ptr(), self.ctx_as_ptr())
         }
     }
+
+    /*
+    /// Get the `(i, j)`-th entry of the matrix.
+    #[inline]
+    fn get_entry(&self, i: usize, j: usize) -> FinFldElem {
+        let mut z = MaybeUninit::uninit();
+        let mut ctx = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_get_entry(
+                z.as_mut_ptr(), 
+                self.as_ptr(),
+                i as c_long, 
+                j as c_long
+            );
+            flint_sys::fmpz_mod::fmpz_mod_ctx_init(ctx.as_mut_ptr(), &self.ctx.0);
+            IntMod { ctx: Arc::new(FmpzModCtx(ctx.assume_init())), extra: (), data: z.assume_init() } 
+        }
+    }*/
+
 }

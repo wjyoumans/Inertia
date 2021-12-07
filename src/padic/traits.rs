@@ -17,7 +17,7 @@
 
 
 //use std::ffi::{CStr, CString};
-//use std::fmt;
+use std::fmt;
 //use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
@@ -39,12 +39,21 @@ impl Clone for PadicElem {
     }
 }
 
-/*
+impl fmt::Debug for PadicElem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("PadicElem")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 impl fmt::Display for PadicElem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
-}*/
+}
 
 impl Drop for PadicElem {
     fn drop(&mut self) {

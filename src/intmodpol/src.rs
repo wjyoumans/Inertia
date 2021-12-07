@@ -174,6 +174,16 @@ impl IntModPolRing {
     pub fn as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
+
+    /// Return the modulus `n` of the integers mod `n`.
+    pub fn modulus(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { 
+            let n = flint_sys::fmpz_mod::fmpz_mod_ctx_modulus(self.as_ptr()); 
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), n);
+        }
+        res
+    }
 }
 
 /// An element of the ring of integers mod `n`.
@@ -230,7 +240,17 @@ impl IntModPol {
     pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
         &self.ctx.0
     }
-    
+   
+    /// Return the modulus `n` of the integers mod `n`.
+    pub fn modulus(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { 
+            let n = flint_sys::fmpz_mod::fmpz_mod_ctx_modulus(self.ctx_as_ptr()); 
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), n);
+        }
+        res
+    }
+
     /// Return a [String] representation of a polynomial over integers mod `n`.
     #[inline]
     pub fn get_str(&self) -> String {

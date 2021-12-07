@@ -18,6 +18,8 @@
 use std::fmt;
 use std::sync::Arc;
 
+use libc::c_long;
+
 /// Traits for operations and algebraic structures.
 
 
@@ -150,6 +152,8 @@ pub trait Parent {
 pub trait Element {
     type Data;
     type Parent: Parent;
+
+    //fn parent(&self) -> Self::Parent;
 }
 
 pub trait Additive: Parent {
@@ -195,16 +199,44 @@ pub trait MultiplicativeGroupElement: MultiplicativeElement {
 pub trait Module: AdditiveGroup {}
 pub trait ModuleElement: AdditiveGroupElement {}
 
-pub trait VectorSpace: Module {}
-pub trait VectorSpaceElement: ModuleElement {}
+pub trait VectorSpace: Module {
+    type BaseRing: Ring;
+    fn base_ring(&self) -> Self::BaseRing;
+}
+pub trait VectorSpaceElement: ModuleElement {
+    type BaseRingElement: RingElement;
+}
 
 pub trait MatrixSpace: VectorSpace {}
 pub trait MatrixSpaceElement: VectorSpaceElement {
-    // nrows
-    // ncols
+    fn nrows(&self) -> c_long;
+    
+    fn ncols(&self) -> c_long;
+    
+    fn get_entry(&self, i: usize, j: usize) -> <Self as VectorSpaceElement>::BaseRingElement;
+    
+    fn get_str(&self) -> String {
+        let r = self.nrows() as usize;
+        let c = self.ncols() as usize;
+        let mut out = Vec::<String>::with_capacity(r);
+
+        for i in 0usize..r {
+            let mut row = Vec::<String>::with_capacity(c+2);
+            row.push("[".to_string());
+            for j in 0usize..c {
+                row.push(format!(" {} ", self.get_entry(i, j)));
+            }
+            if i == r-1 {
+                row.push("]".to_string());
+            } else {
+                row.push("]\n".to_string());
+            }
+            out.push(row.join(""));
+        }
+        out.join("")
+    }
     // one
     // zero
-    // get_entry
     // set_entry
     // is_empty
     // is_square
@@ -216,9 +248,10 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
 }
 
 pub trait Ring: AdditiveGroup + Multiplicative {}
-pub trait RingElement: AdditiveGroupElement + MultiplicativeElement {}
+pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Display {}
 
 pub trait PolynomialRing<T: Ring>: Ring {
+    //fn base_ring(&self) -> T;
     // gen
     // basis (indeterminates)
 }
