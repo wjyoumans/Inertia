@@ -56,7 +56,12 @@ impl AdditiveGroup for IntMatSpace {}
 
 impl Module for IntMatSpace {}
 
-impl VectorSpace for IntMatSpace {}
+impl VectorSpace for IntMatSpace {
+    type BaseRing = IntegerRing;
+    fn base_ring(&self) -> IntegerRing {
+        IntegerRing {}
+    }
+}
 
 impl MatrixSpace for IntMatSpace {}
 
@@ -118,9 +123,38 @@ impl AdditiveGroupElement for IntMat {}
 
 impl ModuleElement for IntMat {}
 
-impl VectorSpaceElement for IntMat {}
+impl VectorSpaceElement for IntMat {
+    type BaseRingElement = Integer;
+}
 
-impl MatrixSpaceElement for IntMat {}
+impl MatrixSpaceElement for IntMat {
+    /// Return the number of rows of an integer matrix.
+    #[inline]
+    fn nrows(&self) -> c_long {
+        unsafe {
+            flint_sys::fmpz_mat::fmpz_mat_nrows(self.as_ptr())
+        }
+    }
+
+    /// Return the number of columns of an integer matrix.
+    #[inline]
+    fn ncols(&self) -> c_long {
+        unsafe {
+            flint_sys::fmpz_mat::fmpz_mat_ncols(self.as_ptr())
+        }
+    }
+    
+    /// Get the `(i, j)`-th entry of an integer matrix.
+    #[inline]
+    fn get_entry(&self, i: usize, j: usize) -> Integer {
+        let mut res = Integer::default();
+        unsafe {
+            let x = flint_sys::fmpz_mat::fmpz_mat_entry(self.as_ptr(), i as c_long, j as c_long);
+            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), x);
+        }
+        res
+    }
+}
 
 impl IntMat {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
@@ -136,32 +170,6 @@ impl IntMat {
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_mat_struct {
         &mut self.data
     }
-
-    /* No `get_str` for matrices in FLINT
-    /// Return a [String] representation of an integer polynomial.
-    #[inline]
-    pub fn get_str(&self) -> String {
-        unsafe {
-            let s = flint_sys::fmpz_mat::fmpz_mat_get_str(self.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }
-    
-    /// Return a pretty-printed [String] representation of an integer polynomial.
-    #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
-        unsafe {
-            let s = flint_sys::fmpz_mat::fmpz_mat_get_str_pretty(self.as_ptr(), v.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }*/
 
     /// Swap two integer matrices. The dimensions are allowed to be different.
     #[inline]
@@ -307,21 +315,6 @@ impl IntMat {
         self.col(i).is_zero()
     }
 
-    /// Return the number of rows of an integer matrix.
-    #[inline]
-    pub fn nrows(&self) -> c_long {
-        unsafe {
-            flint_sys::fmpz_mat::fmpz_mat_nrows(self.as_ptr())
-        }
-    }
-
-    /// Return the number of columns of an integer matrix.
-    #[inline]
-    pub fn ncols(&self) -> c_long {
-        unsafe {
-            flint_sys::fmpz_mat::fmpz_mat_ncols(self.as_ptr())
-        }
-    }
 
     /// Return the transpose of an integer matrix.
     #[inline]
@@ -340,16 +333,6 @@ impl IntMat {
         unsafe { flint_sys::fmpz_mat::fmpz_mat_transpose(self.as_mut_ptr(), self.as_ptr()); }
     }
     
-    /// Get the `(i, j)`-th entry of an integer matrix.
-    #[inline]
-    pub fn get_entry(&self, i: usize, j: usize) -> Integer {
-        let mut res = Integer::default();
-        unsafe {
-            let x = flint_sys::fmpz_mat::fmpz_mat_entry(self.as_ptr(), i as c_long, j as c_long);
-            flint_sys::fmpz::fmpz_set(res.as_mut_ptr(), x);
-        }
-        res
-    }
 
     /// Get the `(i, j)`-th entry of an integer matrix and assign it to `out`. Avoids extra
     /// allocation.
