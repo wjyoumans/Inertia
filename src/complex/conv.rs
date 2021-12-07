@@ -20,10 +20,7 @@ use std::ffi::CString;
 
 use num_traits::PrimInt;
 
-use crate::integer::src::Integer;
-use crate::rational::src::Rational;
-use crate::real::src::Real;
-use crate::complex::src::Complex;
+use crate::*;
 
 
 impl_from_unsafe! {
@@ -52,7 +49,7 @@ impl_from_unsafe! {
 
 impl_from_unsafe! {
     None
-    Complex, Rational, crate::REAL_DEFAULT_PREC;
+    Complex, Rational, REAL_DEFAULT_PREC;
     arb_sys::acb::acb_set_fmpq
 }
 

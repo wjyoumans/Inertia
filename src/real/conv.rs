@@ -18,9 +18,7 @@
 
 use std::ffi::CString;
 
-use crate::real::src::Real;
-use crate::integer::src::Integer;
-use crate::rational::src::Rational;
+use crate::*;
 
 
 impl_from_unsafe! {
@@ -49,7 +47,7 @@ impl_from_unsafe! {
 
 impl_from_unsafe! {
     None
-    Real, Rational, crate::REAL_DEFAULT_PREC;
+    Real, Rational, REAL_DEFAULT_PREC;
     arb_sys::arb::arb_set_fmpq
 }
 
