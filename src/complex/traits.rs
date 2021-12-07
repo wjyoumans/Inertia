@@ -40,13 +40,23 @@ impl Clone for Complex {
     }
 }
 
+impl fmt::Debug for Complex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Complex")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &String::from(self))
+            .finish()
+    }
+}
+
 impl Default for Complex {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
             Complex { 
-                ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), 
+                ctx: Arc::new(RwLock::new(REAL_DEFAULT_PREC)), 
                 extra: (), 
                 data: z.assume_init() 
             }

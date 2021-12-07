@@ -40,13 +40,23 @@ impl Clone for Real {
     }
 }
 
+impl fmt::Debug for Real {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Real")
+            .field("ctx", &self.ctx)
+            .field("extra", &self.extra)
+            .field("data", &String::from(self))
+            .finish()
+    }
+}
+
 impl Default for Real {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
             Real { 
-                ctx: Arc::new(RwLock::new(crate::REAL_DEFAULT_PREC)), 
+                ctx: Arc::new(RwLock::new(REAL_DEFAULT_PREC)), 
                 extra: (),
                 data: z.assume_init() 
             }
