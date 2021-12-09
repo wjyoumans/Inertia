@@ -211,13 +211,17 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
     
     fn get_entry(&self, i: usize, j: usize) -> <Self as VectorSpaceElement>::BaseRingElement;
   
-    /*
     fn set_entry(&mut self, i: usize, j: usize, e: &<Self as VectorSpaceElement>::BaseRingElement);
 
-    fn is_empty(&self) -> bool;
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.nrows() == 0 || self.ncols() == 0
+    }
 
-    fn is_square(&self) -> bool;
-    */
+    #[inline]
+    fn is_square(&self) -> bool {
+        self.nrows() == self.ncols()
+    }
 
     fn get_str(&self) -> String {
         let r = self.nrows() as usize;
@@ -239,12 +243,12 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
         }
         out.join("")
     }
-    
-    // hcat
-    // vcat
-    // solve
-    // rref
-    // nullspace
+
+    // is_invertible
+    // submatrix (derive row/col)
+    // hcat, vcat
+    // trace, det, charpoly, minpoly, rank
+    // rref, solve, nullspace
 }
 
 pub trait Ring: AdditiveGroup + Multiplicative {}
@@ -253,23 +257,27 @@ pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Displ
 pub trait PolynomialRing: Ring {
     type BaseRing: Ring;
     fn base_ring(&self) -> Self::BaseRing;
-    // gen
-    // basis (indeterminates)
+
+    // TODO
+    // gen, basis, indeterminates (multivariate case)
 }
+
 pub trait PolynomialRingElement: RingElement {
     //type BaseRingElement: RingElement; 
-    // len
-    // degree
-    // get_coeff
-    // set_coeff
-    // coefficients
+    
+    // TODO
+    // len, deg
+    // get_coeff, set_coeff, coefficients
 }
 
 pub trait Field: Ring {
-    // basis
-    // gen
+    
+    // TODO
+    // gen, basis
 }
 pub trait FieldElement: RingElement {
+
+    // TODO
     // norm(&self)
     // trace(&self)
 }

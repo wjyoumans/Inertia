@@ -312,6 +312,35 @@ impl FinFldMat {
             flint_sys::fmpz_mod::fmpz_mod_ctx_init(ctx.as_mut_ptr(), &self.ctx.0);
             IntMod { ctx: Arc::new(FmpzModCtx(ctx.assume_init())), extra: (), data: z.assume_init() } 
         }
-    }*/
+    }*/    
 
+    #[inline]
+    fn get_entry(&self, i: usize, j: usize) -> FinFldElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_as_ptr());
+            flint_sys::fq_default_mat::fq_default_mat_entry(
+                z.as_mut_ptr(),
+                self.as_ptr(),
+                i as c_long, 
+                j as c_long,
+                self.ctx_as_ptr()
+            );
+            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() } 
+        }
+    }
+
+    #[inline]
+    fn set_entry(&mut self, i: usize, j: usize, e: &FinFldElem) {
+        //assert_eq!(self.parent(), e.parent());
+        unsafe {
+            flint_sys::fq_default_mat::fq_default_mat_entry_set(
+                self.as_mut_ptr(),
+                i as c_long, 
+                j as c_long,
+                e.as_ptr(),
+                self.ctx_as_ptr()
+            );
+        }
+    }
 }

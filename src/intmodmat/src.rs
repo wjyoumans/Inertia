@@ -246,7 +246,7 @@ impl MatrixSpaceElement for IntModMat {
         }
     }
 
-    /// Get the `(i, j)`-th entry of an integer matrix.
+    /// Get the `(i, j)`-th entry of a matrix with entries in integers mod `n`.
     #[inline]
     fn get_entry(&self, i: usize, j: usize) -> IntMod {
         let mut z = MaybeUninit::uninit();
@@ -262,6 +262,18 @@ impl MatrixSpaceElement for IntModMat {
         }
     }
 
+    /// Set the `(i, j)`-th entry of a matrix with entries in integers mod `n`.
+    #[inline]
+    fn set_entry(&mut self, i: usize, j: usize, e: &IntMod) {
+        unsafe {
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_set_entry(
+                self.as_mut_ptr(),
+                i as c_long, 
+                j as c_long,
+                e.as_ptr()
+            );
+        }
+    }
 }
 
 impl IntModMat {

@@ -159,6 +159,15 @@ impl MatrixSpaceElement for IntMat {
         }
         res
     }
+    
+    /// Set the `(i, j)`-th entry of an integer matrix to the [Integer] `e`.
+    #[inline]
+    fn set_entry(&mut self, i: usize, j: usize, e: &Integer) {
+        unsafe {
+            let x = flint_sys::fmpz_mat::fmpz_mat_entry(self.as_ptr(), i as c_long, j as c_long);
+            flint_sys::fmpz::fmpz_set(x, e.as_ptr());
+        }
+    }
 }
 
 impl IntMat {
@@ -273,32 +282,6 @@ impl IntMat {
         }
     }
 
-    /// Return true if the matrix contains all zeros.
-    #[inline]
-    pub fn is_zero(&self) -> bool {
-        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_zero(self.as_ptr()) == 1 } 
-    }
-    
-    /// Return true if the matrix is the identity.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_one(self.as_ptr()) == 1 } 
-    }
-
-    /// Return true if the number of rows or columns is zero.
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        unsafe { flint_sys::fmpz_mat::fmpz_mat_is_empty(self.as_ptr()) != 0 }
-    }
-
-    /// Return true if the matrix is square.
-    #[inline]
-    pub fn is_square(&self) -> bool {
-        unsafe {
-            flint_sys::fmpz_mat::fmpz_mat_is_square(self.as_ptr()) != 0
-        }
-    }
-    
     /// Return true if the matrix is invertible.
     #[inline]
     pub fn is_invertible(&self) -> bool {
@@ -346,15 +329,6 @@ impl IntMat {
         unsafe {
             let x = flint_sys::fmpz_mat::fmpz_mat_entry(self.as_ptr(), i as c_long, j as c_long);
             flint_sys::fmpz::fmpz_set(out.as_mut_ptr(), x);
-        }
-    }
-    
-    /// Set the `(i, j)`-th entry of an integer matrix to the [Integer] `e`.
-    #[inline]
-    pub fn set_entry(&mut self, i: usize, j: usize, e: &Integer) {
-        unsafe {
-            let x = flint_sys::fmpz_mat::fmpz_mat_entry(self.as_ptr(), i as c_long, j as c_long);
-            flint_sys::fmpz::fmpz_set(x, e.as_ptr());
         }
     }
 

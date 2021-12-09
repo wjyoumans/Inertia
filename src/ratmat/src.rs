@@ -156,6 +156,15 @@ impl MatrixSpaceElement for RatMat {
         }
         res
     }
+    
+    /// Set the `(i, j)`-th entry of a rational matrix to the [Rational] `e`.
+    #[inline]
+    fn set_entry(&mut self, i: usize, j: usize, e: &Rational) {
+        unsafe {
+            let x = flint_sys::fmpq_mat::fmpq_mat_entry(self.as_ptr(), i as c_long, j as c_long);
+            flint_sys::fmpq::fmpq_set(x, e.as_ptr());
+        }
+    }
 }
 
 impl RatMat {
@@ -313,21 +322,7 @@ impl RatMat {
             RatMat { ctx: (), extra: (), data: z.assume_init() }
         }
     }
-
-    /// Return true if the number of rows or columns is zero.
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_is_empty(self.as_ptr()) != 0 }
-    }
-
-    /// Return true if the matrix is square.
-    #[inline]
-    pub fn is_square(&self) -> bool {
-        unsafe {
-            flint_sys::fmpq_mat::fmpq_mat_is_square(self.as_ptr()) != 0
-        }
-    }
-    
+ 
     /// Return true if the matrix is invertible.
     #[inline]
     pub fn is_invertible(&self) -> bool {
@@ -370,15 +365,6 @@ impl RatMat {
         unsafe {
             let x = flint_sys::fmpq_mat::fmpq_mat_entry(self.as_ptr(), i as c_long, j as c_long);
             flint_sys::fmpq::fmpq_set(out.as_mut_ptr(), x);
-        }
-    }
-    
-    /// Set the `(i, j)`-th entry of a rational matrix to the [Rational] `e`.
-    #[inline]
-    pub fn set_entry(&mut self, i: usize, j: usize, e: &Rational) {
-        unsafe {
-            let x = flint_sys::fmpq_mat::fmpq_mat_entry(self.as_ptr(), i as c_long, j as c_long);
-            flint_sys::fmpq::fmpq_set(x, e.as_ptr());
         }
     }
 
