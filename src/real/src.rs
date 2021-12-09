@@ -36,29 +36,31 @@ impl Parent for RealField {
     type Data = Arc<RwLock<c_long>>;
     type Extra = ();
     type Element = Real;
+
+    #[inline]
+    fn default(&self) -> Real {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            arb_sys::arb::arb_init(z.as_mut_ptr());
+            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+
+    }
 }
 
 impl Additive for RealField {
     #[inline]
     fn zero(&self) -> Real {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::arb::arb_init(z.as_mut_ptr());
-            arb_sys::arb::arb_zero(z.as_mut_ptr());
-            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        self.default()
     }
 }
 
 impl Multiplicative for RealField {
     #[inline]
     fn one(&self) -> Real {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::arb::arb_init(z.as_mut_ptr());
-            arb_sys::arb::arb_one(z.as_mut_ptr());
-            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { arb_sys::arb::arb_one(res.as_mut_ptr()); }
+        res
     }
 }
 
@@ -68,7 +70,14 @@ impl MultiplicativeGroup for RealField {}
 
 impl Ring for RealField {}
 
-impl Field for RealField {}
+impl Field for RealField {
+    type BaseField = RealField;
+
+    #[inline]
+    fn base_field(&self) -> RealField {
+        RealField { ctx: Arc::clone(&self.ctx) }
+    }
+}
 
 impl<T> Init1<T> for RealField where
     T: TryInto<c_long>

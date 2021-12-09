@@ -36,6 +36,11 @@ impl Parent for IntMatSpace {
     type Data = ();
     type Extra = ();
     type Element = IntMat;
+
+    #[inline]
+    fn default(&self) -> IntMat {
+        IntMat::zero(self.rows, self.cols)
+    }
 }
 
 impl Additive for IntMatSpace {

@@ -29,6 +29,11 @@ impl Parent for RationalField {
     type Data = ();
     type Extra = ();
     type Element = Rational;
+
+    #[inline]
+    fn default(&self) -> Rational {
+        Rational::default()
+    }
 }
 
 impl Additive for RationalField {
@@ -53,7 +58,14 @@ impl MultiplicativeGroup for RationalField {}
 
 impl Ring for RationalField {}
 
-impl Field for RationalField {}
+impl Field for RationalField {
+    type BaseField = RationalField;
+    
+    #[inline]
+    fn base_field(&self) -> RationalField {
+        RationalField {}
+    }
+}
 
 impl Init for RationalField {
     #[inline]

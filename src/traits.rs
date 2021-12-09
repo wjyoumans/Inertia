@@ -114,6 +114,8 @@ pub trait Parent {
     type Data;
     type Extra;
     type Element: Element;
+
+    fn default(&self) -> Self::Element;
 }
 
 pub trait Init: Parent {
@@ -271,12 +273,13 @@ pub trait PolynomialRingElement: RingElement {
 }
 
 pub trait Field: Ring {
-    
+    type BaseField: Field;
+    fn base_field(&self) -> Self::BaseField;
+
     // TODO
     // gen, basis
 }
 pub trait FieldElement: RingElement {
-
     // TODO
     // norm(&self)
     // trace(&self)

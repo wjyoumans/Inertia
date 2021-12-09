@@ -23,7 +23,6 @@ use std::sync::Arc;
 use flint_sys::fmpz_mod::fmpz_mod_ctx_struct;
 use flint_sys::fmpz_mod_mat::fmpz_mod_mat_struct;
 use libc::c_long;
-use num_traits::PrimInt;
 
 use crate::*;
 
@@ -39,11 +38,9 @@ impl Parent for IntModMatSpace {
     type Data = Arc<FmpzModCtx>;
     type Extra = ();
     type Element = IntModMat;
-}
 
-impl Additive for IntModMatSpace {
     #[inline]
-    fn zero(&self) -> IntModMat {
+    fn default(&self) -> IntModMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(
@@ -52,26 +49,24 @@ impl Additive for IntModMatSpace {
                 self.cols, 
                 self.modulus().as_ptr()
             );
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_zero(z.as_mut_ptr());
             IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+    }
+}
+
+impl Additive for IntModMatSpace {
+    #[inline]
+    fn zero(&self) -> IntModMat {
+        self.default()
     }
 }
 
 impl Multiplicative for IntModMatSpace {
     #[inline]
     fn one(&self) -> IntModMat {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(
-                z.as_mut_ptr(), 
-                self.rows, 
-                self.cols, 
-                self.modulus().as_ptr()
-            );
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
-            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(res.as_mut_ptr()); }
+        res
     }
 }
 
@@ -112,7 +107,7 @@ impl<T> Init3<T, T, &Integer> for IntModMatSpace where
 
 impl<T, U> Init3<T, T, U> for IntModMatSpace where 
     T: TryInto<c_long>,
-    U: PrimInt + Into<Integer>,
+    U: Into<Integer>,
 {
     fn init(r: T, c: T, n: U) -> Self {
         Self::init(r, c, &n.into())

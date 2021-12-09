@@ -36,6 +36,11 @@ impl Parent for IntegerRing {
     type Data = ();
     type Extra = ();
     type Element = Integer;
+
+    #[inline]
+    fn default(&self) -> Integer {
+        Integer::default()
+    }
 }
 
 impl Additive for IntegerRing {

@@ -37,29 +37,30 @@ impl Parent for ComplexField {
     type Data = Arc<RwLock<c_long>>;
     type Extra = ();
     type Element = Complex;
+
+    #[inline]
+    fn default(&self) -> Complex {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            arb_sys::acb::acb_init(z.as_mut_ptr());
+            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
 }
 
 impl Additive for ComplexField {
     #[inline]
     fn zero(&self) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_zero(z.as_mut_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        self.default()
     }
 }
 
 impl Multiplicative for ComplexField {
     #[inline]
     fn one(&self) -> Complex {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_one(z.as_mut_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { arb_sys::acb::acb_one(res.as_mut_ptr()); }
+        res
     }
 }
 
@@ -69,7 +70,14 @@ impl MultiplicativeGroup for ComplexField {}
 
 impl Ring for ComplexField {}
 
-impl Field for ComplexField {}
+impl Field for ComplexField {
+    type BaseField = ComplexField;
+
+    #[inline]
+    fn base_field(&self) -> ComplexField {
+        ComplexField { ctx: Arc::clone(&self.ctx) }
+    }
+}
 
 impl<T> Init1<T> for ComplexField where
     T: TryInto<c_long>

@@ -42,6 +42,16 @@ impl Parent for NumberField {
     type Data = Arc<NfCtx>;
     type Extra = ();
     type Element = NumFldElem;
+
+    #[inline]
+    fn default(&self) -> NumFldElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe { 
+            antic_sys::nf_elem_init(z.as_mut_ptr(), self.as_ptr());
+            NumFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
+
 }
 
 // NumFldElem //

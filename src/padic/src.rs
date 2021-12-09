@@ -23,7 +23,6 @@ use std::sync::Arc;
 use flint_sys::padic::padic_ctx_struct;
 use flint_sys::padic::padic_struct;
 use libc::c_long;
-use num_traits::PrimInt;
 
 use crate::*;
 
@@ -46,29 +45,30 @@ impl Parent for PadicField {
     type Data = Arc<PadicCtx>;
     type Extra = ();
     type Element = PadicElem;
+
+    #[inline]
+    fn default(&self) -> PadicElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::padic::padic_init(z.as_mut_ptr());
+            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
 }
 
 impl Additive for PadicField {
     #[inline]
     fn zero(&self) -> PadicElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::padic::padic_init(z.as_mut_ptr());
-            flint_sys::padic::padic_zero(z.as_mut_ptr());
-            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        self.default()
     }
 }
 
 impl Multiplicative for PadicField {
     #[inline]
     fn one(&self) -> PadicElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::padic::padic_init(z.as_mut_ptr());
-            flint_sys::padic::padic_one(z.as_mut_ptr());
-            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { flint_sys::padic::padic_one(res.as_mut_ptr()); }
+        res
     }
 }
 
@@ -78,7 +78,14 @@ impl MultiplicativeGroup for PadicField {}
 
 impl Ring for PadicField {}
 
-impl Field for PadicField {}
+impl Field for PadicField {
+    type BaseField = PadicField;
+
+    #[inline]
+    fn base_field(&self) -> PadicField {
+        PadicField { ctx: Arc::clone(&self.ctx) }
+    }
+}
 
 impl<T> Init2<&Integer, T> for PadicField where
     T: TryInto<c_long>

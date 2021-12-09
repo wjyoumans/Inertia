@@ -24,7 +24,6 @@ use std::sync::Arc;
 use flint_sys::fq_default_poly::fq_default_poly_struct as fq_poly_struct;
 use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
 use libc::c_long;
-use num_traits::PrimInt;
 
 use crate::*;
 
@@ -38,29 +37,34 @@ impl Parent for FinFldPolRing {
     type Data = Arc<FqCtx>;
     type Extra = Arc<String>;
     type Element = FinFldPol;
+
+    #[inline]
+    fn default(&self) -> FinFldPol {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
+            FinFldPol {
+                ctx: Arc::clone(&self.ctx),
+                extra: Arc::clone(&self.x),
+                data: z.assume_init()
+            }
+        }
+    }
 }
 
 impl Additive for FinFldPolRing {
     #[inline]
     fn zero(&self) -> FinFldPol {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
-            flint_sys::fq_default_poly::fq_default_poly_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldPol { ctx: Arc::clone(&self.ctx), extra: Arc::clone(&self.x), data: z.assume_init() }
-        }
+        self.default()
     }
 }
 
 impl Multiplicative for FinFldPolRing {
     #[inline]
     fn one(&self) -> FinFldPol {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
-            flint_sys::fq_default_poly::fq_default_poly_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldPol { ctx: Arc::clone(&self.ctx), extra: Arc::clone(&self.x), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { flint_sys::fq_default_poly::fq_default_poly_one(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 }
 
@@ -106,7 +110,7 @@ impl<T> Init4<&Integer, T, &str, &str> for FinFldPolRing where
 }
 
 impl<T, U> Init4<T, U, &str, &str> for FinFldPolRing where 
-    T: PrimInt + Into<Integer>,
+    T: Into<Integer>,
     U: TryInto<c_long>,
 {
     /// Construct the ring of polynomials over the finite field with `p^k` elements.

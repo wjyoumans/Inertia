@@ -24,7 +24,6 @@ use std::sync::Arc;
 use flint_sys::fq_default::fq_default_struct as fq_struct;
 use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
 use libc::c_long;
-use num_traits::PrimInt;
 
 use crate::*;
 
@@ -47,29 +46,30 @@ impl Parent for FiniteField {
     type Data = Arc<FqCtx>;
     type Extra = ();
     type Element = FinFldElem;
+
+    #[inline]
+    fn default(&self) -> FinFldElem {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
+            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+        }
+    }
 }
 
 impl Additive for FiniteField {
     #[inline]
     fn zero(&self) -> FinFldElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-            flint_sys::fq_default::fq_default_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        self.default()
     }
 }
 
 impl Multiplicative for FiniteField {
     #[inline]
     fn one(&self) -> FinFldElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-            flint_sys::fq_default::fq_default_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { flint_sys::fq_default::fq_default_one(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 }
 
@@ -79,7 +79,14 @@ impl MultiplicativeGroup for FiniteField {}
 
 impl Ring for FiniteField {}
 
-impl Field for FiniteField {}
+impl Field for FiniteField {
+    type BaseField = FiniteField;
+
+    #[inline]
+    fn base_field(&self) -> FiniteField {
+        FiniteField::init(self.prime(), 1, "o")
+    }
+}
 
 impl<T> Init3<&Integer, T, &str> for FiniteField where
     T: TryInto<c_long>
@@ -109,7 +116,7 @@ impl<T> Init3<&Integer, T, &str> for FiniteField where
 }
 
 impl<T, U> Init3<T, U, &str> for FiniteField where
-    T: PrimInt + Into<Integer>,
+    T: Into<Integer>,
     U: TryInto<c_long>
 {
     /// Construct the finite field with `p^k` elements.
@@ -194,12 +201,44 @@ impl_new! {
     flint_sys::fq_default::fq_default_set_fmpz_mod_poly
 }
 
+impl_new! {
+    FinFldElem
+    flint_sys::fq_default::fq_default_set
+}
+
 impl FiniteField {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_ctx_struct {
         &self.ctx.0
+    }
+
+    #[inline]
+    pub fn modulus(&self) -> IntModPol {
+        let zp = IntModPolRing::init(self.prime(), "x");
+        let mut res = zp.default();
+        unsafe { flint_sys::fq_default::fq_default_ctx_modulus(res.as_mut_ptr(), self.as_ptr()); }
+        res
+    }
+
+    #[inline]
+    pub fn prime(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fq_default::fq_default_ctx_prime(res.as_mut_ptr(), self.as_ptr()); }
+        res
+    }
+
+    #[inline]
+    pub fn degree(&self) -> c_long {
+        unsafe { flint_sys::fq_default::fq_default_ctx_degree(self.as_ptr()) }
+    }
+
+    #[inline]
+    pub fn order(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fq_default::fq_default_ctx_order(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 }
 

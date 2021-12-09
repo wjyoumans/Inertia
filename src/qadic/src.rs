@@ -23,7 +23,6 @@ use std::sync::Arc;
 use flint_sys::qadic::qadic_ctx_struct;
 use flint_sys::qadic::qadic_struct;
 use libc::c_long;
-use num_traits::PrimInt;
 
 use crate::*;
 
@@ -46,15 +45,12 @@ impl Parent for QadicField {
     type Data = Arc<QadicCtx>;
     type Extra = ();
     type Element = QadicElem;
-}
 
-impl Additive for QadicField {
     #[inline]
-    fn zero(&self) -> QadicElem {
+    fn default(&self) -> QadicElem {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
-            flint_sys::qadic::qadic_zero(z.as_mut_ptr());
             QadicElem { 
                 ctx: Arc::clone(&self.ctx), 
                 extra: (), 
@@ -64,19 +60,19 @@ impl Additive for QadicField {
     }
 }
 
+impl Additive for QadicField {
+    #[inline]
+    fn zero(&self) -> QadicElem {
+        self.default()
+    }
+}
+
 impl Multiplicative for QadicField {
     #[inline]
     fn one(&self) -> QadicElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::qadic::qadic_init(z.as_mut_ptr());
-            flint_sys::qadic::qadic_one(z.as_mut_ptr());
-            QadicElem { 
-                ctx: Arc::clone(&self.ctx), 
-                extra: (), 
-                data: z.assume_init() 
-            }
-        }
+        let mut res = self.default();
+        unsafe { flint_sys::qadic::qadic_one(res.as_mut_ptr()); }
+        res
     }
 }
 

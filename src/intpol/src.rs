@@ -39,6 +39,11 @@ impl Parent for IntPolRing {
     type Data = ();
     type Extra = Arc<String>;
     type Element = IntPol;
+
+    #[inline]
+    fn default(&self) -> IntPol {
+        IntPol::default()
+    }
 }
 
 impl Additive for IntPolRing {

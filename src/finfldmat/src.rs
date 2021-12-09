@@ -38,11 +38,9 @@ impl Parent for FinFldMatSpace {
     type Data = Arc<FqCtx>;
     type Extra = ();
     type Element = FinFldMat;
-}
 
-impl Additive for FinFldMatSpace {
     #[inline]
-    fn zero(&self) -> FinFldMat {
+    fn default(&self) -> FinFldMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fq_default_mat::fq_default_mat_init(
@@ -51,26 +49,24 @@ impl Additive for FinFldMatSpace {
                 self.cols, 
                 self.as_ptr()
             );
-            flint_sys::fq_default_mat::fq_default_mat_zero(z.as_mut_ptr(), self.as_ptr());
-            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (),  data: z.assume_init() }
         }
+    }
+}
+
+impl Additive for FinFldMatSpace {
+    #[inline]
+    fn zero(&self) -> FinFldMat {
+        self.default()
     }
 }
 
 impl Multiplicative for FinFldMatSpace {
     #[inline]
     fn one(&self) -> FinFldMat {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            flint_sys::fq_default_mat::fq_default_mat_init(
-                z.as_mut_ptr(), 
-                self.rows, 
-                self.cols, 
-                self.as_ptr()
-            );
-            flint_sys::fq_default_mat::fq_default_mat_one(z.as_mut_ptr(), self.as_ptr());
-            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.default();
+        unsafe { flint_sys::fq_default_mat::fq_default_mat_one(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 }
 
@@ -262,7 +258,7 @@ impl FinFldMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fq_default_mat::fq_default_mat_init(z.as_mut_ptr(), r, c, ff.as_ptr());
-            FinFldMat { ctx: Arc::clone(&ff.ctx), data: z.assume_init() }
+            FinFldMat { ctx: Arc::clone(&ff.ctx), extra: (),  data: z.assume_init() }
         }
     }
 
@@ -275,7 +271,7 @@ impl FinFldMat {
         unsafe {
             flint_sys::fq_default_mat::fq_default_mat_init(z.as_mut_ptr(), r, c, ff.as_ptr());
             flint_sys::fq_default_mat::fq_default_mat_one(z.as_mut_ptr(), ff.as_ptr());
-            FinFldMat { ctx: Arc::clone(&ff.ctx), data: z.assume_init() }
+            FinFldMat { ctx: Arc::clone(&ff.ctx), extra: (), data: z.assume_init() }
         }
     }*/
 

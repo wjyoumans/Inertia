@@ -30,6 +30,15 @@ pub struct NumberField {
     pub ctx: <Self as Parent>::Data,
 }
 
+impl NumberField {
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// Antic via the FFI.
+    #[inline]
+    pub fn as_ptr(&self) -> &nf_struct {
+        &self.ctx.0
+    }
+}
+
 // NumFldElem //
 
 /// A number field element.

@@ -35,6 +35,11 @@ impl Parent for RatPolRing {
     type Data = ();
     type Extra = Arc<String>;
     type Element = RatPol;
+
+    #[inline]
+    fn default(&self) -> RatPol {
+        RatPol::default()
+    }
 }
 
 impl Additive for RatPolRing {

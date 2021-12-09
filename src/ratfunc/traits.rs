@@ -32,6 +32,15 @@ impl Parent for RatFuncField {
     type Data = ();
     type Extra = ();
     type Element = RatFunc;
+
+    #[inline]
+    fn default(&self) -> RatFunc {
+        let mut z = MaybeUninit::uninit();
+        unsafe { 
+            flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
+            RatFunc { ctx: (), extra: (), data: z.assume_init() }
+        }
+    }
 }
 
 // RatFunc //

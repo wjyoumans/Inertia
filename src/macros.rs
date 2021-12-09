@@ -1305,3 +1305,77 @@ macro_rules! impl_from_unsafe {
 
     )*)
 }
+
+
+macro_rules! impl_new_unsafe {
+    (
+        // new from primitive type
+        $t1:ident, $cast:ident {$($t2:ident)*}
+        $func:path
+    ) => ($(
+        impl New<$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: $t2) -> $t1 {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), x as $cast); }
+                res
+            }
+        }
+    )*);
+    (
+        // new without context
+        $t1:ident, $t2:ident
+        $func:path
+    ) => (
+        impl New<&$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: &$t2) -> $t1 {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), x.as_ptr()); }
+                res
+            }
+        }
+        
+        impl New<$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: $t2) -> $t1 {
+                self.new(&x)
+            }
+        }
+    );
+    (
+        // new from primitive with context
+        ctx
+        $t1:ident, $cast:ident {$($t2:ident)*}
+        $func:path
+    ) => ($(
+        impl New<$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: $t2) -> $t1 {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), x as $cast, self.as_ptr()); }
+                res
+            }
+        }
+    )*);
+    (
+        $t1:ident, $t2:ident
+        $func:path
+    ) => (
+        impl New<&$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: &$t2) -> $t1 {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), x.as_ptr(), self.as_ptr()); }
+                res
+            }
+        }
+        
+        impl New<$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: $t2) -> $t1 {
+                self.new(&x)
+            }
+        }
+    );
+}

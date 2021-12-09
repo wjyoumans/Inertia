@@ -35,6 +35,11 @@ impl Parent for RatMatSpace {
     type Data = ();
     type Extra = ();
     type Element = RatMat;
+
+    #[inline]
+    fn default(&self) -> RatMat {
+        RatMat::zero(self.rows, self.cols)
+    }
 }
 
 impl Additive for RatMatSpace {
