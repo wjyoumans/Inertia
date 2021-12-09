@@ -68,6 +68,15 @@ impl AdditiveGroup for FinFldPolRing {}
 
 impl Ring for FinFldPolRing {}
 
+impl PolynomialRing for FinFldPolRing {
+    type BaseRing = FiniteField;
+
+    #[inline]
+    fn base_ring(&self) -> FiniteField {
+        FiniteField { ctx: Arc::clone(&self.ctx) }
+    }
+}
+
 impl<T> Init4<&Integer, T, &str, &str> for FinFldPolRing where 
     T: TryInto<c_long>,
 {
@@ -245,6 +254,11 @@ pub type FinFldPol = Elem<FinFldPolRing>;
 impl Element for FinFldPol {
     type Data = fq_poly_struct;
     type Parent = FinFldPolRing;
+
+    #[inline]
+    fn parent(&self) -> FinFldPolRing {
+        FinFldPolRing { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.extra) }
+    }
 }
 
 impl AdditiveElement for FinFldPol {
@@ -274,6 +288,8 @@ impl MultiplicativeElement for FinFldPol {
 impl AdditiveGroupElement for FinFldPol {}
 
 impl RingElement for FinFldPol {}
+
+impl PolynomialRingElement for FinFldPol {}
 
 impl FinFldPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

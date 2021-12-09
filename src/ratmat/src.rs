@@ -100,6 +100,11 @@ pub type RatMat = Elem<RatMatSpace>;
 impl Element for RatMat {
     type Data = fmpq_mat_struct;
     type Parent = RatMatSpace;
+
+    #[inline]
+    fn parent(&self) -> RatMatSpace {
+        RatMatSpace { rows: self.nrows(), cols: self.ncols() }
+    }
 }
 
 impl AdditiveElement for RatMat {

@@ -295,6 +295,11 @@ pub type Complex = Elem<ComplexField>;
 impl Element for Complex {
     type Data = acb_struct;
     type Parent = ComplexField;
+
+    #[inline]
+    fn parent(&self) -> ComplexField {
+        ComplexField { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for Complex {

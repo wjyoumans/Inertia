@@ -209,6 +209,11 @@ pub type FinFldElem = Elem<FiniteField>;
 impl Element for FinFldElem {
     type Data = fq_struct;
     type Parent = FiniteField;
+
+    #[inline]
+    fn parent(&self) -> FiniteField {
+        FiniteField { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for FinFldElem {

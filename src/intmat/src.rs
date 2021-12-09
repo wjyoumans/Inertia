@@ -103,6 +103,11 @@ pub type IntMat = Elem<IntMatSpace>;
 impl Element for IntMat {
     type Data = fmpz_mat_struct;
     type Parent = IntMatSpace;
+
+    #[inline]
+    fn parent(&self) -> IntMatSpace {
+        IntMatSpace { rows: self.nrows(), cols: self.ncols() }
+    }
 }
 
 impl AdditiveElement for IntMat {

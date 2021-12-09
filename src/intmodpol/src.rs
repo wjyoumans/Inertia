@@ -76,7 +76,14 @@ impl MultiplicativeGroup for IntModPolRing {}
 
 impl Ring for IntModPolRing {}
 
-impl PolynomialRing<IntModRing> for IntModPolRing {}
+impl PolynomialRing for IntModPolRing {
+    type BaseRing = IntModRing;
+
+    #[inline]
+    fn base_ring(&self) -> IntModRing {
+        IntModRing { ctx: Arc::clone(&self.ctx) }
+    }
+}
 
 impl Init2<&Integer, &str> for IntModPolRing {
     #[inline]
@@ -192,6 +199,11 @@ pub type IntModPol = Elem<IntModPolRing>;
 impl Element for IntModPol {
     type Data = fmpz_mod_poly_struct;
     type Parent = IntModPolRing;
+
+    #[inline]
+    fn parent(&self) -> IntModPolRing {
+        IntModPolRing { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.extra) }
+    }
 }
 
 impl AdditiveElement for IntModPol {
@@ -218,7 +230,7 @@ impl MultiplicativeGroupElement for IntModPol {}
 
 impl RingElement for IntModPol {}
 
-impl PolynomialRingElement<IntModRing> for IntModPol {}
+impl PolynomialRingElement for IntModPol {}
 
 impl IntModPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

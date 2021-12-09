@@ -109,7 +109,12 @@ pub trait Factorizable {
     fn factor(&self) -> Self::Output;
 }
 
-// Traits for implementing different initializations of Parents
+/// A generic parent, for example an algebraic structure like a ring.
+pub trait Parent {
+    type Data;
+    type Extra;
+    type Element: Element;
+}
 
 pub trait Init: Parent {
     fn init() -> Self;
@@ -135,17 +140,8 @@ pub trait Init5<A, B, C, D, E>: Parent {
     fn init(a: A, b: B, c: C, d: D, e: E) -> Self;
 }
 
-// Traits for implementing different Element constructors for Parents
-
 pub trait New<T>: Parent {
     fn new(&self, x: T) -> <Self as Parent>::Element;
-}
-
-/// A generic parent, for example an algebraic structure like a ring.
-pub trait Parent {
-    type Data;
-    type Extra;
-    type Element: Element;
 }
 
 /// An generic element of a `Parent`.
@@ -153,7 +149,7 @@ pub trait Element {
     type Data;
     type Parent: Parent;
 
-    //fn parent(&self) -> Self::Parent;
+    fn parent(&self) -> Self::Parent;
 }
 
 pub trait Additive: Parent {
@@ -214,7 +210,15 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
     fn ncols(&self) -> c_long;
     
     fn get_entry(&self, i: usize, j: usize) -> <Self as VectorSpaceElement>::BaseRingElement;
-    
+  
+    /*
+    fn set_entry(&mut self, i: usize, j: usize, e: &<Self as VectorSpaceElement>::BaseRingElement);
+
+    fn is_empty(&self) -> bool;
+
+    fn is_square(&self) -> bool;
+    */
+
     fn get_str(&self) -> String {
         let r = self.nrows() as usize;
         let c = self.ncols() as usize;
@@ -235,11 +239,7 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
         }
         out.join("")
     }
-    // one
-    // zero
-    // set_entry
-    // is_empty
-    // is_square
+    
     // hcat
     // vcat
     // solve
@@ -250,12 +250,14 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
 pub trait Ring: AdditiveGroup + Multiplicative {}
 pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Display {}
 
-pub trait PolynomialRing<T: Ring>: Ring {
-    //fn base_ring(&self) -> T;
+pub trait PolynomialRing: Ring {
+    type BaseRing: Ring;
+    fn base_ring(&self) -> Self::BaseRing;
     // gen
     // basis (indeterminates)
 }
-pub trait PolynomialRingElement<T: Ring>: RingElement {
+pub trait PolynomialRingElement: RingElement {
+    //type BaseRingElement: RingElement; 
     // len
     // degree
     // get_coeff

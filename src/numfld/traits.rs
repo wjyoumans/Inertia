@@ -49,6 +49,11 @@ impl Parent for NumberField {
 impl Element for NumFldElem {
     type Data = nf_elem_struct;
     type Parent = NumberField;
+
+    #[inline]
+    fn parent(&self) -> NumberField {
+        NumberField { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl Clone for NumFldElem {

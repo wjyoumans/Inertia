@@ -89,6 +89,11 @@ pub type Integer = Elem<IntegerRing>;
 impl Element for Integer {
     type Data = fmpz;
     type Parent = IntegerRing;
+
+    #[inline]
+    fn parent(&self) -> IntegerRing {
+        IntegerRing {}
+    }
 }
 
 impl AdditiveElement for Integer {

@@ -63,7 +63,14 @@ impl MultiplicativeGroup for IntPolRing {}
 
 impl Ring for IntPolRing {}
 
-impl PolynomialRing<IntegerRing> for IntPolRing {}
+impl PolynomialRing for IntPolRing {
+    type BaseRing = IntegerRing;
+
+    #[inline]
+    fn base_ring(&self) -> IntegerRing {
+        IntegerRing {}
+    }
+}
 
 impl Init1<&str> for IntPolRing {
     #[inline]
@@ -97,6 +104,11 @@ pub type IntPol = Elem<IntPolRing>;
 impl Element for IntPol {
     type Data = fmpz_poly_struct;
     type Parent = IntPolRing;
+
+    #[inline]
+    fn parent(&self) -> IntPolRing {
+        IntPolRing { x: Arc::clone(&self.extra) }
+    }
 }
 
 impl AdditiveElement for IntPol {
@@ -119,7 +131,7 @@ impl MultiplicativeGroupElement for IntPol {}
 
 impl RingElement for IntPol {}
 
-impl PolynomialRingElement<IntegerRing> for IntPol {}
+impl PolynomialRingElement for IntPol {}
 
 impl IntPol {
 

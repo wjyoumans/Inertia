@@ -59,7 +59,14 @@ impl MultiplicativeGroup for RatPolRing {}
 
 impl Ring for RatPolRing {}
 
-impl PolynomialRing<RationalField> for RatPolRing {}
+impl PolynomialRing for RatPolRing {
+    type BaseRing = RationalField;
+
+    #[inline]
+    fn base_ring(&self) -> RationalField {
+        RationalField {}
+    }
+}
 
 impl Init1<&str> for RatPolRing {
     #[inline]
@@ -92,6 +99,11 @@ pub type RatPol = Elem<RatPolRing>;
 impl Element for RatPol {
     type Data = fmpq_poly_struct;
     type Parent = RatPolRing;
+
+    #[inline]
+    fn parent(&self) -> RatPolRing {
+        RatPolRing { x: Arc::clone(&self.extra) }
+    }
 }
 
 impl AdditiveElement for RatPol {
@@ -114,7 +126,7 @@ impl MultiplicativeGroupElement for RatPol {}
 
 impl RingElement for RatPol {}
 
-impl PolynomialRingElement<RationalField> for RatPol {}
+impl PolynomialRingElement for RatPol {}
 
 impl RatPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

@@ -165,6 +165,11 @@ pub type QadicElem = Elem<QadicField>;
 impl Element for QadicElem {
     type Data = qadic_struct;
     type Parent = QadicField;
+
+    #[inline]
+    fn parent(&self) -> QadicField {
+        QadicField { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for QadicElem {

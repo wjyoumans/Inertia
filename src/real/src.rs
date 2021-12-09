@@ -189,6 +189,11 @@ pub type Real = Elem<RealField>;
 impl Element for Real {
     type Data = arb_struct;
     type Parent = RealField;
+
+    #[inline]
+    fn parent(&self) -> RealField {
+        RealField { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for Real {

@@ -39,6 +39,11 @@ impl Parent for RatFuncField {
 impl Element for RatFunc {
     type Data = fmpz_poly_q_struct;
     type Parent = RatFuncField;
+
+    #[inline]
+    fn parent(&self) -> RatFuncField {
+        RatFuncField {}
+    }
 }
 
 impl Clone for RatFunc {

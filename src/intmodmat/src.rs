@@ -199,6 +199,11 @@ pub type IntModMat = Elem<IntModMatSpace>;
 impl Element for IntModMat {
     type Data = fmpz_mod_mat_struct;
     type Parent = IntModMatSpace;
+
+    #[inline]
+    fn parent(&self) -> IntModMatSpace {
+        IntModMatSpace { rows: self.nrows(), cols: self.ncols(), ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for IntModMat {

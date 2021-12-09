@@ -192,6 +192,11 @@ pub type FinFldMat = Elem<FinFldMatSpace>;
 impl Element for FinFldMat {
     type Data = fq_default_mat_struct;
     type Parent = FinFldMatSpace;
+    
+    #[inline]
+    fn parent(&self) -> FinFldMatSpace {
+        FinFldMatSpace { rows: self.nrows(), cols: self.ncols(), ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for FinFldMat {

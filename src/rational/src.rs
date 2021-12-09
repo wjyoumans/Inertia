@@ -85,6 +85,11 @@ pub type Rational = Elem<RationalField>;
 impl Element for Rational {
     type Data = fmpq;
     type Parent = RationalField;
+
+    #[inline]
+    fn parent(&self) -> RationalField {
+        RationalField {}
+    }
 }
 
 impl AdditiveElement for Rational {

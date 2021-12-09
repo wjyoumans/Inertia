@@ -202,6 +202,11 @@ pub type PadicElem = Elem<PadicField>;
 impl Element for PadicElem {
     type Data = padic_struct;
     type Parent = PadicField;
+
+    #[inline]
+    fn parent(&self) -> PadicField {
+        PadicField { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for PadicElem {

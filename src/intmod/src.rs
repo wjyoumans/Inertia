@@ -141,6 +141,11 @@ pub type IntMod = Elem<IntModRing>;
 impl Element for IntMod {
     type Data = fmpz;
     type Parent = IntModRing;
+
+    #[inline]
+    fn parent(&self) -> IntModRing {
+        IntModRing { ctx: Arc::clone(&self.ctx) }
+    }
 }
 
 impl AdditiveElement for IntMod {
