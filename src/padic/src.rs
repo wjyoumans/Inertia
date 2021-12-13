@@ -119,78 +119,33 @@ impl<T, U> Init2<T, U> for PadicField where
     }
 }
 
-macro_rules! impl_new {
-    (
-        $cast:ident {$($t:ident)*};
-        $func:path
-    ) => ($(
-        impl New<$t> for PadicField {
-            #[inline]
-            fn new(&self, x: $t) -> PadicElem {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::padic::padic_init(z.as_mut_ptr());
-                    $func(
-                        z.as_mut_ptr(), 
-                        x as $cast,
-                        self.as_ptr(),
-                    );
-                    PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-                }        
-            }
-        }
-    )*);
-    (
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for PadicField {
-            #[inline]
-            fn new(&self, x: &$t) -> PadicElem {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::padic::padic_init(z.as_mut_ptr());
-                    $func(
-                        z.as_mut_ptr(), 
-                        x.as_ptr(),
-                        self.as_ptr(),
-                    );
-                    PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-                }        
-            }
-        }
-
-        impl New<$t> for PadicField {
-            #[inline]
-            fn new(&self, x: $t) -> PadicElem {
-                self.new(&x)
-            }
-        }
-    );
-}
-
-impl_new! {
-    u64 {u64 u32 u16 u8};
+impl_new_unsafe! {
+    ctx
+    PadicField, u64 {u64 u32 u16 u8}
     flint_sys::padic::padic_set_ui
 }
 
-impl_new! {
-    i64 {i64 i32 i16 i8};
+impl_new_unsafe! {
+    ctx
+    PadicField, i64 {i64 i32 i16 i8}
     flint_sys::padic::padic_set_si
 }
 
-impl_new! {
-    Integer
+impl_new_unsafe! {
+    ctx
+    PadicField, Integer
     flint_sys::padic::padic_set_fmpz
 }
 
-impl_new! {
-    IntMod
+impl_new_unsafe! {
+    ctx
+    PadicField, IntMod
     flint_sys::padic::padic_set_fmpz
 }
 
-impl_new! {
-    Rational
+impl_new_unsafe! {
+    ctx
+    PadicField, Rational
     flint_sys::padic::padic_set_fmpq
 }
 

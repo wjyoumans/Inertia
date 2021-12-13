@@ -101,42 +101,6 @@ impl<T> Init2<T, &str> for IntModPolRing where
     }
 }
 
-macro_rules! impl_new {
-    (
-        $cast:ident {$($t:ident)*};
-        $func:path
-    ) => ($(
-        impl New<$t> for IntModPolRing {
-            #[inline]
-            fn new(&self, x: $t) -> IntModPol {
-                let mut res = self.default();
-                unsafe { $func(res.as_mut_ptr(), x as $cast, self.as_ptr()); }
-                res
-            }
-        }
-    )*);
-    (
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for IntModPolRing {
-            #[inline]
-            fn new(&self, x: &$t) -> IntModPol {
-                let mut res = self.default();
-                unsafe { $func(res.as_mut_ptr(), x.as_ptr(), self.as_ptr()); }
-                res
-            }
-        }
-        
-        impl New<$t> for IntModPolRing {
-            #[inline]
-            fn new(&self, x: $t) -> IntModPol {
-                self.new(&x)
-            }
-        }
-    );
-}
-
 #[inline]
 unsafe fn fmpz_mod_poly_set_si(
     f: *mut fmpz_mod_poly_struct,
@@ -149,28 +113,33 @@ unsafe fn fmpz_mod_poly_set_si(
     flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
-impl_new! {
-    u64 {u64 u32 u16 u8};
+impl_new_unsafe! {
+    ctx
+    IntModPolRing, u64 {u64 u32 u16 u8}
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_ui
 }
 
-impl_new! {
-    i64 {i64 i32 i16 i8};
+impl_new_unsafe! {
+    ctx
+    IntModPolRing, i64 {i64 i32 i16 i8}
     fmpz_mod_poly_set_si
 }
 
-impl_new! {
-    Integer
+impl_new_unsafe! {
+    ctx
+    IntModPolRing, Integer
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz
 }
 
-impl_new! {
-    IntPol
+impl_new_unsafe! {
+    ctx
+    IntModPolRing, IntPol
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz_poly
 }
 
-impl_new! {
-    IntModPol
+impl_new_unsafe! {
+    ctx
+    IntModPolRing, IntModPol
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set
 }
 

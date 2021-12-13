@@ -1315,7 +1315,7 @@ macro_rules! impl_new_unsafe {
     ) => ($(
         impl New<$t2> for $t1 {
             #[inline]
-            fn new(&self, x: $t2) -> $t1 {
+            fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
                 unsafe { $func(res.as_mut_ptr(), x as $cast); }
                 res
@@ -1329,7 +1329,7 @@ macro_rules! impl_new_unsafe {
     ) => (
         impl New<&$t2> for $t1 {
             #[inline]
-            fn new(&self, x: &$t2) -> $t1 {
+            fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
                 unsafe { $func(res.as_mut_ptr(), x.as_ptr()); }
                 res
@@ -1338,7 +1338,7 @@ macro_rules! impl_new_unsafe {
         
         impl New<$t2> for $t1 {
             #[inline]
-            fn new(&self, x: $t2) -> $t1 {
+            fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
             }
         }
@@ -1351,7 +1351,7 @@ macro_rules! impl_new_unsafe {
     ) => ($(
         impl New<$t2> for $t1 {
             #[inline]
-            fn new(&self, x: $t2) -> $t1 {
+            fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
                 unsafe { $func(res.as_mut_ptr(), x as $cast, self.as_ptr()); }
                 res
@@ -1359,12 +1359,13 @@ macro_rules! impl_new_unsafe {
         }
     )*);
     (
+        ctx
         $t1:ident, $t2:ident
         $func:path
     ) => (
         impl New<&$t2> for $t1 {
             #[inline]
-            fn new(&self, x: &$t2) -> $t1 {
+            fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
                 unsafe { $func(res.as_mut_ptr(), x.as_ptr(), self.as_ptr()); }
                 res
@@ -1373,7 +1374,7 @@ macro_rules! impl_new_unsafe {
         
         impl New<$t2> for $t1 {
             #[inline]
-            fn new(&self, x: $t2) -> $t1 {
+            fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
             }
         }

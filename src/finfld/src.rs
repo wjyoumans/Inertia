@@ -126,83 +126,39 @@ impl<T, U> Init3<T, U, &str> for FiniteField where
     }
 }
 
-macro_rules! impl_new {
-    (
-        $cast:ident {$($t:ident)*};
-        $func:path
-    ) => ($(
-        impl New<$t> for FiniteField {
-            #[inline]
-            fn new(&self, x: $t) -> FinFldElem {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-                    $func(
-                        z.as_mut_ptr(),
-                        x as $cast,
-                        self.as_ptr()
-                    );
-                    FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-                }        
-            }
-        }
-    )*);
-    (
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for FiniteField {
-            #[inline]
-            fn new(&self, x: &$t) -> FinFldElem {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-                    $func(
-                        z.as_mut_ptr(),
-                        x.as_ptr(),
-                        self.as_ptr()
-                    );
-                    FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-                }        
-            }
-        }
-        
-        impl New<$t> for FiniteField {
-            #[inline]
-            fn new(&self, x: $t) -> FinFldElem {
-                self.new(&x)
-            }
-        }
-    );
-}
-
-impl_new! {
-    u64 {u64 u32 u16 u8};
+impl_new_unsafe! {
+    ctx
+    FiniteField, u64 {u64 u32 u16 u8}
     flint_sys::fq_default::fq_default_set_ui
 }
 
-impl_new! {
-    i64 {i64 i32 i16 i8};
+impl_new_unsafe! {
+    ctx
+    FiniteField, i64 {i64 i32 i16 i8}
     flint_sys::fq_default::fq_default_set_si
 }
 
-impl_new! {
-    Integer
+impl_new_unsafe! {
+    ctx
+    FiniteField, Integer
     flint_sys::fq_default::fq_default_set_fmpz
 }
 
-impl_new! {
-    IntPol
+impl_new_unsafe! {
+    ctx
+    FiniteField, IntPol
     flint_sys::fq_default::fq_default_set_fmpz_poly
 }
 
-impl_new! {
-    IntModPol
+impl_new_unsafe! {
+    ctx
+    FiniteField, IntModPol
     flint_sys::fq_default::fq_default_set_fmpz_mod_poly
 }
 
-impl_new! {
-    FinFldElem
+impl_new_unsafe! {
+    ctx
+    FiniteField, FinFldElem
     flint_sys::fq_default::fq_default_set
 }
 

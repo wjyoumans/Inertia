@@ -94,87 +94,25 @@ impl<T> Init1<T> for IntModRing where
     }
 }
 
-macro_rules! impl_new {
-    (
-        $cast:ident {$($t:ident)*};
-        $func:path
-    ) => ($(
-        impl New<$t> for IntModRing {
-            #[inline]
-            fn new(&self, x: $t) -> IntMod {
-                let mut res = self.default();
-                unsafe { $func(res.as_mut_ptr(), x as $cast); }
-                res
-            }
-        }
-    )*);
-    (
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for IntModRing {
-            #[inline]
-            fn new(&self, x: &$t) -> IntMod {
-                let mut res = self.default();
-                unsafe { $func(res.as_mut_ptr(), x.as_ptr()); }
-                res
-            }
-        }
-        
-        impl New<$t> for IntModRing {
-            #[inline]
-            fn new(&self, x: $t) -> IntMod {
-                self.new(&x)
-            }
-        }
-    );
-}
-
-impl_new! {
-    u64 {u64 u32 u16 u8};
+impl_new_unsafe! {
+    IntModRing, u64 {u64 u32 u16 u8}
     flint_sys::fmpz::fmpz_set_ui
 }
 
-impl_new! {
-    i64 {i64 i32 i16 i8};
+impl_new_unsafe! {
+    IntModRing, i64 {i64 i32 i16 i8}
     flint_sys::fmpz::fmpz_set_si
 }
 
-impl_new! {
-    Integer
+impl_new_unsafe! {
+    IntModRing, Integer
     flint_sys::fmpz::fmpz_set
 }
 
-impl_new! {
-    IntMod
+impl_new_unsafe! {
+    IntModRing, IntMod
     flint_sys::fmpz::fmpz_set
 }
-
-/*
-impl New<&IntMod> for IntModRing {
-    /// Construct an element of the ring of integers mod `n`.
-    #[inline]
-    fn new(&self, n: &IntMod) -> IntMod {
-        IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: n.data }
-    }
-}
-
-impl New<&Integer> for IntModRing {
-    /// Construct an element of the ring of integers mod `n`.
-    #[inline]
-    fn new(&self, n: &Integer) -> IntMod {
-        IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: n.data }
-    }
-}
-impl<T> New<T> for IntModRing where
-    T: Into<Integer>
-{
-    /// Construct an element of the ring of integers mod `n`.
-    #[inline]
-    fn new(&self, n: T) -> IntMod {
-        self.new(&n.into())
-    }
-}*/
 
 impl IntModRing {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

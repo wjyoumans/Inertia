@@ -21,9 +21,10 @@ use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
+
 use flint_sys::fq_default_poly::fq_default_poly_struct as fq_poly_struct;
 use flint_sys::fq_default::fq_default_ctx_struct as fq_ctx_struct;
-use libc::c_long;
+use libc::{c_long, c_ulong};
 
 use crate::*;
 
@@ -120,121 +121,72 @@ impl<T, U> Init4<T, U, &str, &str> for FinFldPolRing where
     }
 }
 
-macro_rules! impl_new {
-    (
-        $($t:ident)*;
-        $func:path
-    ) => ($(
-        impl New<$t> for FinFldPolRing {
-            #[inline]
-            fn new(&self, x: $t) -> FinFldPol {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
-                    $func(
-                        z.as_mut_ptr(),
-                        0 as c_long,
-                        Integer::from(x).as_ptr(),
-                        self.as_ptr()
-                    );
-                    FinFldPol { 
-                        ctx: Arc::clone(&self.ctx), 
-                        extra: Arc::clone(&self.x), 
-                        data: z.assume_init() 
-                    }
-                }        
-            }
-        }
-    )*);
-    (
-        base_ring
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for FinFldPolRing {
-            #[inline]
-            fn new(&self, x: &$t) -> FinFldPol {
-                let ff = self.base_ring();
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
-                    $func(
-                        z.as_mut_ptr(),
-                        ff.new(x).as_ptr(),
-                        self.as_ptr()
-                    );
-                    FinFldPol { 
-                        ctx: Arc::clone(&self.ctx), 
-                        extra: Arc::clone(&self.x), 
-                        data: z.assume_init() 
-                    }
-                }        
-            }
-        }
-        
-        impl New<$t> for FinFldPolRing {
-            #[inline]
-            fn new(&self, x: $t) -> FinFldPol {
-                self.new(&x)
-            }
-        }
-    );
-    (
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for FinFldPolRing {
-            #[inline]
-            fn new(&self, x: &$t) -> FinFldPol {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
-                    $func(
-                        z.as_mut_ptr(),
-                        x.as_ptr(),
-                        self.as_ptr()
-                    );
-                    FinFldPol { 
-                        ctx: Arc::clone(&self.ctx), 
-                        extra: Arc::clone(&self.x), 
-                        data: z.assume_init() 
-                    }
-                }        
-            }
-        }
-        
-        impl New<$t> for FinFldPolRing {
-            #[inline]
-            fn new(&self, x: $t) -> FinFldPol {
-                self.new(&x)
-            }
-        }
-    );
+#[inline]
+unsafe fn fq_default_poly_set_ui(
+    f: *mut fq_poly_struct,
+    x: c_ulong,
+    ctx: *const fq_ctx_struct) 
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_ui(z.as_mut_ptr(), x);
+    flint_sys::fq_default_poly::fq_default_poly_set_coeff_fmpz(f, 0, z.as_ptr(), ctx);
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
-impl_new! {
-    u64 u32 u16 u8 i64 i32 i16 i8;
-    flint_sys::fq_default_poly::fq_default_poly_set_coeff_fmpz
+#[inline]
+unsafe fn fq_default_poly_set_si(
+    f: *mut fq_poly_struct,
+    x: c_long,
+    ctx: *const fq_ctx_struct) 
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), x);
+    flint_sys::fq_default_poly::fq_default_poly_set_coeff_fmpz(f, 0, z.as_ptr(), ctx);
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
 }
 
-impl_new! {
-    base_ring
-    Integer
-    flint_sys::fq_default_poly::fq_default_poly_set_fq_default
+#[inline]
+unsafe fn fq_default_poly_set_fmpz(
+    f: *mut fq_poly_struct,
+    x: *const flint_sys::fmpz::fmpz,
+    ctx: *const fq_ctx_struct) 
+{
+    flint_sys::fq_default_poly::fq_default_poly_set_coeff_fmpz(f, 0, x, ctx);
 }
 
-impl_new! {
-    IntPol
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, u64 {u64 u32 u16 u8}
+    fq_default_poly_set_ui
+}
+
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, i64 {i64 i32 i16 i8}
+    fq_default_poly_set_si
+}
+
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, Integer
+    fq_default_poly_set_fmpz
+}
+
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, IntPol
     flint_sys::fq_default_poly::fq_default_poly_set_fmpz_poly
 }
 
-impl_new! {
-    IntModPol
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, IntModPol
     flint_sys::fq_default_poly::fq_default_poly_set_fmpz_mod_poly
 }
 
-impl_new! {
-    FinFldElem
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, FinFldElem
     flint_sys::fq_default_poly::fq_default_poly_set_fq_default
 }
 
