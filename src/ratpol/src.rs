@@ -71,6 +71,11 @@ impl PolynomialRing for RatPolRing {
     fn base_ring(&self) -> RationalField {
         RationalField {}
     }
+
+    #[inline]
+    fn gens(&self) -> Vec<RatPol> {
+        vec![RatPol::from(vec![0,1].as_slice())]
+    }
 }
 
 impl Init1<&str> for RatPolRing {
@@ -131,7 +136,40 @@ impl MultiplicativeGroupElement for RatPol {}
 
 impl RingElement for RatPol {}
 
-impl PolynomialRingElement for RatPol {}
+impl PolynomialRingElement for RatPol {
+    type BaseRingElement = Rational;
+
+    /// Return the length of the polynomial, equivalently, the degree plus one.
+    #[inline]
+    fn len(&self) -> c_long {
+        unsafe { flint_sys::fmpq_poly::fmpq_poly_length(self.as_ptr())}
+    }
+    
+    #[inline]
+    fn degree(&self) -> c_long {
+        unsafe { flint_sys::fmpq_poly::fmpq_poly_degree(self.as_ptr())}
+    }
+    
+    #[inline]
+    fn get_coeff(&self, i: usize) -> Rational {
+        let mut res = Rational::default();
+        unsafe {
+            flint_sys::fmpq_poly::fmpq_poly_get_coeff_fmpq(res.as_mut_ptr(), self.as_ptr(), i as i64);
+            res
+        }
+    }
+    
+    #[inline]
+    fn set_coeff(&mut self, i: usize, coeff: &Rational) {
+        unsafe {
+            flint_sys::fmpq_poly::fmpq_poly_set_coeff_fmpq(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.as_ptr()
+            );
+        }
+    }
+}
 
 impl RatPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -170,18 +208,7 @@ impl RatPol {
             }
         }
     }
-
-    /// Return the length of the polynomial, equivalently, the degree plus one.
-    #[inline]
-    pub fn len(&self) -> c_long {
-        unsafe { flint_sys::fmpq_poly::fmpq_poly_length(self.as_ptr())}
-    }
-    
-    #[inline]
-    pub fn degree(&self) -> c_long {
-        unsafe { flint_sys::fmpq_poly::fmpq_poly_degree(self.as_ptr())}
-    }
-    
+ 
     #[inline]
     pub fn numerator(&self) -> IntPol {
         let mut res = IntPol::default();
@@ -198,26 +225,6 @@ impl RatPol {
             flint_sys::fmpq_poly::fmpq_poly_get_denominator(res.as_mut_ptr(), self.as_ptr());
         }
         res
-    }
-    
-    #[inline]
-    pub fn get_coeff(&self, i: usize) -> Rational {
-        let mut res = Rational::default();
-        unsafe {
-            flint_sys::fmpq_poly::fmpq_poly_get_coeff_fmpq(res.as_mut_ptr(), self.as_ptr(), i as i64);
-            res
-        }
-    }
-    
-    #[inline]
-    pub fn set_coeff(&mut self, i: usize, coeff: &Rational) {
-        unsafe {
-            flint_sys::fmpq_poly::fmpq_poly_set_coeff_fmpq(
-                self.as_mut_ptr(), 
-                i as c_long, 
-                coeff.as_ptr()
-            );
-        }
     }
     
     #[inline]
@@ -244,17 +251,6 @@ impl RatPol {
                 coeff.into()
             );
         }
-    }
-
-    #[inline]
-    pub fn coefficients(&self) -> Vec<Rational> {
-        let len = self.len();
-
-        let mut vec = Vec::<Rational>::default();
-        for i in 0..len {
-            vec.push(self.get_coeff(i as usize));
-        }
-        vec
     }
 }
 

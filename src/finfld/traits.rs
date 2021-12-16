@@ -23,6 +23,18 @@ use std::sync::Arc;
 
 use crate::*;
 
+impl Hash for FiniteField { 
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.prime().hash(state);
+        self.modulus().hash(state);
+    }
+}
+
+impl fmt::Display for FiniteField {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Finite field with {}^{} elements", self.prime(), self.degree())
+    }
+}
 
 impl Clone for FinFldElem {
     fn clone(&self) -> Self {
@@ -66,5 +78,6 @@ impl Drop for FinFldElem {
 impl Hash for FinFldElem {
     fn hash<H: Hasher>(&self, state: &mut H) {
         IntPol::from(self).hash(state);
+        self.parent().hash(state);
     }
 }

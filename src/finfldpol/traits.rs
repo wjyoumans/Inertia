@@ -24,6 +24,18 @@ use std::sync::Arc;
 use crate::*;
 
 
+impl Hash for FinFldPolRing { 
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.base_ring().hash(state);
+    }
+}
+
+impl fmt::Display for FinFldPolRing {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Univariate polynomial ring over {}", self.base_ring()) 
+    }
+}
+
 impl Clone for FinFldPol {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();

@@ -38,6 +38,7 @@ impl Drop for FqCtx {
 }
 
 /// The finite field with `p^k` elements for `p` prime.
+#[derive(Debug, Clone)]
 pub struct FiniteField {
     pub ctx: <Self as Parent>::Data,
 }
@@ -141,6 +142,12 @@ impl_new_unsafe! {
 impl_new_unsafe! {
     ctx
     FiniteField, Integer
+    flint_sys::fq_default::fq_default_set_fmpz
+}
+
+impl_new_unsafe! {
+    ctx
+    FiniteField, IntMod
     flint_sys::fq_default::fq_default_set_fmpz
 }
 
@@ -283,5 +290,32 @@ impl FinFldElem {
                 Err(_) => panic!("Flint returned invalid UTF-8!")
             }
         }
+    }
+
+    #[inline]
+    pub fn modulus(&self) -> IntModPol {
+        let zp = IntModPolRing::init(self.prime(), "x");
+        let mut res = zp.default();
+        unsafe { flint_sys::fq_default::fq_default_ctx_modulus(res.as_mut_ptr(), self.ctx_as_ptr()); }
+        res
+    }
+
+    #[inline]
+    pub fn prime(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fq_default::fq_default_ctx_prime(res.as_mut_ptr(), self.ctx_as_ptr()); }
+        res
+    }
+
+    #[inline]
+    pub fn degree(&self) -> c_long {
+        unsafe { flint_sys::fq_default::fq_default_ctx_degree(self.ctx_as_ptr()) }
+    }
+
+    #[inline]
+    pub fn order(&self) -> Integer {
+        let mut res = Integer::default();
+        unsafe { flint_sys::fq_default::fq_default_ctx_order(res.as_mut_ptr(), self.ctx_as_ptr()); }
+        res
     }
 }

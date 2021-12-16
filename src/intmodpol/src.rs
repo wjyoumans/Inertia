@@ -79,6 +79,11 @@ impl PolynomialRing for IntModPolRing {
     fn base_ring(&self) -> IntModRing {
         IntModRing { ctx: Arc::clone(&self.ctx) }
     }
+
+    #[inline]
+    fn gens(&self) -> Vec<IntModPol> {
+        vec!(self.new(vec![0,1].as_slice()))
+    }
 }
 
 impl Init2<&Integer, &str> for IntModPolRing {
@@ -120,15 +125,41 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
+    pol
+    IntModPolRing, u64 {u64 u32 u16 u8}
+}
+
+impl_new_unsafe! {
     ctx
     IntModPolRing, i64 {i64 i32 i16 i8}
     fmpz_mod_poly_set_si
 }
 
 impl_new_unsafe! {
+    pol
+    IntModPolRing, i64 {i64 i32 i16 i8}
+}
+
+impl_new_unsafe! {
     ctx
     IntModPolRing, Integer
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz
+}
+
+impl_new_unsafe! {
+    pol
+    IntModPolRing, Integer
+}
+
+impl_new_unsafe! {
+    ctx
+    IntModPolRing, IntMod
+    flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz
+}
+
+impl_new_unsafe! {
+    pol
+    IntModPolRing, IntMod
 }
 
 impl_new_unsafe! {
@@ -142,6 +173,7 @@ impl_new_unsafe! {
     IntModPolRing, IntModPol
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set
 }
+
 
 impl IntModPolRing {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -199,7 +231,47 @@ impl MultiplicativeGroupElement for IntModPol {}
 
 impl RingElement for IntModPol {}
 
-impl PolynomialRingElement for IntModPol {}
+impl PolynomialRingElement for IntModPol {
+    type BaseRingElement = IntMod;
+
+    /// Return the length of the polynomial, equivalently, the degree plus one.
+    #[inline]
+    fn len(&self) -> c_long {
+        unsafe { flint_sys::fmpz_mod_poly::fmpz_mod_poly_length(self.as_ptr(), self.ctx_as_ptr())}
+    }
+    
+    /// Return the degree of the polynomial.
+    #[inline]
+    fn degree(&self) -> c_long {
+        unsafe { flint_sys::fmpz_mod_poly::fmpz_mod_poly_degree(self.as_ptr(), self.ctx_as_ptr())}
+    }
+    
+    #[inline]
+    fn get_coeff(&self, i: usize) -> IntMod {
+        let mut res = self.parent().base_ring().default();
+        unsafe {
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_get_coeff_fmpz(
+                res.as_mut_ptr(), 
+                self.as_ptr(), 
+                i as i64,
+                self.ctx_as_ptr()
+            );
+            res
+        }
+    }
+    
+    #[inline]
+    fn set_coeff(&mut self, i: usize, coeff: &IntMod) {
+        unsafe {
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_coeff_fmpz(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.as_ptr(),
+                self.ctx_as_ptr()
+            );
+        }
+    }
+}
 
 impl IntModPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 

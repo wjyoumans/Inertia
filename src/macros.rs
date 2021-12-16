@@ -1379,4 +1379,50 @@ macro_rules! impl_new_unsafe {
             }
         }
     );
+    (
+        // new from vectors of primitives with context
+        pol
+        $t1:ident, $cast:ident {$($t2:ident)*}
+    ) => ($(
+        impl New<&[$t2]> for $t1 {
+            #[inline]
+            fn new(&self, src: &[$t2]) -> <$t1 as Parent>::Element {
+                let mut res = self.default();
+                for (i, &x) in src.iter().enumerate() {
+                    res.set_coeff(i, &self.base_ring().new(x));
+                }
+                res
+            }
+        }
+        
+        impl New<Vec<$t2>> for $t1 {
+            #[inline]
+            fn new(&self, src: Vec<$t2>) -> <$t1 as Parent>::Element {
+                self.new(src.as_slice())
+            }
+        }
+    )*);
+    (
+        // new from vectors of non primitive with context
+        pol
+        $t1:ident, $t2:ident
+    ) => (
+        impl New<&[$t2]> for $t1 {
+            #[inline]
+            fn new(&self, src: &[$t2]) -> <$t1 as Parent>::Element {
+                let mut res = self.default();
+                for (i, x) in src.iter().enumerate() {
+                    res.set_coeff(i, &self.base_ring().new(x));
+                }
+                res
+            }
+        }
+        
+        impl New<Vec<$t2>> for $t1 {
+            #[inline]
+            fn new(&self, src: Vec<$t2>) -> <$t1 as Parent>::Element {
+                self.new(src.as_slice())
+            }
+        }
+    );
 }

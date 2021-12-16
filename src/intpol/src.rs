@@ -75,6 +75,11 @@ impl PolynomialRing for IntPolRing {
     fn base_ring(&self) -> IntegerRing {
         IntegerRing {}
     }
+
+    #[inline]
+    fn gens(&self) -> Vec<IntPol> {
+        vec![IntPol::from(vec![0,1].as_slice())]
+    }
 }
 
 impl Init1<&str> for IntPolRing {
@@ -136,7 +141,43 @@ impl MultiplicativeGroupElement for IntPol {}
 
 impl RingElement for IntPol {}
 
-impl PolynomialRingElement for IntPol {}
+impl PolynomialRingElement for IntPol {
+    type BaseRingElement = Integer;
+
+    /// Return the length of the polynomial, equivalently, the degree plus one.
+    #[inline]
+    fn len(&self) -> c_long {
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_length(self.as_ptr())}
+    }
+    
+    /// Return the degree of the polynomial.
+    #[inline]
+    fn degree(&self) -> c_long {
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_degree(self.as_ptr())}
+    }
+    
+    /// Get the i-th coefficient of an integer polynomial.
+    #[inline]
+    fn get_coeff(&self, i: usize) -> Integer {
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_get_coeff_fmpz(res.as_mut_ptr(), self.as_ptr(), i as i64);
+            res
+        }
+    }
+    
+    /// Set the i-th coefficient of an integer polynomial to an [Integer].
+    #[inline]
+    fn set_coeff(&mut self, i: usize, coeff: &Integer) {
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_set_coeff_fmpz(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.as_ptr()
+            );
+        }
+    }
+}
 
 impl IntPol {
 
@@ -185,41 +226,7 @@ impl IntPol {
     pub fn is_invertible(&self) -> bool {
         !self.is_zero()
     }
-
-    /// Return the length of the polynomial, equivalently, the degree plus one.
-    #[inline]
-    pub fn len(&self) -> c_long {
-        unsafe { flint_sys::fmpz_poly::fmpz_poly_length(self.as_ptr())}
-    }
-    
-    /// Return the degree of the polynomial.
-    #[inline]
-    pub fn degree(&self) -> c_long {
-        unsafe { flint_sys::fmpz_poly::fmpz_poly_degree(self.as_ptr())}
-    }
-    
-    /// Get the i-th coefficient of an integer polynomial.
-    #[inline]
-    pub fn get_coeff(&self, i: usize) -> Integer {
-        let mut res = Integer::default();
-        unsafe {
-            flint_sys::fmpz_poly::fmpz_poly_get_coeff_fmpz(res.as_mut_ptr(), self.as_ptr(), i as i64);
-            res
-        }
-    }
-    
-    /// Set the i-th coefficient of an integer polynomial to an [Integer].
-    #[inline]
-    pub fn set_coeff(&mut self, i: usize, coeff: &Integer) {
-        unsafe {
-            flint_sys::fmpz_poly::fmpz_poly_set_coeff_fmpz(
-                self.as_mut_ptr(), 
-                i as c_long, 
-                coeff.as_ptr()
-            );
-        }
-    }
-    
+ 
     /// Set the i-th coefficient of an integer polynomial to an unsigned integer.
     #[inline]
     pub fn set_coeff_ui<T>(&mut self, i: usize, coeff: T) where 
@@ -246,18 +253,6 @@ impl IntPol {
                 coeff.into()
             );
         }
-    }
-
-    /// Return an [Integer] vector containing the coefficients of the polynomial.
-    #[inline]
-    pub fn coefficients(&self) -> Vec<Integer> {
-        let len = self.len();
-
-        let mut vec = Vec::<Integer>::default();
-        for i in 0..len {
-            vec.push(self.get_coeff(i as usize));
-        }
-        vec
     }
     
     /// Return true if the polynomial is the unit +/-1.

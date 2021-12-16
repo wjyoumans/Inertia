@@ -207,6 +207,7 @@ pub trait VectorSpaceElement: ModuleElement {
 
 pub trait MatrixSpace: VectorSpace {}
 pub trait MatrixSpaceElement: VectorSpaceElement {
+
     fn nrows(&self) -> c_long;
     
     fn ncols(&self) -> c_long;
@@ -258,22 +259,38 @@ pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Displ
 
 pub trait PolynomialRing: Ring {
     type BaseRing: Ring;
+    
     fn base_ring(&self) -> Self::BaseRing;
 
-    // TODO
-    // gen, basis, indeterminates (multivariate case)
+    fn gens(&self) -> Vec<<Self as Parent>::Element>;
 }
 
 pub trait PolynomialRingElement: RingElement {
-    //type BaseRingElement: RingElement; 
+    type BaseRingElement: RingElement; 
+  
+    fn len(&self) -> c_long;
+
+    fn degree(&self) -> c_long;
+
+    fn get_coeff(&self, i: usize) -> Self::BaseRingElement;
     
-    // TODO
-    // len, deg
-    // get_coeff, set_coeff, coefficients
+    fn set_coeff(&mut self, i: usize, coeff: &Self::BaseRingElement);
+
+    #[inline]
+    fn coefficients(&self) -> Vec<Self::BaseRingElement> {
+        let len = self.len();
+
+        let mut vec = Vec::<Self::BaseRingElement>::default();
+        for i in 0..len {
+            vec.push(self.get_coeff(i as usize));
+        }
+        vec
+    }
 }
 
 pub trait Field: Ring {
     type BaseField: Field;
+    
     fn base_field(&self) -> Self::BaseField;
 
     // TODO

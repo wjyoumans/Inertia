@@ -29,6 +29,7 @@ use libc::{c_long, c_ulong};
 use crate::*;
 
 /// The ring of polynomials over the finite field with `p^k` elements.
+#[derive(Debug, Clone)]
 pub struct FinFldPolRing {
     ctx: <Self as Parent>::Data,
     x: Arc<String>,
@@ -79,6 +80,11 @@ impl PolynomialRing for FinFldPolRing {
     #[inline]
     fn base_ring(&self) -> FiniteField {
         FiniteField { ctx: Arc::clone(&self.ctx) }
+    }
+
+    #[inline]
+    fn gens(&self) -> Vec<FinFldPol> {
+        vec!(self.new(vec![0,1].as_slice()))
     }
 }
 
@@ -161,9 +167,19 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
+    pol
+    FinFldPolRing, u64 {u64 u32 u16 u8}
+}
+
+impl_new_unsafe! {
     ctx
     FinFldPolRing, i64 {i64 i32 i16 i8}
     fq_default_poly_set_si
+}
+
+impl_new_unsafe! {
+    pol
+    FinFldPolRing, i64 {i64 i32 i16 i8}
 }
 
 impl_new_unsafe! {
@@ -173,9 +189,30 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
+    pol
+    FinFldPolRing, Integer
+}
+
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, IntMod
+    fq_default_poly_set_fmpz
+}
+
+impl_new_unsafe! {
+    pol
+    FinFldPolRing, IntMod
+}
+
+impl_new_unsafe! {
     ctx
     FinFldPolRing, IntPol
     flint_sys::fq_default_poly::fq_default_poly_set_fmpz_poly
+}
+
+impl_new_unsafe! {
+    pol
+    FinFldPolRing, IntPol
 }
 
 impl_new_unsafe! {
@@ -185,10 +222,28 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
+    pol
+    FinFldPolRing, IntModPol
+}
+
+impl_new_unsafe! {
     ctx
     FinFldPolRing, FinFldElem
     flint_sys::fq_default_poly::fq_default_poly_set_fq_default
 }
+
+impl_new_unsafe! {
+    pol
+    FinFldPolRing, FinFldElem
+}
+
+impl_new_unsafe! {
+    ctx
+    FinFldPolRing, FinFldPol
+    flint_sys::fq_default_poly::fq_default_poly_set
+}
+
+
 
 impl FinFldPolRing {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
@@ -196,11 +251,6 @@ impl FinFldPolRing {
     #[inline]
     pub fn as_ptr(&self) -> &fq_ctx_struct {
         &self.ctx.0
-    }
-
-    #[inline]
-    pub fn base_ring(&self) -> FiniteField {
-        FiniteField { ctx: Arc::clone(&self.ctx) }
     }
 }
 
@@ -245,7 +295,47 @@ impl AdditiveGroupElement for FinFldPol {}
 
 impl RingElement for FinFldPol {}
 
-impl PolynomialRingElement for FinFldPol {}
+impl PolynomialRingElement for FinFldPol {
+    type BaseRingElement = FinFldElem;
+
+    /// Return the length of the polynomial, equivalently, the degree plus one.
+    #[inline]
+    fn len(&self) -> c_long {
+        unsafe { flint_sys::fq_default_poly::fq_default_poly_length(self.as_ptr(), self.ctx_as_ptr())}
+    }
+    
+    /// Return the degree of the polynomial.
+    #[inline]
+    fn degree(&self) -> c_long {
+        unsafe { flint_sys::fq_default_poly::fq_default_poly_degree(self.as_ptr(), self.ctx_as_ptr())}
+    }
+    
+    #[inline]
+    fn get_coeff(&self, i: usize) -> FinFldElem {
+        let mut res = self.parent().base_ring().default();
+        unsafe {
+            flint_sys::fq_default_poly::fq_default_poly_get_coeff(
+                res.as_mut_ptr(), 
+                self.as_ptr(), 
+                i as i64,
+                self.ctx_as_ptr()
+            );
+            res
+        }
+    }
+    
+    #[inline]
+    fn set_coeff(&mut self, i: usize, coeff: &FinFldElem) {
+        unsafe {
+            flint_sys::fq_default_poly::fq_default_poly_set_coeff(
+                self.as_mut_ptr(), 
+                i as c_long, 
+                coeff.as_ptr(),
+                self.ctx_as_ptr()
+            );
+        }
+    }
+}
 
 impl FinFldPol {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
