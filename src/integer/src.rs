@@ -61,8 +61,6 @@ impl Multiplicative for IntegerRing {
 
 impl AdditiveGroup for IntegerRing {}
 
-impl MultiplicativeGroup for IntegerRing {}
-
 impl Ring for IntegerRing {}
 
 impl Init for IntegerRing {
@@ -116,8 +114,6 @@ impl MultiplicativeElement for Integer {
 }
 
 impl AdditiveGroupElement for Integer {}
-
-impl MultiplicativeGroupElement for Integer {}
 
 impl RingElement for Integer {}
 

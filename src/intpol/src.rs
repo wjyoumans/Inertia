@@ -64,8 +64,6 @@ impl Multiplicative for IntPolRing {
 
 impl AdditiveGroup for IntPolRing {}
 
-impl MultiplicativeGroup for IntPolRing {}
-
 impl Ring for IntPolRing {}
 
 impl PolynomialRing for IntPolRing {
@@ -136,8 +134,6 @@ impl MultiplicativeElement for IntPol {
 }
 
 impl AdditiveGroupElement for IntPol {}
-
-impl MultiplicativeGroupElement for IntPol {}
 
 impl RingElement for IntPol {}
 

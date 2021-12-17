@@ -68,8 +68,6 @@ impl Multiplicative for IntModPolRing {
 
 impl AdditiveGroup for IntModPolRing {}
 
-impl MultiplicativeGroup for IntModPolRing {}
-
 impl Ring for IntModPolRing {}
 
 impl PolynomialRing for IntModPolRing {
@@ -226,8 +224,6 @@ impl MultiplicativeElement for IntModPol {
 }
 
 impl AdditiveGroupElement for IntModPol {}
-
-impl MultiplicativeGroupElement for IntModPol {}
 
 impl RingElement for IntModPol {}
 

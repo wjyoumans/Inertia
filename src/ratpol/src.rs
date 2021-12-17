@@ -60,8 +60,6 @@ impl Multiplicative for RatPolRing {
 
 impl AdditiveGroup for RatPolRing {}
 
-impl MultiplicativeGroup for RatPolRing {}
-
 impl Ring for RatPolRing {}
 
 impl PolynomialRing for RatPolRing {
@@ -131,8 +129,6 @@ impl MultiplicativeElement for RatPol {
 }
 
 impl AdditiveGroupElement for RatPol {}
-
-impl MultiplicativeGroupElement for RatPol {}
 
 impl RingElement for RatPol {}
 

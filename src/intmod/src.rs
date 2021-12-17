@@ -68,8 +68,6 @@ impl Multiplicative for IntModRing {
 
 impl AdditiveGroup for IntModRing {}
 
-impl MultiplicativeGroup for IntModRing {}
-
 impl Ring for IntModRing {}
 
 impl Init1<&Integer> for IntModRing {
@@ -161,8 +159,6 @@ impl MultiplicativeElement for IntMod {
 }
 
 impl AdditiveGroupElement for IntMod {}
-
-impl MultiplicativeGroupElement for IntMod {}
 
 impl RingElement for IntMod {}
 
