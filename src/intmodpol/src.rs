@@ -123,41 +123,21 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
-    pol
-    IntModPolRing, u64 {u64 u32 u16 u8}
-}
-
-impl_new_unsafe! {
     ctx
     IntModPolRing, i64 {i64 i32 i16 i8}
     fmpz_mod_poly_set_si
 }
 
 impl_new_unsafe! {
-    pol
-    IntModPolRing, i64 {i64 i32 i16 i8}
-}
-
-impl_new_unsafe! {
     ctx
     IntModPolRing, Integer
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz
 }
 
 impl_new_unsafe! {
-    pol
-    IntModPolRing, Integer
-}
-
-impl_new_unsafe! {
     ctx
     IntModPolRing, IntMod
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set_fmpz
-}
-
-impl_new_unsafe! {
-    pol
-    IntModPolRing, IntMod
 }
 
 impl_new_unsafe! {
@@ -170,6 +150,11 @@ impl_new_unsafe! {
     ctx
     IntModPolRing, IntModPol
     flint_sys::fmpz_mod_poly::fmpz_mod_poly_set
+}
+
+impl_new_unsafe! {
+    pol
+    IntModPolRing, {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod}
 }
 
 

@@ -84,19 +84,16 @@ impl<T> Init2<T, T> for RatMatSpace where
     }
 }
 
-impl New<&RatMat> for RatMatSpace {
-    fn new(&self, x: &RatMat) -> RatMat {
-        x.clone()
-    }
+impl_new_unsafe! {
+    RatMatSpace, RatMat
+    flint_sys::fmpq_mat::fmpq_mat_set
 }
 
-impl<T> New<T> for RatMatSpace where
-    T: Into<RatMat>
-{
-    fn new(&self, x: T) -> RatMat {
-        x.into()
-    }
+impl_new_unsafe! {
+    matrix
+    RatMatSpace, {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod Rational}
 }
+
 
 /// A matrix of arbitrary precision [Rationals][Rational]. The field `data` is a FLINT
 /// [fmpq_mat_struct][flint_sys::fmpq_mat::fmpq_mat_struct].

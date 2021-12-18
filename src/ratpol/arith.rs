@@ -23,6 +23,8 @@ use rug::ops::*;
 
 use crate::*;
 
+// TODO: Rem, Div, Pow
+
 impl_cmp_unsafe! {
     eq
     RatPol

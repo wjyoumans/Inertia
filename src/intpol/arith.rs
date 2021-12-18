@@ -23,6 +23,7 @@ use rug::ops::*;
 
 use crate::*;
 
+// TODO: Div, Pow -> RatFunc
 
 impl_cmp_unsafe! {
     eq

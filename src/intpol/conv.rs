@@ -50,6 +50,18 @@ impl_from! {
 }
 
 impl_from! {
+    IntPol, PadicElem
+    {
+        fn from(x: &PadicElem) -> IntPol {
+            let mut res = IntPol::default();
+            let tmp = Integer::from(x);
+            res.set_coeff(0, &tmp);
+            res
+        }
+    }
+}
+
+impl_from! {
     IntPol, IntModPol
     {
         fn from(x: &IntModPol) -> IntPol {
@@ -65,6 +77,8 @@ impl_from! {
         }
     }
 }
+
+// PadicPol
 
 impl_from! {
     IntPol, FinFldElem

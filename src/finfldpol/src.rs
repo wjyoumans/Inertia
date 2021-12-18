@@ -167,41 +167,21 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
-    pol
-    FinFldPolRing, u64 {u64 u32 u16 u8}
-}
-
-impl_new_unsafe! {
     ctx
     FinFldPolRing, i64 {i64 i32 i16 i8}
     fq_default_poly_set_si
 }
 
 impl_new_unsafe! {
-    pol
-    FinFldPolRing, i64 {i64 i32 i16 i8}
-}
-
-impl_new_unsafe! {
     ctx
     FinFldPolRing, Integer
     fq_default_poly_set_fmpz
 }
 
 impl_new_unsafe! {
-    pol
-    FinFldPolRing, Integer
-}
-
-impl_new_unsafe! {
     ctx
     FinFldPolRing, IntMod
     fq_default_poly_set_fmpz
-}
-
-impl_new_unsafe! {
-    pol
-    FinFldPolRing, IntMod
 }
 
 impl_new_unsafe! {
@@ -211,19 +191,9 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
-    pol
-    FinFldPolRing, IntPol
-}
-
-impl_new_unsafe! {
     ctx
     FinFldPolRing, IntModPol
     flint_sys::fq_default_poly::fq_default_poly_set_fmpz_mod_poly
-}
-
-impl_new_unsafe! {
-    pol
-    FinFldPolRing, IntModPol
 }
 
 impl_new_unsafe! {
@@ -233,16 +203,15 @@ impl_new_unsafe! {
 }
 
 impl_new_unsafe! {
-    pol
-    FinFldPolRing, FinFldElem
-}
-
-impl_new_unsafe! {
     ctx
     FinFldPolRing, FinFldPol
     flint_sys::fq_default_poly::fq_default_poly_set
 }
 
+impl_new_unsafe! {
+    pol
+    FinFldPolRing, {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod IntPol IntModPol FinFldElem}
+}
 
 
 impl FinFldPolRing {

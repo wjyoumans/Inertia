@@ -1313,12 +1313,19 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $cast:ident {$($t2:ident)*}
         $func:path
     ) => ($(
+        impl New<&$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), *x as $cast); }
+                res
+            }
+        }
+        
         impl New<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
-                let mut res = self.default();
-                unsafe { $func(res.as_mut_ptr(), x as $cast); }
-                res
+                self.new(&x)
             }
         }
     )*);
@@ -1349,12 +1356,19 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $cast:ident {$($t2:ident)*}
         $func:path
     ) => ($(
+        impl New<&$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), *x as $cast, self.as_ptr()); }
+                res
+            }
+        }
+        
         impl New<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
-                let mut res = self.default();
-                unsafe { $func(res.as_mut_ptr(), x as $cast, self.as_ptr()); }
-                res
+                self.new(&x)
             }
         }
     )*);
@@ -1382,31 +1396,8 @@ macro_rules! impl_new_unsafe {
     (
         // new from vectors of primitives with context
         pol
-        $t1:ident, $cast:ident {$($t2:ident)*}
+        $t1:ident, {$($t2:ident)*}
     ) => ($(
-        impl New<&[$t2]> for $t1 {
-            #[inline]
-            fn new(&self, src: &[$t2]) -> <$t1 as Parent>::Element {
-                let mut res = self.default();
-                for (i, &x) in src.iter().enumerate() {
-                    res.set_coeff(i, &self.base_ring().new(x));
-                }
-                res
-            }
-        }
-        
-        impl New<Vec<$t2>> for $t1 {
-            #[inline]
-            fn new(&self, src: Vec<$t2>) -> <$t1 as Parent>::Element {
-                self.new(src.as_slice())
-            }
-        }
-    )*);
-    (
-        // new from vectors of non primitive with context
-        pol
-        $t1:ident, $t2:ident
-    ) => (
         impl New<&[$t2]> for $t1 {
             #[inline]
             fn new(&self, src: &[$t2]) -> <$t1 as Parent>::Element {
@@ -1424,5 +1415,61 @@ macro_rules! impl_new_unsafe {
                 self.new(src.as_slice())
             }
         }
-    );
+    )*);
+    (
+        // new from vector of slices of primitive types with context
+        matrix
+        $t1:ident, {$($t2:ident)*}
+    ) => ($(
+        
+        impl New<&[&[$t2]]> for $t1 {
+            fn new(&self, mat: &[&[$t2]]) -> <$t1 as Parent>::Element {
+                let m = mat.len() as c_long;
+                let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+
+                let mut res = self.default();
+                assert!(m <= res.nrows());
+                assert!(n <= res.ncols());
+
+                for (i, row) in mat.iter().enumerate() {
+                    for (j, x) in row.iter().enumerate() {
+                        res.set_entry(i, j, &self.base_ring().new(x));
+                    }
+                }
+                res
+            }
+        }
+        
+        impl New<&[Vec<$t2>]> for $t1 {
+            fn new(&self, mat: &[Vec<$t2>]) -> <$t1 as Parent>::Element {
+                let m = mat.len() as c_long;
+                let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+
+                let mut res = self.default();
+                assert!(m <= res.nrows());
+                assert!(n <= res.ncols());
+
+                for (i, row) in mat.iter().enumerate() {
+                    for (j, x) in row.iter().enumerate() {
+                        res.set_entry(i, j, &self.base_ring().new(x));
+                    }
+                }
+                res
+            }
+        }
+        
+        impl New<Vec<&[$t2]>> for $t1 {
+            #[inline]
+            fn new(&self, mat: Vec<&[$t2]>) -> <$t1 as Parent>::Element {
+                self.new(mat.as_slice())
+            }
+        }
+       
+        impl New<Vec<Vec<$t2>>> for $t1 {
+            #[inline]
+            fn new(&self, mat: Vec<Vec<$t2>>) -> <$t1 as Parent>::Element {
+                self.new(mat.as_slice())
+            }
+        }
+    )*);
 }

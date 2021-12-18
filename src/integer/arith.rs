@@ -24,6 +24,8 @@ use rug::ops::*;
 
 use crate::*;
 
+// TODO: Div -> Rational
+
 impl_cmp_unsafe! {
     eq
     Integer

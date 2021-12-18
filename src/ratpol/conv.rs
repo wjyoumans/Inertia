@@ -17,7 +17,6 @@
 
 use crate::*;
 
-
 impl_from_unsafe! {
     None
     RatPol, u64 {usize u64 u32 u16 u8} 
@@ -38,6 +37,12 @@ impl_from_unsafe! {
 
 impl_from_unsafe! {
     None
+    RatPol, IntMod
+    flint_sys::fmpq_poly::fmpq_poly_set_fmpz
+}
+
+impl_from_unsafe! {
+    None
     RatPol, Rational
     flint_sys::fmpq_poly::fmpq_poly_set_fmpq
 }
@@ -48,16 +53,11 @@ impl_from_unsafe! {
     flint_sys::fmpq_poly::fmpq_poly_set_fmpz_poly
 }
 
-
 impl_from! {
-    RatPol, IntMod
+    RatPol, IntModPol
     {
-        fn from(x: &IntMod) -> RatPol {
-            let mut res = RatPol::default();
-            unsafe {
-                flint_sys::fmpq_poly::fmpq_poly_set_fmpz(res.as_mut_ptr(), x.as_ptr());
-            }
-            res
+        fn from(x: &IntModPol) -> RatPol {
+            RatPol::from(IntPol::from(x))
         }
     }
 }
