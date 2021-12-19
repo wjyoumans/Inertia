@@ -17,14 +17,13 @@
 
 
 use std::cmp::Ordering::{self, Less, Greater, Equal};
+use std::mem::MaybeUninit;
 use std::ops::*;
 
 use libc::{c_long, c_ulong};
 use rug::ops::*;
 
 use crate::*;
-
-// TODO: Div -> Rational
 
 impl_cmp_unsafe! {
     eq
@@ -140,6 +139,10 @@ impl_binop_unsafe! {
     Pow {pow}
     AssignPow {assign_pow}
     fmpz_pow_fmpz;
+
+    Div {div}
+    AssignDiv {assign_div}
+    flint_sys::fmpq::fmpq_set_fmpz_frac;
 }
 
 impl_binop_unsafe! {
@@ -236,6 +239,10 @@ impl_binop_unsafe! {
     Pow {pow}
     AssignPow {assign_pow}
     fmpz_pow_si;
+
+    Div {div}
+    AssignDiv {assign_div}
+    fmpz_div_si;
 }
 
 impl_binop_unsafe! {
@@ -279,15 +286,18 @@ impl_binop_unsafe! {
     fmpz_ui_tdiv_r;
 }
 
-/* TODO: not working?
 impl_binop_unsafe! {
     None
-    u64 {u64 u32 u16 i8}, Integer, Rational
+    u64 {u64 u32 u16 u8}, Integer, Rational
 
     Pow {pow}
     AssignPow {assign_pow}
     fmpz_ui_pow;
-}*/
+    
+    Div {div}
+    AssignDiv {assign_div}
+    fmpz_ui_div;
+}
 
 impl_binop_unsafe! {
     None
@@ -330,7 +340,6 @@ impl_binop_unsafe! {
     fmpz_si_tdiv_r;
 }
 
-/* TODO: not working?
 impl_binop_unsafe! {
     None
     i64 {i64 i32 i16 i8}, Integer, Rational
@@ -338,8 +347,11 @@ impl_binop_unsafe! {
     Pow {pow}
     AssignPow {assign_pow}
     fmpz_si_pow;
+    
+    Div {div}
+    AssignDiv {assign_div}
+    fmpz_si_div;
 }
-*/
 
 #[inline]
 unsafe fn fmpz_and_ui(
@@ -584,7 +596,6 @@ unsafe fn fmpz_pow_si(
     flint_sys::fmpq::fmpq_pow_si(res, res, g);
 }
 
-/*
 #[inline]
 unsafe fn fmpz_ui_pow(
     res: *mut flint_sys::fmpq::fmpq,
@@ -606,4 +617,55 @@ unsafe fn fmpz_si_pow(
     flint_sys::fmpq::fmpq_set_si_den1(res, f);
     flint_sys::fmpq::fmpq_pow_fmpz(res, res, g);
 }
-*/
+
+#[inline]
+unsafe fn fmpz_div_ui(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: *const flint_sys::fmpz::fmpz,
+    g: c_ulong,
+    )
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_set_ui(z.as_mut_ptr(), g);
+    flint_sys::fmpq::fmpq_set_fmpz_frac(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_div_si(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: *const flint_sys::fmpz::fmpz,
+    g: c_long,
+    )
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_set_si(z.as_mut_ptr(), g);
+    flint_sys::fmpq::fmpq_set_fmpz_frac(res, f, z.as_ptr());
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_ui_div(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: c_ulong,
+    g: *const flint_sys::fmpz::fmpz,
+    )
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_set_ui(z.as_mut_ptr(), f);
+    flint_sys::fmpq::fmpq_set_fmpz_frac(res, z.as_ptr(), g);
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}
+
+#[inline]
+unsafe fn fmpz_si_div(
+    res: *mut flint_sys::fmpq::fmpq,
+    f: c_long,
+    g: *const flint_sys::fmpz::fmpz,
+    )
+{
+    let mut z = MaybeUninit::uninit();
+    flint_sys::fmpz::fmpz_set_si(z.as_mut_ptr(), f);
+    flint_sys::fmpq::fmpq_set_fmpz_frac(res, z.as_ptr(), g);
+    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
+}
