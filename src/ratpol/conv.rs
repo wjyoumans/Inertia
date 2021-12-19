@@ -71,23 +71,26 @@ impl_from! {
     }
 }
 
-impl<'a, T> From<&'a [T]> for RatPol where &'a T: Into<Rational>
-{
-    fn from(src: &'a [T]) -> RatPol {
-        let mut res = RatPol::default();
-        for (i, x) in src.iter().enumerate() {
-            res.set_coeff(i, &x.into());
-        }
-        res
-    }
+
+impl_from! {
+    pol
+    RatPol, Rational {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod PadicElem}
 }
 
 impl From<&[Rational]> for RatPol {
+    #[inline]
     fn from(src: &[Rational]) -> RatPol {
         let mut res = RatPol::default();
         for (i, x) in src.iter().enumerate() {
             res.set_coeff(i, x);
         }
         res
+    }
+}
+
+impl From<Vec<Rational>> for RatPol {
+    #[inline]
+    fn from(src: Vec<Rational>) -> RatPol {
+        RatPol::from(src.as_slice())
     }
 }

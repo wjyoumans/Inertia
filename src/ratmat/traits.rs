@@ -57,6 +57,6 @@ impl Drop for RatMat {
 
 impl Hash for RatMat {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        Vec::from(self).hash(state);
+        self.entries().hash(state);
     }
 }

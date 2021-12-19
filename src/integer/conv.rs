@@ -18,7 +18,6 @@
 use std::ffi::CString;
 use crate::*;
 
-
 impl_from_unsafe! {
     None
     Integer, u64 {usize u64 u32 u16 u8}

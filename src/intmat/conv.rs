@@ -33,61 +33,56 @@ impl_from! {
     String, IntMat
     {
         fn from(x: &IntMat) -> String {
-            let r = x.nrows() as usize;
-            let c = x.ncols() as usize;
-            let mut out = Vec::<String>::with_capacity(r);
-
-            for i in 0usize..r {
-                let mut row = Vec::<String>::with_capacity(c+2);
-                row.push("[".to_string());
-                for j in 0usize..c {
-                    row.push(format!(" {} ", x.get_entry(i, j)));
-                }
-                if i == r-1 {
-                    row.push("]".to_string());
-                } else {
-                    row.push("]\n".to_string());
-                }
-                out.push(row.join(""));
-            }
-            out.join("")
+            x.get_str()
         }
     }
 }
 
-impl<'a, T> From<&'a [Vec<T>]> for IntMat where &'a T: Into<Integer> {
-    fn from(mat: &'a [Vec<T>]) -> IntMat {
+impl_from! {
+    matrix
+    IntMat, Integer {u64 u32 u16 u8 i64 i32 i16 i8 IntMod PadicElem}
+}
+
+impl From<&[&[Integer]]> for IntMat {
+    fn from(mat: &[&[Integer]]) -> IntMat {
         let m = mat.len() as c_long;
         let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+        let mut res = <IntMat>::zero(m, n);
 
-        let mut res = IntMat::zero(m, n);
         for (i, row) in mat.iter().enumerate() {
             for (j, x) in row.iter().enumerate() {
-                res.set_entry(i, j, &x.into());
+                res.set_entry(i, j, x);
             }
         }
         res
     }
 }
 
-impl From<&IntMat> for Vec<Integer> {
-    fn from(x: &IntMat) -> Vec<Integer> {
-        let r = x.nrows() as usize;
-        let c = x.ncols() as usize;
-        let mut out = Vec::<Integer>::with_capacity(r*c);
+impl From<&[Vec<Integer>]> for IntMat {
+    fn from(mat: &[Vec<Integer>]) -> IntMat {
+        let m = mat.len() as c_long;
+        let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+        let mut res = <IntMat>::zero(m, n);
 
-        for i in 0usize..r {
-            for j in 0usize..c {
-                out.push(x.get_entry(i, j));
+        for (i, row) in mat.iter().enumerate() {
+            for (j, x) in row.iter().enumerate() {
+                res.set_entry(i, j, x);
             }
         }
-        out
+        res
     }
 }
 
-impl From<IntMat> for Vec<Integer> {
-    fn from(x: IntMat) -> Vec<Integer> {
-        Vec::from(&x)
+impl From<Vec<&[Integer]>> for IntMat {
+    #[inline]
+    fn from(mat: Vec<&[Integer]>) -> IntMat {
+        <IntMat>::from(mat.as_slice())
     }
 }
 
+impl From<Vec<Vec<Integer>>> for IntMat {
+    #[inline]
+    fn from(mat: Vec<Vec<Integer>>) -> IntMat {
+        <IntMat>::from(mat.as_slice())
+    }
+}

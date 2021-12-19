@@ -247,12 +247,33 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
         out.join("")
     }
 
+    fn entries(&self) -> Vec<<Self as VectorSpaceElement>::BaseRingElement> {
+        let r = self.nrows() as usize;
+        let c = self.ncols() as usize;
+        let mut out = Vec::<<Self as VectorSpaceElement>::BaseRingElement>::with_capacity(r*c);
+
+        for i in 0usize..r {
+            for j in 0usize..c {
+                out.push(self.get_entry(i, j));
+            }
+        }
+        out
+    }
+
     // is_invertible
     // submatrix (derive row/col)
     // hcat, vcat
     // trace, det, charpoly, minpoly, rank
     // rref, solve, nullspace
 }
+
+/* would work if MatrixSpaceElement<T> etc
+impl<T: MatrixSpaceElement> From<&T> for Vec<<T as VectorSpaceElement>::BaseRingElement> {
+    #[inline]
+    fn from(x: &T) -> Vec<<T as VectorSpaceElement>::BaseRingElement> {
+        x.entries()
+    }
+}*/
 
 pub trait Ring: AdditiveGroup + Multiplicative {}
 pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Display {}
@@ -324,6 +345,7 @@ impl<T: Parent> fmt::Debug for Elem<T> {
         f.write_str("Debug not implemented.")
     }
 }
+
 
 /* Changing poly ring defs to this causes compiler crash
 pub struct PolyRing<T: Ring> {}

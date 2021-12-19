@@ -106,23 +106,25 @@ impl_from! {
     }
 }
 
-impl<'a, T> From<&'a [T]> for IntPol where &'a T: Into<Integer>
-{
-    fn from(src: &'a [T]) -> IntPol {
-        let mut res = IntPol::default();
-        for (i, x) in src.iter().enumerate() {
-            res.set_coeff(i, &x.into());
-        }
-        res
-    }
+impl_from! {
+    pol
+    IntPol, Integer {u64 u32 u16 u8 i64 i32 i16 i8 IntMod PadicElem}
 }
 
 impl From<&[Integer]> for IntPol {
+    #[inline]
     fn from(src: &[Integer]) -> IntPol {
         let mut res = IntPol::default();
         for (i, x) in src.iter().enumerate() {
             res.set_coeff(i, x);
         }
         res
+    }
+}
+
+impl From<Vec<Integer>> for IntPol {
+    #[inline]
+    fn from(src: Vec<Integer>) -> IntPol {
+        IntPol::from(src.as_slice())
     }
 }

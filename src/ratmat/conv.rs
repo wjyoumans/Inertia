@@ -40,61 +40,56 @@ impl_from! {
     String, RatMat
     {
         fn from(x: &RatMat) -> String {
-            let r = x.nrows() as usize;
-            let c = x.ncols() as usize;
-            let mut out = Vec::<String>::with_capacity(r);
-
-            for i in 0usize..r {
-                let mut row = Vec::<String>::with_capacity(c+2);
-                row.push("[".to_string());
-                for j in 0usize..c {
-                    row.push(format!(" {} ", x.get_entry(i, j)));
-                }
-                if i == r-1 {
-                    row.push("]".to_string());
-                } else {
-                    row.push("]\n".to_string());
-                }
-                out.push(row.join(""));
-            }
-            out.join("")
+            x.get_str()
         }
     }
 }
 
-impl From<&RatMat> for Vec<Rational> {
-    fn from(x: &RatMat) -> Vec<Rational> {
-        let r = x.nrows() as usize;
-        let c = x.ncols() as usize;
-        let mut out = Vec::<Rational>::with_capacity(r*c);
-
-        for i in 0usize..r {
-            for j in 0usize..c {
-                out.push(x.get_entry(i, j));
-            }
-        }
-        out
-    }
+impl_from! {
+    matrix
+    RatMat, Rational {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod PadicElem}
 }
 
-impl From<RatMat> for Vec<Rational> {
-    fn from(x: RatMat) -> Vec<Rational> {
-        Vec::from(&x)
-    }
-}
-
-impl<'a, T> From<&'a [Vec<T>]> for RatMat where &'a T: Into<Rational> {
-    fn from(mat: &'a [Vec<T>]) -> RatMat {
+impl From<&[&[Rational]]> for RatMat {
+    fn from(mat: &[&[Rational]]) -> RatMat {
         let m = mat.len() as c_long;
         let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+        let mut res = <RatMat>::zero(m, n);
 
-        let mut res = RatMat::zero(m, n);
         for (i, row) in mat.iter().enumerate() {
             for (j, x) in row.iter().enumerate() {
-                res.set_entry(i, j, &x.into());
+                res.set_entry(i, j, x);
             }
         }
         res
     }
 }
 
+impl From<&[Vec<Rational>]> for RatMat {
+    fn from(mat: &[Vec<Rational>]) -> RatMat {
+        let m = mat.len() as c_long;
+        let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+        let mut res = <RatMat>::zero(m, n);
+
+        for (i, row) in mat.iter().enumerate() {
+            for (j, x) in row.iter().enumerate() {
+                res.set_entry(i, j, x);
+            }
+        }
+        res
+    }
+}
+
+impl From<Vec<&[Rational]>> for RatMat {
+    #[inline]
+    fn from(mat: Vec<&[Rational]>) -> RatMat {
+        <RatMat>::from(mat.as_slice())
+    }
+}
+
+impl From<Vec<Vec<Rational>>> for RatMat {
+    #[inline]
+    fn from(mat: Vec<Vec<Rational>>) -> RatMat {
+        <RatMat>::from(mat.as_slice())
+    }
+}

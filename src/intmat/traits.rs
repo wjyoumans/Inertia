@@ -20,7 +20,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use crate::intmat::src::IntMat;
+use crate::*;
 
 
 impl Clone for IntMat {
@@ -57,6 +57,6 @@ impl Drop for IntMat {
 
 impl Hash for IntMat {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        Vec::from(self).hash(state);
+        self.entries().hash(state);
     }
 }

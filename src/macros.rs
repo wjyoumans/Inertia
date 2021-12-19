@@ -1247,7 +1247,78 @@ macro_rules! impl_from {
             #[inline]
             $($code)*
         }
-    }
+    };
+    (
+        pol
+        $t1:ident, $cast:ident {$($t2:ident)*}
+    ) => ($(
+        impl From<&[$t2]> for $t1 {
+            #[inline]
+            fn from(src: &[$t2]) -> $t1 {
+                let mut res = <$t1>::default();
+                for (i, x) in src.iter().enumerate() {
+                    res.set_coeff(i, &<$cast>::from(x));
+                }
+                res
+            }
+        }
+        
+        impl From<Vec<$t2>> for $t1 {
+            #[inline]
+            fn from(src: Vec<$t2>) -> $t1 {
+                <$t1>::from(src.as_slice())
+            }
+        }
+    )*);
+    (
+        matrix
+        $t1:ident, $cast:ident {$($t2:ident)*}
+    ) => ($(
+        
+        impl From<&[&[$t2]]> for $t1 {
+            fn from(mat: &[&[$t2]]) -> $t1 {
+                let m = mat.len() as c_long;
+                let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+                let mut res = <$t1>::zero(m, n);
+
+                for (i, row) in mat.iter().enumerate() {
+                    for (j, x) in row.iter().enumerate() {
+                        res.set_entry(i, j, &<$cast>::from(x));
+                    }
+                }
+                res
+            }
+        }
+        
+        impl From<&[Vec<$t2>]> for $t1 {
+            fn from(mat: &[Vec<$t2>]) -> $t1 {
+                let m = mat.len() as c_long;
+                let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
+                let mut res = <$t1>::zero(m, n);
+
+                for (i, row) in mat.iter().enumerate() {
+                    for (j, x) in row.iter().enumerate() {
+                        res.set_entry(i, j, &<$cast>::from(x));
+                    }
+                }
+                res
+            }
+        }
+        
+        impl From<Vec<&[$t2]>> for $t1 {
+            #[inline]
+            fn from(mat: Vec<&[$t2]>) -> $t1 {
+                <$t1>::from(mat.as_slice())
+            }
+        }
+       
+        impl From<Vec<Vec<$t2>>> for $t1 {
+            #[inline]
+            fn from(mat: Vec<Vec<$t2>>) -> $t1 {
+                <$t1>::from(mat.as_slice())
+            }
+        }
+    )*);
 }
 
 /// Macros for implementing `From` for conversions with unsafe functions.
