@@ -1444,6 +1444,7 @@ macro_rules! impl_new_unsafe {
         }
     )*);
     (
+        // new from non-primitive with context
         ctx
         $t1:ident, $t2:ident
         $func:path
@@ -1453,6 +1454,28 @@ macro_rules! impl_new_unsafe {
             fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
                 unsafe { $func(res.as_mut_ptr(), x.as_ptr(), self.as_ptr()); }
+                res
+            }
+        }
+        
+        impl New<$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
+                self.new(&x)
+            }
+        }
+    );
+    (
+        // new from non-primitive with precision
+        prec
+        $t1:ident, $t2:ident
+        $func:path
+    ) => (
+        impl New<&$t2> for $t1 {
+            #[inline]
+            fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
+                let mut res = self.default();
+                unsafe { $func(res.as_mut_ptr(), x.as_ptr(), self.precision()); }
                 res
             }
         }

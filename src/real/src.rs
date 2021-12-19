@@ -90,86 +90,35 @@ impl<T> Init1<T> for RealField where
     }
 }
 
-macro_rules! impl_new {
-    (
-        $cast:ident {$($t:ident)*};
-        $func:path
-    ) => ($(
-        impl New<$t> for RealField {
-            #[inline]
-            fn new(&self, x: $t) -> Real {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    arb_sys::arb::arb_init(z.as_mut_ptr());
-                    $func(
-                        z.as_mut_ptr(), 
-                        x as $cast,
-                    );
-                    Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-                }        
-            }
-        }
-    )*);
-    (
-        $t:ident
-        $func:path
-    ) => (
-        impl New<&$t> for RealField {
-            #[inline]
-            fn new(&self, x: &$t) -> Real {
-                let mut z = MaybeUninit::uninit();
-                unsafe {
-                    arb_sys::arb::arb_init(z.as_mut_ptr());
-                    $func(
-                        z.as_mut_ptr(), 
-                        x.as_ptr(),
-                    );
-                    Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-                }        
-            }
-        }
-
-        impl New<$t> for RealField {
-            #[inline]
-            fn new(&self, x: $t) -> Real {
-                self.new(&x)
-            }
-        }
-    );
-}
-
-impl_new! {
-    u64 {u64 u32 u16 u8};
+impl_new_unsafe! {
+    RealField, u64 {u64 u32 u16 u8}
     arb_sys::arb::arb_set_ui
 }
 
-impl_new! {
-    i64 {i64 i32 i16 i8};
+impl_new_unsafe! {
+    RealField, i64 {i64 i32 i16 i8}
     arb_sys::arb::arb_set_si
 }
 
-impl_new! {
-    Integer
+impl_new_unsafe! {
+    RealField, f64 {f64}
+    arb_sys::arb::arb_set_d
+}
+
+impl_new_unsafe! {
+    RealField, Integer
     arb_sys::arb::arb_set_fmpz
 }
 
-impl New<&Rational> for RealField {
-    #[inline]
-    fn new(&self, x: &Rational) -> Real {
-        let mut z = MaybeUninit::uninit();
-        unsafe {
-            arb_sys::arb::arb_init(z.as_mut_ptr());
-            arb_sys::arb::arb_set_fmpq(z.as_mut_ptr(), x.as_ptr(), self.precision());
-            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
-    }
+impl_new_unsafe! {
+    RealField, IntMod
+    arb_sys::arb::arb_set_fmpz
 }
 
-impl New<Rational> for RealField {
-    #[inline]
-    fn new(&self, x: Rational) -> Real {
-        self.new(&x)
-    }
+impl_new_unsafe! {
+    prec
+    RealField, Rational
+    arb_sys::arb::arb_set_fmpq
 }
 
 impl RealField {

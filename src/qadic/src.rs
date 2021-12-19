@@ -125,16 +125,11 @@ impl<T, U> Init4<T, U, U, &str> for QadicField where
 
 impl New<&IntPol> for QadicField {
     fn new(&self, x: &IntPol) -> QadicElem {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.default();
         unsafe {
-            flint_sys::qadic::qadic_init(z.as_mut_ptr());
-            flint_sys::qadic::qadic_set_fmpz_poly(z.as_mut_ptr(), x.as_ptr(), self.as_ptr());
-            QadicElem { 
-                ctx: Arc::clone(&self.ctx), 
-                extra: (), 
-                data: z.assume_init() 
-            }
+            flint_sys::qadic::qadic_set_fmpz_poly(res.as_mut_ptr(), x.as_ptr(), self.as_ptr());
         }
+        res
     }
 }
 

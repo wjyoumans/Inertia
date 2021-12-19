@@ -20,13 +20,29 @@ use std::ffi::{CStr, CString};
 
 use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
 
-use crate::traits::Elem;
-//use crate::intpol::src::IntPol;
+use crate::*;
 
 // RatFunc //
 
-#[derive(Default, Debug, Hash, Clone, Copy)]
-pub struct RatFuncField {}
+#[derive(Default, Debug, Hash, Clone)]
+pub struct RatFuncField {
+    pub x: Arc<String>,
+}
+
+impl Parent for RatFuncField {
+    type Data = ();
+    type Extra = Arc<String>;
+    type Element = RatFunc;
+    
+    #[inline]
+    fn default(&self) -> RatFunc {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
+            RatFunc { ctx: (), extra: Arc::clone(&self.x), data: z.assume_init() }
+        }
+    }
+}
 
 impl RatFuncField {
     /// Construct the field of rational functions.
