@@ -24,47 +24,8 @@ use std::sync::Arc;
 use antic_sys::nf_struct;
 use antic_sys::nf_elem_struct;
 
-use crate::traits::*;
-use crate::numfld::src::{NumFldElem, NumberField};
+use crate::*;
 
-
-// NumberField //
-
-pub struct NfCtx(pub nf_struct);
-
-impl Drop for NfCtx {
-    fn drop(&mut self) {
-        unsafe { antic_sys::nf_clear(&mut self.0); }
-    }
-}
-
-impl Parent for NumberField {
-    type Data = Arc<NfCtx>;
-    type Extra = ();
-    type Element = NumFldElem;
-
-    #[inline]
-    fn default(&self) -> NumFldElem {
-        let mut z = MaybeUninit::uninit();
-        unsafe { 
-            antic_sys::nf_elem_init(z.as_mut_ptr(), self.as_ptr());
-            NumFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
-    }
-
-}
-
-// NumFldElem //
-
-impl Element for NumFldElem {
-    type Data = nf_elem_struct;
-    type Parent = NumberField;
-
-    #[inline]
-    fn parent(&self) -> NumberField {
-        NumberField { ctx: Arc::clone(&self.ctx) }
-    }
-}
 
 impl Clone for NumFldElem {
     fn clone(&self) -> Self {

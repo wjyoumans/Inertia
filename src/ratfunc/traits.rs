@@ -17,52 +17,21 @@
 
 
 use std::fmt;
-//use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
+use std::sync::Arc;
 
 use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
 
-use crate::traits::*;
-//use crate::rational::src::Rational;
-use crate::ratfunc::src::{RatFunc, RatFuncField};
+use crate::*;
 
-// RatFuncField //
-
-impl Parent for RatFuncField {
-    type Data = ();
-    type Extra = ();
-    type Element = RatFunc;
-
-    #[inline]
-    fn default(&self) -> RatFunc {
-        let mut z = MaybeUninit::uninit();
-        unsafe { 
-            flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
-            RatFunc { ctx: (), extra: (), data: z.assume_init() }
-        }
-    }
-}
-
-// RatFunc //
-
-impl Element for RatFunc {
-    type Data = fmpz_poly_q_struct;
-    type Parent = RatFuncField;
-
-    #[inline]
-    fn parent(&self) -> RatFuncField {
-        RatFuncField {}
-    }
-}
 
 impl Clone for RatFunc {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
-            flint_sys::fmpz_poly_q::fmpz_poly_q_set(z.as_mut_ptr(), self.as_ptr()); 
-            RatFunc { ctx: (), extra: (), data: z.assume_init() }
+            flint_sys::fmpz_poly_q::fmpz_poly_q_set(res.as_mut_ptr(), self.as_ptr()); 
         }
+        res
     }
 }
 
@@ -81,7 +50,7 @@ impl Default for RatFunc {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
-            RatFunc { ctx: (), extra: (), data: z.assume_init() }
+            RatFunc { ctx: (), extra: Arc::new("x".to_owned()), data: z.assume_init() }
         }
     }
 }

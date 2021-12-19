@@ -18,6 +18,7 @@
 #![allow(non_snake_case)]
 
 use std::ffi::{CStr, CString};
+use std::mem::MaybeUninit;
 use std::ops::Rem;
 use std::sync::Arc;
 
@@ -42,21 +43,25 @@ impl Parent for IntPolRing {
 
     #[inline]
     fn default(&self) -> IntPol {
-        IntPol::default()
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
+            IntPol { ctx: (), extra: Arc::clone(&self.x), data: z.assume_init() }
+        }
     }
 }
 
 impl Additive for IntPolRing {
     #[inline]
     fn zero(&self) -> IntPol {
-        IntPol::default()
+        self.default()
     }
 }
 
 impl Multiplicative for IntPolRing {
     #[inline]
     fn one(&self) -> IntPol {
-        let mut res = IntPol::default();
+        let mut res = self.default();
         unsafe { flint_sys::fmpz_poly::fmpz_poly_one(res.as_mut_ptr()); }
         res
     }
@@ -299,11 +304,9 @@ impl IntPol {
     /// input polynomial.
     #[inline]
     pub fn abs(&self) -> IntPol {
-        unsafe {
-            let mut res = IntPol::default();
-            flint_sys::fmpz_poly::fmpz_poly_scalar_abs(res.as_mut_ptr(), self.as_ptr());
-            res
-        }
+        let mut res = self.parent().default();
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_scalar_abs(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 
     /// Computes the height of an integer polynomial, defined as the largest of the absolute value
@@ -351,10 +354,8 @@ impl IntPol {
     /// content, normalized to have non-negative leading coefficient.
     #[inline]
     pub fn primitive_part(&self) -> IntPol {
-        let mut res = IntPol::default();
-        unsafe {
-            flint_sys::fmpz_poly::fmpz_poly_primitive_part(res.as_mut_ptr(), self.as_ptr());
-        }
+        let mut res = self.parent().default();
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_primitive_part(res.as_mut_ptr(), self.as_ptr());}
         res
     }
     

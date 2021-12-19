@@ -734,7 +734,7 @@ macro_rules! impl_binop {
             type Output = $out;
             #[inline]
             fn $meth(self, rhs: $t2) -> $out {
-                self.$meth(&rhs)
+                (&self).$meth(&rhs)
             }
         }
         

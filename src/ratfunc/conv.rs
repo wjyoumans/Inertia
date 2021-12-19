@@ -49,7 +49,7 @@ impl_from! {
     String, RatFunc
     {
         fn from(x: &RatFunc) -> String {
-            x.get_str_pretty("x")
+            x.get_str_pretty()
         }
     }
 }

@@ -17,6 +17,8 @@
 
 
 use std::ffi::{CStr, CString};
+use std::mem::MaybeUninit;
+use std::sync::Arc;
 
 use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
 
@@ -44,23 +46,63 @@ impl Parent for RatFuncField {
     }
 }
 
-impl RatFuncField {
-    /// Construct the field of rational functions.
-    pub fn init() -> Self {
-        RatFuncField {}
-    }
-    
-    /// Create a new rational function.
-    pub fn new<T: Into<RatFunc>>(&self, x: T) -> RatFunc {
-        x.into()
+impl Additive for RatFuncField {
+    #[inline]
+    fn zero(&self) -> RatFunc {
+        self.default()
     }
 }
 
-// RatPol //
+impl Multiplicative for RatFuncField {
+    #[inline]
+    fn one(&self) -> RatFunc {
+        let mut res = self.default();
+        unsafe { flint_sys::fmpz_poly_q::fmpz_poly_q_one(res.as_mut_ptr()); }
+        res
+    }
+}
+
+impl AdditiveGroup for RatFuncField {}
+
+impl MultiplicativeGroup for RatFuncField {}
+
+impl Ring for RatFuncField {}
 
 /// A rational function represented as the quotient of integer polynomials. The field `data` is a
 /// FLINT [fmpz_poly_q][flint_sys::fmpz_poly_q::fmpz_poly_q_struct]
 pub type RatFunc = Elem<RatFuncField>;
+
+impl Element for RatFunc {
+    type Data = fmpz_poly_q_struct;
+    type Parent = RatFuncField;
+
+    #[inline]
+    fn parent(&self) -> RatFuncField {
+        RatFuncField { x: Arc::clone(&self.extra) }
+    }
+}
+
+impl AdditiveElement for RatFunc {    
+    /// Return true if the rational function is zero.
+    #[inline]
+    fn is_zero(&self) -> bool {
+        unsafe {flint_sys::fmpz_poly_q::fmpz_poly_q_is_zero(self.as_ptr()) == 1}
+    }
+}
+
+impl MultiplicativeElement for RatFunc {    
+    /// Return true if the rational function is one.
+    #[inline]
+    fn is_one(&self) -> bool {
+        unsafe {flint_sys::fmpz_poly_q::fmpz_poly_q_is_one(self.as_ptr()) == 1}
+    }
+}
+
+impl AdditiveGroupElement for RatFunc {}
+
+impl MultiplicativeGroupElement for RatFunc {}
+
+impl RingElement for RatFunc {}
 
 impl RatFunc {
     /// A pointer to the underlying FFI type. This is only needed to interface directly with 
@@ -91,8 +133,8 @@ impl RatFunc {
     
     /// Return a pretty-printed [String] representation of a rational function.
     #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
+    pub fn get_str_pretty(&self) -> String {
+        let v = CString::new((*self.extra).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpz_poly_q::fmpz_poly_q_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {
@@ -144,18 +186,6 @@ impl RatFunc {
             flint_sys::fmpz_poly::fmpz_poly_set(&mut self.data.den, den.as_ptr());
         }
     }*/
-
-    /// Return true if the rational function is zero.
-    #[inline]
-    pub fn is_zero(&self) -> bool {
-        unsafe {flint_sys::fmpz_poly_q::fmpz_poly_q_is_zero(self.as_ptr()) == 1}
-    }
-
-    /// Return true if the rational function is one.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        unsafe {flint_sys::fmpz_poly_q::fmpz_poly_q_is_one(self.as_ptr()) == 1}
-    }
     
     /* TODO: need num_den
     // TODO: is it canonical by default?
