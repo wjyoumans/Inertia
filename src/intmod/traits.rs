@@ -23,19 +23,25 @@ use std::sync::Arc;
 
 use crate::*;
 
+// TODO: hash, clone, debug for IntModRing
+
+impl fmt::Display for IntModRing {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "The ring of integers mod {}", self.modulus())
+    }
+}
 
 impl Clone for IntMod {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
             flint_sys::fmpz_mod::fmpz_mod_set_fmpz(
-                z.as_mut_ptr(), 
+                res.as_mut_ptr(), 
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             ); 
-            IntMod { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+        res
     }
 }
 

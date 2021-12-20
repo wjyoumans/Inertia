@@ -17,14 +17,12 @@
 
 
 use std::ffi::{CStr, CString};
-use std::mem::MaybeUninit;
+use std::mem::{MaybeUninit, ManuallyDrop};
 use std::sync::Arc;
 
 use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
 
 use crate::*;
-
-// RatFunc //
 
 #[derive(Default, Debug, Hash, Clone)]
 pub struct RatFuncField {
@@ -67,6 +65,46 @@ impl AdditiveGroup for RatFuncField {}
 impl MultiplicativeGroup for RatFuncField {}
 
 impl Ring for RatFuncField {}
+
+impl Field for RatFuncField {
+    type BaseField = RatFuncField;
+
+    #[inline]
+    fn base_field(&self) -> RatFuncField {
+        self.clone()
+    }
+}
+
+impl Init1<&str> for RatFuncField {
+    #[inline]
+    fn init(x: &str) -> RatFuncField {
+        RatFuncField { x: Arc::new(x.to_owned()) }
+    }
+}
+
+impl New<&IntPol> for RatFuncField {
+    fn new(&self, x: &IntPol) -> RatFunc {
+        let mut res = self.default();
+        let num = ManuallyDrop::new(x.clone());
+        let den = ManuallyDrop::new(IntPol::from(1));
+        
+        unsafe {
+            flint_sys::fmpz_poly::fmpz_poly_set(&mut res.data.num, num.as_ptr());
+            flint_sys::fmpz_poly::fmpz_poly_set(&mut res.data.den, den.as_ptr());
+        }
+
+        res
+    }
+}
+
+impl<T> New<T> for RatFuncField where
+    T: Into<IntPol>
+{
+    #[inline]
+    fn new(&self, x: T) -> RatFunc {
+        self.new(&x.into())
+    }
+}
 
 /// A rational function represented as the quotient of integer polynomials. The field `data` is a
 /// FLINT [fmpz_poly_q][flint_sys::fmpz_poly_q::fmpz_poly_q_struct]

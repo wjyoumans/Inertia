@@ -205,7 +205,12 @@ pub trait VectorSpaceElement: ModuleElement {
     type BaseRingElement: RingElement;
 }
 
-pub trait MatrixSpace: VectorSpace {}
+pub trait MatrixSpace: VectorSpace {
+
+    fn nrows(&self) -> c_long;
+    
+    fn ncols(&self) -> c_long;
+}
 pub trait MatrixSpaceElement: VectorSpaceElement {
 
     fn nrows(&self) -> c_long;

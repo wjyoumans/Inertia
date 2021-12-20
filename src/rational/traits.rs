@@ -21,6 +21,11 @@ use std::mem::MaybeUninit;
 
 use crate::*;
 
+impl fmt::Display for RationalField {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Rational field")
+    }
+}
 
 impl Clone for Rational {
     fn clone(&self) -> Self {
@@ -52,12 +57,12 @@ impl Default for Rational {
     }
 }
 
-
 impl fmt::Display for Rational {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
 }
+
 
 impl Drop for Rational {
     fn drop(&mut self) {

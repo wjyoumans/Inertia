@@ -58,7 +58,7 @@
 //!     - [ ] \*matrices over finite fields
 //!     - [ ] matrices over p-adic/q-adics
 //! - [ ] multivariate polynomials
-//! - [ ] \*rational functions
+//! - [ ] rational functions (currently disabled)
 //! - [ ] \*number fields
 
 
@@ -109,7 +109,7 @@ pub mod padic;
 
 pub mod qadic;
 
-pub mod ratfunc;
+//pub mod ratfunc;
 
 pub mod numfld;
 
@@ -159,7 +159,7 @@ pub mod prelude {
 
     pub use crate::qadic::src::*;
 
-    pub use crate::ratfunc::src::*;
+    //pub use crate::ratfunc::src::*;
     //pub use super::ratfunc;
 
     pub use crate::numfld::src::*; 

@@ -68,7 +68,16 @@ impl VectorSpace for IntMatSpace {
     }
 }
 
-impl MatrixSpace for IntMatSpace {}
+impl MatrixSpace for IntMatSpace {
+
+    fn nrows(&self) -> c_long {
+        self.rows
+    }
+    
+    fn ncols(&self) -> c_long {
+        self.cols
+    }
+}
 
 impl<T> Init2<T, T> for IntMatSpace where 
     T: TryInto<c_long>,

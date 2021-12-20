@@ -67,7 +67,15 @@ impl VectorSpace for RatMatSpace {
     }
 }
 
-impl MatrixSpace for RatMatSpace {}
+impl MatrixSpace for RatMatSpace {
+    fn nrows(&self) -> c_long {
+        self.rows
+    }
+    
+    fn ncols(&self) -> c_long {
+        self.cols
+    }
+}
 
 impl<T> Init2<T, T> for RatMatSpace where 
     T: TryInto<c_long>,

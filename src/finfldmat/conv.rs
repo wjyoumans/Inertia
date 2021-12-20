@@ -16,3 +16,14 @@
  */
 
 
+/*
+use crate::*;
+
+impl_from! {
+    String, FinFldMat
+    {
+        fn from(x: &FinFldMat) -> String {
+            x.get_str()
+        }
+    }
+}*/

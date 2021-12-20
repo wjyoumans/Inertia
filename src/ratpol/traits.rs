@@ -24,14 +24,19 @@ use std::sync::Arc;
 use crate::*;
 
 
+impl fmt::Display for RatPolRing {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Polynomial ring in {} over the rationals", self.gens()[0])
+    }
+}
+
 impl Clone for RatPol {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
-            flint_sys::fmpq_poly::fmpq_poly_set(z.as_mut_ptr(), &self.data); 
-            RatPol { ctx: (), extra: Arc::clone(&self.extra), data: z.assume_init() }
+            flint_sys::fmpq_poly::fmpq_poly_set(res.as_mut_ptr(), &self.data); 
         }
+        res
     }
 }
 

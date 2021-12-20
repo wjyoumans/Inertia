@@ -38,16 +38,15 @@ impl fmt::Display for FiniteField {
 
 impl Clone for FinFldElem {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fq_default::fq_default_set(
-                z.as_mut_ptr(), 
+                res.as_mut_ptr(), 
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+        res
     }
 }
 

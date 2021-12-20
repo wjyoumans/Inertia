@@ -26,11 +26,11 @@ use crate::*;
 
 impl Clone for IntModMat {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_init_set(z.as_mut_ptr(), self.as_ptr());
-            IntModMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            flint_sys::fmpz_mod_mat::fmpz_mod_mat_set(res.as_mut_ptr(), self.as_ptr());
         }
+        res
     }
 }
 

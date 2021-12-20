@@ -76,12 +76,21 @@ impl Module for FinFldMatSpace {}
 
 impl VectorSpace for FinFldMatSpace {
     type BaseRing = FiniteField;
+    
     fn base_ring(&self) -> FiniteField {
         FiniteField { ctx: Arc::clone(&self.ctx) }
     }
 }
 
-impl MatrixSpace for FinFldMatSpace {}
+impl MatrixSpace for FinFldMatSpace {
+    fn nrows(&self) -> c_long {
+        self.rows
+    }
+    
+    fn ncols(&self) -> c_long {
+        self.cols
+    }
+}
 
 impl<T> Init5<T, T, &Integer, T, &str> for FinFldMatSpace where
     T: TryInto<c_long>

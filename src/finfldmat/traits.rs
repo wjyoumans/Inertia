@@ -26,15 +26,15 @@ use crate::*;
 
 impl Clone for FinFldMat {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fq_default_mat::fq_default_mat_init_set(
-                z.as_mut_ptr(), 
+            flint_sys::fq_default_mat::fq_default_mat_set(
+                res.as_mut_ptr(), 
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             );
-            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+        res
     }
 }
 
@@ -47,7 +47,6 @@ impl fmt::Debug for FinFldMat {
             .finish()
     }
 }
-
 
 /*
 impl fmt::Display for IntModMat {

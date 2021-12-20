@@ -23,6 +23,12 @@ use std::mem::MaybeUninit;
 use crate::*;
 
 
+impl fmt::Display for IntegerRing {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Integer ring")
+    }
+}
+
 impl Clone for Integer {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();

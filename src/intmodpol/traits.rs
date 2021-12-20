@@ -26,20 +26,15 @@ use crate::*;
 
 impl Clone for IntModPol {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_set(
-                z.as_mut_ptr(), 
+                res.as_mut_ptr(), 
                 self.as_ptr(), 
                 self.ctx_as_ptr()
             ); 
-            IntModPol { 
-                ctx: Arc::clone(&self.ctx), 
-                extra: Arc::clone(&self.extra), 
-                data: z.assume_init() 
-            }
         }
+        res
     }
 }
 

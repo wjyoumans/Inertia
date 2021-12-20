@@ -23,6 +23,12 @@ use std::mem::MaybeUninit;
 use crate::*;
 
 
+impl fmt::Display for IntMatSpace {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "The space of {}x{} matrices over the integers", self.nrows(), self.ncols())
+    }
+}
+
 impl Clone for IntMat {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();

@@ -23,14 +23,19 @@ use std::sync::Arc;
 use crate::*;
 
 
+impl fmt::Display for IntPolRing {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Polynomial ring in {} over the integers", self.gens()[0])
+    }
+}
+
 impl Clone for IntPol {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            flint_sys::fmpz_poly::fmpz_poly_set(z.as_mut_ptr(), &self.data); 
-            IntPol { ctx: (), extra: Arc::clone(&self.extra), data: z.assume_init() }
+            flint_sys::fmpz_poly::fmpz_poly_set(res.as_mut_ptr(), &self.data); 
         }
+        res
     }
 }
 

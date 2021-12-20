@@ -38,20 +38,15 @@ impl fmt::Display for FinFldPolRing {
 
 impl Clone for FinFldPol {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fq_default_poly::fq_default_poly_set(
-                z.as_mut_ptr(), 
+                res.as_mut_ptr(), 
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            FinFldPol { 
-                ctx: Arc::clone(&self.ctx), 
-                extra: Arc::clone(&self.extra), 
-                data: z.assume_init() 
-            }
         }
+        res
     }
 }
 
@@ -82,6 +77,7 @@ impl Drop for FinFldPol {
 impl Hash for FinFldPol {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // avoid calling hash on coefficients directly, since they each hash the finite field context.
-        self.coefficients().iter().map(|x| IntPol::from(x)).collect::<Vec<IntPol>>().hash(state);
+        self.coefficients().iter().for_each(|x| IntPol::from(x).hash(state));
+        self.parent().hash(state)
     }
 }

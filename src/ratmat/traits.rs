@@ -23,6 +23,12 @@ use std::mem::MaybeUninit;
 use crate::*;
 
 
+impl fmt::Display for RatMatSpace {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "The space of {}x{} matrices over the rationals", self.nrows(), self.ncols())
+    }
+}
+
 impl Clone for RatMat {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();
