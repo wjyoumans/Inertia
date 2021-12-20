@@ -42,5 +42,5 @@ additional functions, arithmetic, conversion, etc.
     - [ ] \*matrices over finite fields
     - [ ] matrices over p-adic/q-adics
 - [ ] multivariate polynomials
-- [ ] \*rational functions
+- [ ] rational functions (currently disabled)
 - [ ] \*number fields
