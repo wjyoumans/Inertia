@@ -23,6 +23,21 @@ use std::sync::Arc;
 
 use crate::*;
 
+/*
+impl fmt::Display for IntModMatSpace {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Space of {}x{} matrices over the integers mod {}", 
+            self.nrows(), self.ncols(), self.base_ring().modulus())
+    }
+}
+
+impl Hash for IntModMatSpace {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.nrows().hash(state);
+        self.ncols().hash(state);
+        self.modulus().hash(state)
+    }
+}*/
 
 impl Clone for IntModMat {
     fn clone(&self) -> Self {

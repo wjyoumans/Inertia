@@ -26,6 +26,7 @@ use crate::*;
 
 
 /// The ring of polynomials with coefficients integers mod `n` for any integer `n`.
+#[derive(Debug, Clone)]
 pub struct IntModPolRing {
     ctx: <Self as Parent>::Data,
     x: Arc<String>,

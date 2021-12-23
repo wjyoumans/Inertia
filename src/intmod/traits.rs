@@ -23,11 +23,16 @@ use std::sync::Arc;
 
 use crate::*;
 
-// TODO: hash, clone, debug for IntModRing
 
 impl fmt::Display for IntModRing {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "The ring of integers mod {}", self.modulus())
+    }
+}
+
+impl Hash for IntModRing {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.modulus().hash(state)
     }
 }
 

@@ -24,6 +24,18 @@ use std::sync::Arc;
 use crate::*;
 
 
+impl fmt::Display for IntModPolRing {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Polynomial ring over integers mod {}", self.base_ring().modulus())
+    }
+}
+
+impl Hash for IntModPolRing {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.base_ring().modulus().hash(state)
+    }
+}
+
 impl Clone for IntModPol {
     fn clone(&self) -> Self {
         let mut res = self.parent().default();

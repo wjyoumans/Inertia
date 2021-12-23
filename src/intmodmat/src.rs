@@ -28,6 +28,7 @@ use crate::*;
 
 
 /// The vector space of matrices with entries integers mod `n`.
+#[derive(Debug, Clone)]
 pub struct IntModMatSpace {
     rows: c_long,
     cols: c_long,

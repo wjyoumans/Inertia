@@ -35,6 +35,7 @@ impl Drop for FmpzModCtx {
 }
 
 /// The ring of integers mod `n` for any integer `n`.
+#[derive(Debug, Clone)]
 pub struct IntModRing {
     pub ctx: <Self as Parent>::Data,
 }
