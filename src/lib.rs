@@ -62,8 +62,6 @@
 //! - [ ] \*number fields
 
 
-#![feature(min_specialization)]
-
 use libc::{c_long, c_ulong, c_uint};
 
 const ARB_DEFAULT_PREC: c_long = 10;

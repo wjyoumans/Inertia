@@ -122,7 +122,7 @@ macro_rules! impl_cmp {
     ) => {
         impl Eq for $t {}
         
-        impl Eq for &$t {}
+        //impl Eq for &$t {}
 
         impl PartialEq for $t {
             #[inline]
