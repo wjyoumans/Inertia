@@ -18,6 +18,7 @@
 
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
+use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
@@ -31,13 +32,11 @@ use crate::*;
 /// The ring of polynomials over the finite field with `p^k` elements.
 #[derive(Debug, Clone)]
 pub struct FinFldPolRing {
-    ctx: <Self as Parent>::Data,
+    ctx: Arc<FqCtx>,
     x: Arc<String>,
 }
 
 impl Parent for FinFldPolRing {
-    type Data = Arc<FqCtx>;
-    type Extra = Arc<String>;
     type Element = FinFldPol;
 
     #[inline]
@@ -46,9 +45,11 @@ impl Parent for FinFldPolRing {
         unsafe {
             flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
             FinFldPol {
-                ctx: Arc::clone(&self.ctx),
-                extra: Arc::clone(&self.x),
-                data: z.assume_init()
+                data: FinFldPolData {
+                    ctx: Arc::clone(&self.ctx),
+                    x: Arc::clone(&self.x),
+                    elem: z.assume_init()
+                }
             }
         }
     }
@@ -226,13 +227,49 @@ impl FinFldPolRing {
 /// An element of a finite field.
 pub type FinFldPol = Elem<FinFldPolRing>;
 
+pub struct FinFldPolData {
+    pub elem: fq_poly_struct,
+    pub ctx: Arc<FqCtx>,
+    pub x: Arc<String>,
+}
+
+impl Drop for FinFldPolData {
+    fn drop(&mut self) {
+        unsafe { 
+            flint_sys::fq_default_poly::fq_default_poly_clear(&mut self.elem, &self.ctx.0);
+        }
+    }
+}
+
+impl fmt::Debug for FinFldPolData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let x = CString::new((*self.x).clone()).unwrap();
+        unsafe {
+            let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
+                &self.elem, 
+                x.as_ptr(),
+                &self.ctx.0
+            );
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => {
+                    f.debug_struct("FinFldPolData")
+                        .field("elem", &s.to_owned())
+                        .field("ctx", &self.ctx)
+                        .finish()
+                },
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
+    }
+}
+
 impl Element for FinFldPol {
-    type Data = fq_poly_struct;
+    type Data = FinFldPolData;
     type Parent = FinFldPolRing;
 
     #[inline]
     fn parent(&self) -> FinFldPolRing {
-        FinFldPolRing { ctx: Arc::clone(&self.ctx), x: Arc::clone(&self.extra) }
+        FinFldPolRing { ctx: Arc::clone(&self.data.ctx), x: Arc::clone(&self.data.x) }
     }
 }
 
@@ -311,20 +348,20 @@ impl FinFldPol {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_poly_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_poly_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fq_ctx_struct {
-        &self.ctx.0
+        &self.data.ctx.0
     }
     
     /// Return a [String] representation of a polynomial over a finite field.
@@ -345,7 +382,7 @@ impl FinFldPol {
     /// Return a pretty-printed [String] representation of a polynomial over a finite field.
     #[inline]
     pub fn get_str_pretty(&self) -> String {
-        let x = CString::new((*self.extra).clone()).unwrap();
+        let x = CString::new((*self.data.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
                 self.as_ptr(), 
@@ -381,7 +418,12 @@ impl FinFldPol {
                 i as i64,
                 self.ctx_as_ptr()
             );
-            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            FinFldElem { 
+                data: FinFldElemData {
+                    ctx: Arc::clone(&self.data.ctx), 
+                    elem: z.assume_init() 
+                }
+            }
         }
     }
     

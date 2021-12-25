@@ -34,7 +34,7 @@ impl_from! {
     Integer, IntMod
     {
         fn from(x: &IntMod) -> Integer {
-            Integer { ctx: (), extra: (), data: x.data }
+            Integer { data: IntegerData { elem: x.data.elem } }
         }
     }
 }

@@ -50,6 +50,7 @@ impl Clone for IntModPol {
     }
 }
 
+/*
 impl fmt::Debug for IntModPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("IntModPol")
@@ -58,19 +59,11 @@ impl fmt::Debug for IntModPol {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl fmt::Display for IntModPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for IntModPol {
-    fn drop(&mut self) {
-        unsafe { 
-            flint_sys::fmpz_mod_poly::fmpz_mod_poly_clear(self.as_mut_ptr(), self.ctx_as_ptr());
-        }
     }
 }
 

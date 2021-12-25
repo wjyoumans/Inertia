@@ -29,7 +29,13 @@ use crate::*;
 
 impl Clone for NumFldElem {
     fn clone(&self) -> Self {
-        NumFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: self.data.clone() }
+        NumFldElem { 
+            data: NumFldElemData {
+                ctx: Arc::clone(&self.data.ctx), 
+                x: Arc::clone(&self.data.x), 
+                elem: self.data.elem.clone() 
+            }
+        }
     }
 }
 
@@ -39,12 +45,6 @@ impl fmt::Display for RatFunc {
         write!(f, "{}", String::from(self))
     }
 }*/
-
-impl Drop for NumFldElem {
-    fn drop(&mut self) {
-        unsafe { antic_sys::nf_elem_clear(self.as_mut_ptr(), self.ctx_as_ptr());}
-    }
-}
 
 /* TODO: need num/den
 impl Hash for RatFunc {

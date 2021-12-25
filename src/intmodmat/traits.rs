@@ -49,6 +49,7 @@ impl Clone for IntModMat {
     }
 }
 
+/*
 impl fmt::Debug for IntModMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("IntModMat")
@@ -57,19 +58,11 @@ impl fmt::Debug for IntModMat {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl fmt::Display for IntModMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for IntModMat {
-    fn drop(&mut self) {
-        unsafe { 
-            flint_sys::fmpz_mod_mat::fmpz_mod_mat_clear(self.as_mut_ptr());
-        }
     }
 }
 

@@ -33,8 +33,6 @@ pub struct IntMatSpace {
 }
 
 impl Parent for IntMatSpace {
-    type Data = ();
-    type Extra = ();
     type Element = IntMat;
 
     #[inline]
@@ -114,8 +112,19 @@ impl<T> New<T> for IntMatSpace where
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].
 pub type IntMat = Elem<IntMatSpace>;
 
+#[derive(Debug)]
+pub struct IntMatData {
+    pub elem: fmpz_mat_struct,
+}
+
+impl Drop for IntMatData {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_clear(&mut self.elem); }
+    }
+}
+
 impl Element for IntMat {
-    type Data = fmpz_mat_struct;
+    type Data = IntMatData;
     type Parent = IntMatSpace;
 
     #[inline]
@@ -189,14 +198,14 @@ impl IntMat {
     /// via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_mat_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_mat_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// Swap two integer matrices. The dimensions are allowed to be different.
@@ -281,7 +290,7 @@ impl IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
-            IntMat { ctx: (), extra: (), data: z.assume_init() }
+            IntMat { data: IntMatData { elem: z.assume_init() } }
         }
     }
 
@@ -292,7 +301,7 @@ impl IntMat {
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpz_mat::fmpz_mat_one(z.as_mut_ptr());
-            IntMat { ctx: (), extra: (), data: z.assume_init() }
+            IntMat { data: IntMatData { elem: z.assume_init() } }
         }
     }
 

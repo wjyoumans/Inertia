@@ -31,12 +31,13 @@ impl Clone for Rational {
     fn clone(&self) -> Self {
         let mut z = Rational::default();
         unsafe {
-            flint_sys::fmpq::fmpq_set(z.as_mut_ptr(), &self.data); 
+            flint_sys::fmpq::fmpq_set(z.as_mut_ptr(), self.as_ptr()); 
         }
         z
     }
 }
 
+/*
 impl fmt::Debug for Rational {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Rational")
@@ -45,14 +46,14 @@ impl fmt::Debug for Rational {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for Rational {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
-            Rational { ctx: (), extra: (), data: z.assume_init() }
+            Rational { data: RationalData { elem: z.assume_init() } }
         }
     }
 }
@@ -63,12 +64,6 @@ impl fmt::Display for Rational {
     }
 }
 
-
-impl Drop for Rational {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpq::fmpq_clear(self.as_mut_ptr());}
-    }
-}
 
 impl Hash for Rational {
     fn hash<H: Hasher>(&self, state: &mut H) {

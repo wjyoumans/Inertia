@@ -49,7 +49,7 @@ impl_from_unsafe! {
 
 impl_from_unsafe! {
     None
-    Complex, Rational, REAL_DEFAULT_PREC;
+    Complex, Rational, ARB_DEFAULT_PREC;
     arb_sys::acb::acb_set_fmpq
 }
 
@@ -63,7 +63,7 @@ impl_from! {
     String, Complex
     {
         fn from(x: &Complex) -> String {
-           format!("{}", &x.get_str(x.precision()))
+           format!("{}", &x.get_str())
         }
     }
 }

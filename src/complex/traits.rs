@@ -31,15 +31,13 @@ use crate::*;
 
 impl Clone for Complex {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
-        unsafe { 
-            arb_sys::acb::acb_init(z.as_mut_ptr());
-            arb_sys::acb::acb_set(z.as_mut_ptr(), self.as_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.parent().default();
+        unsafe { arb_sys::acb::acb_set(res.as_mut_ptr(), self.as_ptr());}
+        res
     }
 }
 
+/*
 impl fmt::Debug for Complex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Complex")
@@ -48,17 +46,18 @@ impl fmt::Debug for Complex {
             .field("data", &String::from(self))
             .finish()
     }
-}
+}*/
 
 impl Default for Complex {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
-            Complex { 
-                ctx: Arc::new(RwLock::new(REAL_DEFAULT_PREC)), 
-                extra: (), 
-                data: z.assume_init() 
+            Complex {
+                data: ComplexData {
+                    prec: Arc::new(RwLock::new(ARB_DEFAULT_PREC)), 
+                    elem: z.assume_init() 
+                }
             }
         }
     }
@@ -67,12 +66,6 @@ impl Default for Complex {
 impl fmt::Display for Complex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for Complex {
-    fn drop(&mut self) {
-        unsafe { arb_sys::acb::acb_clear(self.as_mut_ptr());}
     }
 }
 

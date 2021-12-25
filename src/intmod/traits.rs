@@ -50,6 +50,7 @@ impl Clone for IntMod {
     }
 }
 
+/*
 impl fmt::Debug for IntMod {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("IntMod")
@@ -58,17 +59,11 @@ impl fmt::Debug for IntMod {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl fmt::Display for IntMod {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for IntMod {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz::fmpz_clear(self.as_mut_ptr());}
     }
 }
 

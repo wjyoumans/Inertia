@@ -17,6 +17,7 @@
 
 
 use std::ffi::{CStr, CString};
+use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
@@ -37,12 +38,11 @@ impl Drop for NfCtx {
 /// A number field.
 #[derive(Clone)]
 pub struct NumberField {
-    pub ctx: <Self as Parent>::Data,
+    pub ctx: Arc<NfCtx>,
+    pub x: Arc<String>,
 }
 
 impl Parent for NumberField {
-    type Data = Arc<NfCtx>;
-    type Extra = ();
     type Element = NumFldElem;
 
     #[inline]
@@ -50,7 +50,13 @@ impl Parent for NumberField {
         let mut z = MaybeUninit::uninit();
         unsafe { 
             antic_sys::nf_elem_init(z.as_mut_ptr(), self.as_ptr());
-            NumFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            NumFldElem { 
+                data: NumFldElemData {
+                    ctx: Arc::clone(&self.ctx), 
+                    x: Arc::clone(&self.x),
+                    elem: z.assume_init() 
+                }
+            }
         }
     }
 
@@ -108,13 +114,46 @@ impl NumberField {
 /// A number field element.
 pub type NumFldElem = Elem<NumberField>;
 
+pub struct NumFldElemData {
+    pub elem: nf_elem_struct,
+    pub ctx: Arc<NfCtx>,
+    pub x: Arc<String>,
+}
+
+impl Drop for NumFldElemData {
+    fn drop(&mut self) {
+        unsafe { antic_sys::nf_elem_clear(&mut self.elem, &self.ctx.0);}
+    }
+}
+
+impl fmt::Debug for NumFldElemData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let rr = RatPolRing::init(&*self.x);
+        let mut tmp = rr.default();
+        unsafe {
+            antic_sys::nf_elem_get_fmpq_poly(
+                tmp.as_mut_ptr(),
+                &self.elem,
+                &self.ctx.0
+            );
+            f.debug_struct("NumFldElemData")
+                .field("elem", &tmp.get_str_pretty())
+                .field("x", &self.x)
+                .field("ctx.pol", &self.ctx.0.pol)
+                .field("ctx.traces", &self.ctx.0.traces)
+                .field("ctx.flag", &self.ctx.0.flag)
+                .finish_non_exhaustive()
+        }
+    }
+}
+
 impl Element for NumFldElem {
-    type Data = nf_elem_struct;
+    type Data = NumFldElemData;
     type Parent = NumberField;
 
     #[inline]
     fn parent(&self) -> NumberField {
-        NumberField { ctx: Arc::clone(&self.ctx) }
+        NumberField { ctx: Arc::clone(&self.data.ctx), x: Arc::clone(&self.data.x) }
     }
 }
 
@@ -147,47 +186,33 @@ impl NumFldElem {
     /// Antic via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &nf_elem_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with Antic via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut nf_elem_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with Antic via the FFI.
     #[inline]
     pub fn ctx_as_ptr(&self) -> &nf_struct {
-        &self.ctx.0
+        &self.data.ctx.0
     }
     
-    /*
     /// Return a [String] representation of a number field element.
     #[inline]
     pub fn get_str(&self) -> String {
-        unsafe {
-            let s = flint_sys::fmpz_poly_q::fmpz_poly_q_get_str(self.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
+        RatPol::from(self).get_str()
     }
     
-    /// Return a pretty-printed [String] representation of a rational function.
+    /// Return a pretty-printed [String] representation of a number field element.
     #[inline]
-    pub fn get_str_pretty(&self, var: &str) -> String {
-        let v = CString::new(var).unwrap();
-        unsafe {
-            let s = flint_sys::fmpz_poly_q::fmpz_poly_q_get_str_pretty(self.as_ptr(), v.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
+    pub fn get_str_pretty(&self) -> String {
+        let rr = RatPolRing::init(&*self.data.x);
+        rr.new(self).get_str()
     }
-    */
 }

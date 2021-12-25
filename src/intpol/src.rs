@@ -37,8 +37,6 @@ pub struct IntPolRing {
 }
 
 impl Parent for IntPolRing {
-    type Data = ();
-    type Extra = Arc<String>;
     type Element = IntPol;
 
     #[inline]
@@ -46,7 +44,7 @@ impl Parent for IntPolRing {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPol { ctx: (), extra: Arc::clone(&self.x), data: z.assume_init() }
+            IntPol { data: IntPolData { x: Arc::clone(&self.x), elem: z.assume_init() } }
         }
     }
 }
@@ -114,13 +112,25 @@ impl<T> New<T> for IntPolRing where
 /// [fmpz_poly][flint_sys::fmpz_poly::fmpz_poly_struct].
 pub type IntPol = Elem<IntPolRing>;
 
+#[derive(Debug)]
+pub struct IntPolData {
+    pub elem: fmpz_poly_struct,
+    pub x: Arc<String>,
+}
+
+impl Drop for IntPolData {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_clear(&mut self.elem);}
+    }
+}
+
 impl Element for IntPol {
-    type Data = fmpz_poly_struct;
+    type Data = IntPolData;
     type Parent = IntPolRing;
 
     #[inline]
     fn parent(&self) -> IntPolRing {
-        IntPolRing { x: Arc::clone(&self.extra) }
+        IntPolRing { x: Arc::clone(&self.data.x) }
     }
 }
 
@@ -186,14 +196,14 @@ impl IntPol {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_poly_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_poly_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// Return a [String] representation of an integer polynomial.
@@ -211,7 +221,7 @@ impl IntPol {
     /// Return a pretty-printed [String] representation of an integer polynomial.
     #[inline]
     pub fn get_str_pretty(&self) -> String {
-        let v = CString::new((*self.extra).clone()).unwrap();
+        let v = CString::new((*self.data.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpz_poly::fmpz_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {

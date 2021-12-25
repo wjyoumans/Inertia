@@ -38,12 +38,10 @@ impl Drop for QadicCtx {
 
 /// An unramified extension of the p-adic numbers.
 pub struct QadicField {
-    ctx: <Self as Parent>::Data,
+    ctx: Arc<QadicCtx>,
 }
 
 impl Parent for QadicField {
-    type Data = Arc<QadicCtx>;
-    type Extra = ();
     type Element = QadicElem;
 
     #[inline]
@@ -51,10 +49,11 @@ impl Parent for QadicField {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
-            QadicElem { 
-                ctx: Arc::clone(&self.ctx), 
-                extra: (), 
-                data: z.assume_init() 
+            QadicElem {
+                data: QadicData {
+                    ctx: Arc::clone(&self.ctx), 
+                    elem: z.assume_init()
+                }
             }
         }
     }
@@ -153,13 +152,27 @@ impl QadicField {
 /// An element of a q-adic field.
 pub type QadicElem = Elem<QadicField>;
 
+#[derive(Debug)]
+pub struct QadicData {
+    pub elem: qadic_struct,
+    pub ctx: Arc<QadicCtx>,
+}
+
+impl Drop for QadicData {
+    fn drop(&mut self) {
+        unsafe { 
+            flint_sys::qadic::qadic_clear(&mut self.elem);
+        }
+    }
+}
+
 impl Element for QadicElem {
-    type Data = qadic_struct;
+    type Data = QadicData;
     type Parent = QadicField;
 
     #[inline]
     fn parent(&self) -> QadicField {
-        QadicField { ctx: Arc::clone(&self.ctx) }
+        QadicField { ctx: Arc::clone(&self.data.ctx) }
     }
 }
 
@@ -192,20 +205,20 @@ impl QadicElem {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &qadic_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut qadic_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &qadic_ctx_struct {
-        &self.ctx.0
+        &self.data.ctx.0
     }
 
     /*

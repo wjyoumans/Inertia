@@ -18,6 +18,7 @@
 
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
+use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, RwLock};
 
@@ -27,14 +28,12 @@ use num_traits::{Zero, PrimInt};
 
 use crate::*;
 
-/// The field of real numbers with initial precision given by `ctx`.
+/// The field of real numbers with initial precision given by `prec`.
 pub struct RealField {
-    pub ctx: <Self as Parent>::Data,
+    pub prec: Arc<RwLock<c_long>>,
 }
 
 impl Parent for RealField {
-    type Data = Arc<RwLock<c_long>>;
-    type Extra = ();
     type Element = Real;
 
     #[inline]
@@ -42,7 +41,12 @@ impl Parent for RealField {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
-            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            Real { 
+                data: RealData {
+                    prec: Arc::clone(&self.prec), 
+                    elem: z.assume_init() 
+                }
+            }
         }
 
     }
@@ -75,7 +79,7 @@ impl Field for RealField {
 
     #[inline]
     fn base_field(&self) -> RealField {
-        RealField { ctx: Arc::clone(&self.ctx) }
+        RealField { prec: Arc::clone(&self.prec) }
     }
 }
 
@@ -84,7 +88,7 @@ impl<T> Init1<T> for RealField where
 {
     fn init(prec: T) -> Self {
         match prec.try_into() {
-            Ok(v) => RealField { ctx: Arc::new(RwLock::new(v)) },
+            Ok(v) => RealField { prec: Arc::new(RwLock::new(v)) },
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -124,7 +128,7 @@ impl_new_unsafe! {
 impl RealField {
     /// Return the default working precision of the real field.
     pub fn precision(&self) -> c_long {
-        *self.ctx.read().unwrap()
+        *self.prec.read().unwrap()
     }
     
     /// Update the default working precision of the real field. This affects all elements of the
@@ -133,7 +137,7 @@ impl RealField {
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *self.ctx.write().unwrap() = v,
+            Ok(v) => *self.prec.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -144,13 +148,47 @@ impl RealField {
 /// nonnegative (possibly infinite).
 pub type Real = Elem<RealField>;
 
+pub struct RealData {
+    pub elem: arb_struct,
+    pub prec: Arc<RwLock<c_long>>,
+}
+
+impl Drop for RealData {
+    fn drop(&mut self) {
+        unsafe { 
+            arb_sys::arb::arb_clear(&mut self.elem);
+        }
+    }
+}
+
+impl fmt::Debug for RealData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        unsafe {
+            let s = arb_sys::arb::arb_get_str(
+                &self.elem, 
+                ARB_DEFAULT_NUM_DIGITS, 
+                ARB_DEFAULT_PRINT_MODE
+            );
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => {
+                    f.debug_struct("RealData")
+                        .field("elem", &s.to_owned())
+                        .field("prec", &self.prec)
+                        .finish()
+                },
+                Err(_) => panic!("Arb returned invalid UTF-8!")
+            }
+        }
+    }
+}
+
 impl Element for Real {
-    type Data = arb_struct;
+    type Data = RealData;
     type Parent = RealField;
 
     #[inline]
     fn parent(&self) -> RealField {
-        RealField { ctx: Arc::clone(&self.ctx) }
+        RealField { prec: Arc::clone(&self.data.prec) }
     }
 }
 
@@ -181,19 +219,19 @@ impl Real {
     /// Arb via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &arb_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with Arb via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut arb_struct {
-        &mut self.data
+        &mut self.data.elem
     }
     
     /// Return the default working precision of the real field.
     pub fn precision(&self) -> c_long {
-        *self.ctx.read().unwrap()
+        *self.data.prec.read().unwrap()
     }
     
     /// Update the default working precision of the real field. This affects all elements of the
@@ -202,16 +240,20 @@ impl Real {
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *self.ctx.write().unwrap() = v,
+            Ok(v) => *self.data.prec.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
     
     /// Return a [String] representation of the real number.
     #[inline]
-    pub fn get_str(&self, n: c_long) -> String {
+    pub fn get_str(&self) -> String {
         unsafe {
-            let s = arb_sys::arb::arb_get_str(self.as_ptr(), n, 0);
+            let s = arb_sys::arb::arb_get_str(
+                self.as_ptr(), 
+                ARB_DEFAULT_NUM_DIGITS, 
+                ARB_DEFAULT_PRINT_MODE
+            );
             match CStr::from_ptr(s).to_str() {
                 Ok(s) => s.to_owned(),
                 Err(_) => panic!("Arb returned invalid UTF-8!")

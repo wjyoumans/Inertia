@@ -28,6 +28,12 @@ use libc::c_long;
 use crate::*;
 
 
+/// The finite field with `p^k` elements for `p` prime.
+#[derive(Debug, Clone)]
+pub struct FiniteField {
+    pub ctx: Arc<FqCtx>,
+}
+
 #[derive(Debug)]
 pub struct FqCtx(pub fq_ctx_struct);
 
@@ -37,15 +43,7 @@ impl Drop for FqCtx {
     }
 }
 
-/// The finite field with `p^k` elements for `p` prime.
-#[derive(Debug, Clone)]
-pub struct FiniteField {
-    pub ctx: <Self as Parent>::Data,
-}
-
 impl Parent for FiniteField {
-    type Data = Arc<FqCtx>;
-    type Extra = ();
     type Element = FinFldElem;
 
     #[inline]
@@ -53,7 +51,12 @@ impl Parent for FiniteField {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
-            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            FinFldElem { 
+                data: FinFldElemData { 
+                    ctx: Arc::clone(&self.ctx), 
+                    elem: z.assume_init() 
+                } 
+            }
         }
     }
 }
@@ -208,13 +211,27 @@ impl FiniteField {
 /// An element of a finite field.
 pub type FinFldElem = Elem<FiniteField>;
 
+#[derive(Debug)]
+pub struct FinFldElemData {
+    pub elem: fq_struct,
+    pub ctx: Arc<FqCtx>,
+}
+
+impl Drop for FinFldElemData {
+    fn drop(&mut self) {
+        unsafe { 
+            flint_sys::fq_default::fq_default_clear(&mut self.elem, &self.ctx.0);
+        }
+    }
+}
+
 impl Element for FinFldElem {
-    type Data = fq_struct;
+    type Data = FinFldElemData;
     type Parent = FiniteField;
 
     #[inline]
     fn parent(&self) -> FiniteField {
-        FiniteField { ctx: Arc::clone(&self.ctx) }
+        FiniteField { ctx: Arc::clone(&self.data.ctx) }
     }
 }
 
@@ -249,20 +266,20 @@ impl FinFldElem {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fq_ctx_struct {
-        &self.ctx.0
+        &self.data.ctx.0
     }
     
     /// Return a [String] representation of a finite field element.

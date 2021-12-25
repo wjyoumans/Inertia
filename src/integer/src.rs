@@ -28,13 +28,12 @@ use rustc_hash::FxHashMap;
 
 use crate::*;
 
+
 /// An integer ring that can be used as an [Integer] "factory".
 #[derive(Default, Debug, Hash, Clone, Copy)]
 pub struct IntegerRing {}
 
 impl Parent for IntegerRing {
-    type Data = ();
-    type Extra = ();
     type Element = Integer;
 
     #[inline]
@@ -89,8 +88,19 @@ impl<T> New<T> for IntegerRing where
 /// An arbitrary precision integer. The field `data` is a FLINT [fmpz][flint_sys::fmpz::fmpz].
 pub type Integer = Elem<IntegerRing>;
 
+#[derive(Debug)]
+pub struct IntegerData {
+    pub elem: fmpz,
+}
+
+impl Drop for IntegerData {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpz::fmpz_clear(&mut self.elem);}
+    }
+}
+
 impl Element for Integer {
-    type Data = fmpz;
+    type Data = IntegerData;
     type Parent = IntegerRing;
 
     #[inline]
@@ -122,14 +132,14 @@ impl Integer {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// Convert an [Integer] to a string in base `base`.
@@ -1027,7 +1037,7 @@ impl Factorizable for Integer {
             
             let mut hashmap = FxHashMap::<Integer, Integer>::default();
             for (p, k) in base.iter().zip(exp) {
-                hashmap.insert(Integer { ctx: (), extra: (), data: p.clone() }, Integer::from(k));
+                hashmap.insert(Integer { data: IntegerData { elem: p.clone() }}, Integer::from(k));
             }
             
             flint_sys::fmpz_factor::fmpz_factor_clear(&mut fac);

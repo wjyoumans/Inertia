@@ -34,12 +34,13 @@ impl Clone for RatPol {
     fn clone(&self) -> Self {
         let mut res = self.parent().default();
         unsafe { 
-            flint_sys::fmpq_poly::fmpq_poly_set(res.as_mut_ptr(), &self.data); 
+            flint_sys::fmpq_poly::fmpq_poly_set(res.as_mut_ptr(), self.as_ptr()); 
         }
         res
     }
 }
 
+/*
 impl fmt::Debug for RatPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("IntPol")
@@ -48,14 +49,14 @@ impl fmt::Debug for RatPol {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for RatPol {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
-            RatPol { ctx: (), extra: Arc::new("x".to_owned()), data: z.assume_init() }
+            RatPol { data: RatPolData { x: Arc::new("x".to_owned()), elem: z.assume_init() } }
         }
     }
 }
@@ -63,12 +64,6 @@ impl Default for RatPol {
 impl fmt::Display for RatPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for RatPol {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpq_poly::fmpq_poly_clear(self.as_mut_ptr());}
     }
 }
 

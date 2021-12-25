@@ -31,12 +31,10 @@ use crate::*;
 pub struct FinFldMatSpace {
     rows: c_long,
     cols: c_long,
-    ctx: <Self as Parent>::Data,
+    ctx: Arc<FqCtx>,
 }
 
 impl Parent for FinFldMatSpace {
-    type Data = Arc<FqCtx>;
-    type Extra = ();
     type Element = FinFldMat;
 
     #[inline]
@@ -49,7 +47,12 @@ impl Parent for FinFldMatSpace {
                 self.cols, 
                 self.as_ptr()
             );
-            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (),  data: z.assume_init() }
+            FinFldMat { 
+                data: FinFldMatData {
+                    ctx: Arc::clone(&self.ctx), 
+                    elem: z.assume_init() 
+                }
+            }
         }
     }
 }
@@ -136,15 +139,15 @@ impl<'a, T> New<&'a [Vec<T>]> for FinFldMatSpace where
 impl New<&IntMat> for FinFldMatSpace {
     #[inline]
     fn new(&self, x: &IntMat) -> FinFldMat {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.default();
         unsafe {
             flint_sys::fq_default_mat::fq_default_mat_set_fmpz_mat(
-                z.as_mut_ptr(),
+                res.as_mut_ptr(),
                 x.as_ptr(),
                 self.as_ptr()
             );
-            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+        res
     }
 }
 
@@ -158,15 +161,15 @@ impl New<IntMat> for FinFldMatSpace {
 impl New<&IntModMat> for FinFldMatSpace {
     #[inline]
     fn new(&self, x: &IntModMat) -> FinFldMat {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.default();
         unsafe {
             flint_sys::fq_default_mat::fq_default_mat_set_fmpz_mod_mat(
-                z.as_mut_ptr(),
+                res.as_mut_ptr(),
                 x.as_ptr(),
                 self.as_ptr()
             );
-            FinFldMat { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+        res
     }
 }
 
@@ -194,13 +197,27 @@ impl FinFldMatSpace {
 /// An element of the ring of integers mod `n`.
 pub type FinFldMat = Elem<FinFldMatSpace>;
 
+#[derive(Debug)]
+pub struct FinFldMatData {
+    pub elem: fq_default_mat_struct,
+    pub ctx: Arc<FqCtx>,
+}
+
+impl Drop for FinFldMatData {
+    fn drop(&mut self) {
+        unsafe { 
+            flint_sys::fq_default_mat::fq_default_mat_clear(&mut self.elem, &self.ctx.0);
+        }
+    }
+}
+
 impl Element for FinFldMat {
-    type Data = fq_default_mat_struct;
+    type Data = FinFldMatData;
     type Parent = FinFldMatSpace;
     
     #[inline]
     fn parent(&self) -> FinFldMatSpace {
-        FinFldMatSpace { rows: self.nrows(), cols: self.ncols(), ctx: Arc::clone(&self.ctx) }
+        FinFldMatSpace { rows: self.nrows(), cols: self.ncols(), ctx: Arc::clone(&self.data.ctx) }
     }
 }
 
@@ -237,20 +254,20 @@ impl FinFldMat {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_default_mat_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_default_mat_struct {
-        &mut self.data
+        &mut self.data.elem
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fq_default_ctx_struct {
-        &self.ctx.0
+        &self.data.ctx.0
     }
    
     /*
@@ -321,18 +338,17 @@ impl FinFldMat {
 
     #[inline]
     fn get_entry(&self, i: usize, j: usize) -> FinFldElem {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().base_ring().default();
         unsafe {
-            flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.ctx_as_ptr());
             flint_sys::fq_default_mat::fq_default_mat_entry(
-                z.as_mut_ptr(),
+                res.as_mut_ptr(),
                 self.as_ptr(),
                 i as c_long, 
                 j as c_long,
                 self.ctx_as_ptr()
             );
-            FinFldElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() } 
         }
+        res
     }
 
     #[inline]

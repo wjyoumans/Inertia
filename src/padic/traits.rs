@@ -26,19 +26,19 @@ use crate::*;
 
 impl Clone for PadicElem {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::padic::padic_init(z.as_mut_ptr());
             flint_sys::padic::padic_set(
-                z.as_mut_ptr(), 
+                res.as_mut_ptr(), 
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            PadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
         }
+        res
     }
 }
 
+/*
 impl fmt::Debug for PadicElem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("PadicElem")
@@ -47,17 +47,11 @@ impl fmt::Debug for PadicElem {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl fmt::Display for PadicElem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for PadicElem {
-    fn drop(&mut self) {
-        unsafe { flint_sys::padic::padic_clear(self.as_mut_ptr()); }
     }
 }
 

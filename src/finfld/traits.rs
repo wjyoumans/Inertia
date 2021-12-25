@@ -50,6 +50,7 @@ impl Clone for FinFldElem {
     }
 }
 
+/*
 impl fmt::Debug for FinFldElem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("FinFldElem")
@@ -58,19 +59,11 @@ impl fmt::Debug for FinFldElem {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl fmt::Display for FinFldElem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for FinFldElem {
-    fn drop(&mut self) {
-        unsafe { 
-            flint_sys::fq_default::fq_default_clear(self.as_mut_ptr(), self.ctx_as_ptr());
-        }
     }
 }
 

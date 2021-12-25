@@ -31,30 +31,27 @@ impl fmt::Display for IntegerRing {
 
 impl Clone for Integer {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
-        unsafe { 
-            flint_sys::fmpz::fmpz_init_set(z.as_mut_ptr(), &self.data); 
-            Integer { ctx: (), extra: (), data: z.assume_init() }
-        }
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz::fmpz_init_set(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 }
 
+/*
 impl fmt::Debug for Integer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Integer")
-            .field("ctx", &self.ctx)
-            .field("extra", &self.extra)
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for Integer {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
-            Integer { ctx: (), extra: (), data: z.assume_init() }
+            Integer { data: IntegerData { elem: z.assume_init() } }
         }
     }
 }
@@ -62,12 +59,6 @@ impl Default for Integer {
 impl fmt::Display for Integer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for Integer {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz::fmpz_clear(self.as_mut_ptr());}
     }
 }
 

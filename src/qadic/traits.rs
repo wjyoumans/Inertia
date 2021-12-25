@@ -26,19 +26,19 @@ use crate::*;
 
 impl Clone for QadicElem {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
+        let mut res = self.parent().default();
         unsafe { 
-            flint_sys::qadic::qadic_init(z.as_mut_ptr());
             flint_sys::qadic::qadic_set(
-                z.as_mut_ptr(), 
+                res.as_mut_ptr(), 
                 self.as_ptr(),
                 self.ctx_as_ptr()
             ); 
-            QadicElem { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            res
         }
     }
 }
 
+/*
 impl fmt::Debug for QadicElem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("QadicElem")
@@ -48,6 +48,7 @@ impl fmt::Debug for QadicElem {
             .finish()
     }
 }
+*/
 
 /*
 impl fmt::Display for PadicElem {
@@ -56,11 +57,6 @@ impl fmt::Display for PadicElem {
     }
 }*/
 
-impl Drop for QadicElem {
-    fn drop(&mut self) {
-        unsafe { flint_sys::qadic::qadic_clear(self.as_mut_ptr()); }
-    }
-}
 
 /*
 impl Hash for PadicElem {

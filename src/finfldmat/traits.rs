@@ -38,6 +38,7 @@ impl Clone for FinFldMat {
     }
 }
 
+/*
 impl fmt::Debug for FinFldMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("FinFldMat")
@@ -47,7 +48,7 @@ impl fmt::Debug for FinFldMat {
             .finish()
     }
 }
-
+*/
 /*
 impl fmt::Display for IntModMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -55,13 +56,6 @@ impl fmt::Display for IntModMat {
     }
 }*/
 
-impl Drop for FinFldMat {
-    fn drop(&mut self) {
-        unsafe { 
-            flint_sys::fq_default_mat::fq_default_mat_clear(self.as_mut_ptr(), self.ctx_as_ptr());
-        }
-    }
-}
 
 /*
 impl Hash for IntModMat {

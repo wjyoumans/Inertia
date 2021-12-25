@@ -26,8 +26,6 @@ use crate::*;
 pub struct RationalField {}
 
 impl Parent for RationalField {
-    type Data = ();
-    type Extra = ();
     type Element = Rational;
 
     #[inline]
@@ -94,8 +92,19 @@ impl<T> New<T> for RationalField where
 /// [fmpq][flint_sys::fmpq::fmpq].
 pub type Rational = Elem<RationalField>;
 
+#[derive(Debug)]
+pub struct RationalData {
+    pub elem: fmpq,
+}
+
+impl Drop for RationalData {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpq::fmpq_clear(&mut self.elem); }
+    }
+}
+
 impl Element for Rational {
-    type Data = fmpq;
+    type Data = RationalData;
     type Parent = RationalField;
 
     #[inline]
@@ -131,36 +140,28 @@ impl Rational {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq {
-        &self.data
+        &self.data.elem
     }
    
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq {
-        &mut self.data
+        &mut self.data.elem
     }
 
     // TODO: does this share mem?
     /// Returns the numerator of a rational number as an [Integer].
     #[inline]
     pub fn numerator(&self) -> Integer {
-        Integer {
-            ctx: (),
-            extra: (),
-            data: self.data.num
-        }
+        Integer { data: IntegerData { elem: self.data.elem.num } }
     }
     
     // TODO: does this share mem?
     /// Returns the denominator of a rational number as an [Integer].
     #[inline]
     pub fn denominator(&self) -> Integer {
-        Integer {
-            ctx: (),
-            extra: (),
-            data: self.data.den
-        }
+        Integer { data: IntegerData { elem: self.data.elem.den } }
     }
 
     /// Rounds the rational number down to the nearest [Integer].

@@ -31,15 +31,13 @@ use crate::*;
 
 impl Clone for Real {
     fn clone(&self) -> Self {
-        let mut z = MaybeUninit::uninit();
-        unsafe { 
-            arb_sys::arb::arb_init(z.as_mut_ptr());
-            arb_sys::arb::arb_set(z.as_mut_ptr(), self.as_ptr());
-            Real { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
-        }
+        let mut res = self.parent().default();
+        unsafe { arb_sys::arb::arb_set(res.as_mut_ptr(), self.as_ptr()); }
+        res
     }
 }
 
+/*
 impl fmt::Debug for Real {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Real")
@@ -48,17 +46,18 @@ impl fmt::Debug for Real {
             .field("data", &String::from(self))
             .finish()
     }
-}
+}*/
 
 impl Default for Real {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
-            Real { 
-                ctx: Arc::new(RwLock::new(REAL_DEFAULT_PREC)), 
-                extra: (),
-                data: z.assume_init() 
+            Real {
+                data: RealData {
+                    prec: Arc::new(RwLock::new(ARB_DEFAULT_PREC)), 
+                    elem: z.assume_init()
+                }
             }
         }
     }
@@ -67,12 +66,6 @@ impl Default for Real {
 impl fmt::Display for Real {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for Real {
-    fn drop(&mut self) {
-        unsafe { arb_sys::arb::arb_clear(self.as_mut_ptr());}
     }
 }
 

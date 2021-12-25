@@ -31,30 +31,27 @@ impl fmt::Display for IntPolRing {
 
 impl Clone for IntPol {
     fn clone(&self) -> Self {
-        let mut res = self.parent().default();
-        unsafe { 
-            flint_sys::fmpz_poly::fmpz_poly_set(res.as_mut_ptr(), &self.data); 
-        }
+        let mut res = IntPol::default();
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_set(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
 }
 
+/*
 impl fmt::Debug for IntPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("IntPol")
-            .field("ctx", &self.ctx)
-            .field("extra", &self.extra)
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for IntPol {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPol { ctx: (), extra: Arc::new("x".to_owned()), data: z.assume_init() }
+            IntPol { data: IntPolData { x: Arc::new("x".to_owned()), elem: z.assume_init() } }
         }
     }
 }
@@ -62,12 +59,6 @@ impl Default for IntPol {
 impl fmt::Display for IntPol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for IntPol {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_poly::fmpz_poly_clear(self.as_mut_ptr());}
     }
 }
 

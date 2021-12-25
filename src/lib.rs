@@ -64,12 +64,16 @@
 
 #![feature(min_specialization)]
 
-use libc::{c_long, c_uint};
+use libc::{c_long, c_ulong, c_uint};
 
-const REAL_DEFAULT_PREC: c_long = 10;
+const ARB_DEFAULT_PREC: c_long = 10;
+const ARB_DEFAULT_NUM_DIGITS: c_long = 20;
+const ARB_DEFAULT_PRINT_MODE: c_ulong = 0;
 
 const PADIC_PRINT_TERSE: c_uint = 0;
+#[allow(dead_code)]
 const PADIC_PRINT_SERIES: c_uint = 1;
+#[allow(dead_code)]
 const PADIC_PRINT_VAL_UNIT: c_uint = 2;
 const PADIC_DEFAULT_PRINT_MODE: c_uint = PADIC_PRINT_TERSE;
 

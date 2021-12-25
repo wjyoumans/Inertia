@@ -18,6 +18,7 @@
 
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
+use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, RwLock};
 
@@ -30,12 +31,10 @@ use crate::*;
 
 /// The field of complex numbers with initial precision given by `ctx`.
 pub struct ComplexField {
-    pub ctx: <Self as Parent>::Data,
+    pub prec: Arc<RwLock<c_long>>,
 }
 
 impl Parent for ComplexField {
-    type Data = Arc<RwLock<c_long>>;
-    type Extra = ();
     type Element = Complex;
 
     #[inline]
@@ -43,7 +42,12 @@ impl Parent for ComplexField {
         let mut z = MaybeUninit::uninit();
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
-            Complex { ctx: Arc::clone(&self.ctx), extra: (), data: z.assume_init() }
+            Complex { 
+                data: ComplexData {
+                    prec: Arc::clone(&self.prec), 
+                    elem: z.assume_init() 
+                }
+            }
         }
     }
 }
@@ -75,7 +79,7 @@ impl Field for ComplexField {
 
     #[inline]
     fn base_field(&self) -> ComplexField {
-        ComplexField { ctx: Arc::clone(&self.ctx) }
+        ComplexField { prec: Arc::clone(&self.prec) }
     }
 }
 
@@ -84,7 +88,7 @@ impl<T> Init1<T> for ComplexField where
 {
     fn init(prec: T) -> Self {
         match prec.try_into() {
-            Ok(v) => ComplexField { ctx: Arc::new(RwLock::new(v)) },
+            Ok(v) => ComplexField { prec: Arc::new(RwLock::new(v)) },
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -241,7 +245,7 @@ impl New<[Rational; 2]> for ComplexField {
 impl ComplexField {
     /// Return the default working precision of the complex field.
     pub fn precision(&self) -> c_long {
-        *self.ctx.read().unwrap()
+        *self.prec.read().unwrap()
     }
     
     /// Update the default working precision of the complex field. This affects all elements of the
@@ -250,7 +254,7 @@ impl ComplexField {
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *self.ctx.write().unwrap() = v,
+            Ok(v) => *self.prec.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
@@ -260,13 +264,55 @@ impl ComplexField {
 /// with separate error bounds.
 pub type Complex = Elem<ComplexField>;
 
+pub struct ComplexData {
+    pub elem: acb_struct,
+    pub prec: Arc<RwLock<c_long>>,
+}
+
+impl Drop for ComplexData {
+    fn drop(&mut self) {
+        unsafe { 
+            arb_sys::acb::acb_clear(&mut self.elem);
+        }
+    }
+}
+
+impl fmt::Debug for ComplexData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        unsafe {
+            let r = CStr::from_ptr(
+                arb_sys::arb::arb_get_str(
+                    &self.elem.real, 
+                    ARB_DEFAULT_NUM_DIGITS, 
+                    ARB_DEFAULT_PRINT_MODE
+                    )
+                ).to_str();
+            let i = CStr::from_ptr(
+                arb_sys::arb::arb_get_str(
+                    &self.elem.imag, 
+                    ARB_DEFAULT_NUM_DIGITS, 
+                    ARB_DEFAULT_PRINT_MODE
+                    )
+                ).to_str();
+            if r.is_ok() && i.is_ok() {
+                f.debug_struct("ComplexData")
+                    .field("elem", &format!("{} + i*{}", r.unwrap(), i.unwrap()))
+                    .field("prec", &self.prec)
+                    .finish()
+            } else {
+                panic!("Arb returned invalid UTF-8!")
+            }
+        }
+    }
+}
+
 impl Element for Complex {
-    type Data = acb_struct;
+    type Data = ComplexData;
     type Parent = ComplexField;
 
     #[inline]
     fn parent(&self) -> ComplexField {
-        ComplexField { ctx: Arc::clone(&self.ctx) }
+        ComplexField { prec: Arc::clone(&self.data.prec) }
     }
 }
 
@@ -297,47 +343,47 @@ impl Complex {
     /// Arb via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &acb_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with Arb via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut acb_struct {
-        &mut self.data
+        &mut self.data.elem
     }
     
     /// A reference to the underlying FFI struct of the real part of a complex number. This is only 
     /// needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn real_as_ptr(&self) -> &arb_struct {
-        &self.data.real
+        &self.data.elem.real
     }
     
     /// A mutable reference to the underlying FFI struct of the real part of a complex number. This is
     /// only needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn real_as_mut_ptr(&mut self) -> &mut arb_struct {
-        &mut self.data.real
+        &mut self.data.elem.real
     }
     
     /// A reference to the underlying FFI struct of the imaginary part of a complex number. This is 
     /// only needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn imag_as_ptr(&self) -> &arb_struct {
-        &self.data.imag
+        &self.data.elem.imag
     }
     
     /// A mutable reference to the underlying FFI struct of the imaginary part of a complex number. 
     /// This is only needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn imag_as_mut_ptr(&mut self) -> &mut arb_struct {
-        &mut self.data.imag
+        &mut self.data.elem.imag
     }
     
     /// Return the default working precision of the complex field.
     pub fn precision(&self) -> c_long {
-        *self.ctx.read().unwrap()
+        *self.data.prec.read().unwrap()
     }
     
     /// Update the default working precision of the complex field. This affects all elements of the
@@ -346,17 +392,29 @@ impl Complex {
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *self.ctx.write().unwrap() = v,
+            Ok(v) => *self.data.prec.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }
     
     /// Return a [String] representation of the complex number.
     #[inline]
-    pub fn get_str(&self, n: c_long) -> String {
+    pub fn get_str(&self) -> String {
         unsafe {
-            let r = CStr::from_ptr(arb_sys::arb::arb_get_str(self.real_as_ptr(), n, 0)).to_str();
-            let i = CStr::from_ptr(arb_sys::arb::arb_get_str(self.imag_as_ptr(), n, 0)).to_str();
+            let r = CStr::from_ptr(
+                arb_sys::arb::arb_get_str(
+                    self.real_as_ptr(), 
+                    ARB_DEFAULT_NUM_DIGITS, 
+                    ARB_DEFAULT_PRINT_MODE
+                    )
+                ).to_str();
+            let i = CStr::from_ptr(
+                arb_sys::arb::arb_get_str(
+                    self.imag_as_ptr(), 
+                    ARB_DEFAULT_NUM_DIGITS, 
+                    ARB_DEFAULT_PRINT_MODE
+                    )
+                ).to_str();
             if r.is_ok() && i.is_ok() {
                 format!("{} + i*{}", r.unwrap(), i.unwrap())
             } else {

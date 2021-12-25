@@ -33,12 +33,13 @@ impl Clone for RatMat {
     fn clone(&self) -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
-            flint_sys::fmpq_mat::fmpq_mat_init_set(z.as_mut_ptr(), &self.data);
-            RatMat { ctx: (), extra: (), data: z.assume_init() }
+            flint_sys::fmpq_mat::fmpq_mat_init_set(z.as_mut_ptr(), self.as_ptr());
+            RatMat { data: RatMatData { elem: z.assume_init() } }
         }
     }
 }
 
+/*
 impl fmt::Debug for RatMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("RatMat")
@@ -47,17 +48,11 @@ impl fmt::Debug for RatMat {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl fmt::Display for RatMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for RatMat {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_clear(self.as_mut_ptr()); }
     }
 }
 

@@ -35,6 +35,7 @@ impl Clone for RatFunc {
     }
 }
 
+/*
 impl fmt::Debug for RatFunc {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("RatFunc")
@@ -43,14 +44,19 @@ impl fmt::Debug for RatFunc {
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for RatFunc {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly_q::fmpz_poly_q_init(z.as_mut_ptr());
-            RatFunc { ctx: (), extra: Arc::new("x".to_owned()), data: z.assume_init() }
+            RatFunc { 
+                data: RatFuncData {
+                    x: Arc::new("x".to_owned()), 
+                    elem: z.assume_init() 
+                }
+            }
         }
     }
 }
@@ -58,12 +64,6 @@ impl Default for RatFunc {
 impl fmt::Display for RatFunc {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
-    }
-}
-
-impl Drop for RatFunc {
-    fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_poly_q::fmpz_poly_q_clear(self.as_mut_ptr());}
     }
 }
 

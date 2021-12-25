@@ -47,7 +47,7 @@ impl_from_unsafe! {
 
 impl_from_unsafe! {
     None
-    Real, Rational, REAL_DEFAULT_PREC;
+    Real, Rational, ARB_DEFAULT_PREC;
     arb_sys::arb::arb_set_fmpq
 }
 
@@ -55,7 +55,7 @@ impl_from! {
     String, Real
     {
         fn from(x: &Real) -> String {
-           format!("{}", &x.get_str(x.precision()))
+           format!("{}", &x.get_str())
         }
     }
 }

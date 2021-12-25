@@ -15,11 +15,14 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+use std::fmt::Debug;
 use std::hash::Hash;
 use rustc_hash::FxHashMap;
 use crate::integer::src::Integer;
 
-#[derive(Debug, Clone)]
+//#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Product<T: Hash> {
     pub hashmap: FxHashMap<T, Integer>,
 }

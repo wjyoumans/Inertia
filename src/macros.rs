@@ -1324,6 +1324,23 @@ macro_rules! impl_from {
 /// Macros for implementing `From` for conversions with unsafe functions.
 macro_rules! impl_from_unsafe {
     (
+        // a -> b with context
+        ctx
+        $t1:ident, $t2:ident
+        $func:path
+    ) => (
+        impl_from! {
+            $t1, $t2
+            {
+                fn from(src: &$t2) -> $t1 {
+                    let mut res = default!(From, ctx, $t1, src);
+                    unsafe { $func(res.as_mut_ptr(), src.as_ptr(), src.ctx_as_ptr()); }
+                    res
+                }
+            }
+        }
+    );
+    (
         // a -> b
         $kw:ident
         $t1:ident, $t2:ident
@@ -1341,7 +1358,7 @@ macro_rules! impl_from_unsafe {
         }
     );
     (
-        // a -> b, with third argument (precision, context, etc)
+        // a -> b, with third argument (precision, etc)
         $kw:ident
         $t1:ident, $t2:ident, $arg:expr;
         $func:path

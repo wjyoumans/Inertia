@@ -32,8 +32,6 @@ pub struct RatPolRing {
 }
 
 impl Parent for RatPolRing {
-    type Data = ();
-    type Extra = Arc<String>;
     type Element = RatPol;
 
     #[inline]
@@ -104,13 +102,25 @@ impl<T> New<T> for RatPolRing where
 
 pub type RatPol = Elem<RatPolRing>;
 
+#[derive(Debug)]
+pub struct RatPolData {
+    pub elem: fmpq_poly_struct,
+    pub x: Arc<String>,
+}
+
+impl Drop for RatPolData {
+    fn drop(&mut self) {
+        unsafe { flint_sys::fmpq_poly::fmpq_poly_clear(&mut self.elem); }
+    }
+}
+
 impl Element for RatPol {
-    type Data = fmpq_poly_struct;
+    type Data = RatPolData;
     type Parent = RatPolRing;
 
     #[inline]
     fn parent(&self) -> RatPolRing {
-        RatPolRing { x: Arc::clone(&self.extra) }
+        RatPolRing { x: Arc::clone(&self.data.x) }
     }
 }
 
@@ -172,14 +182,14 @@ impl RatPol {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq_poly_struct {
-        &self.data
+        &self.data.elem
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_poly_struct {
-        &mut self.data
+        &mut self.data.elem
     }
     
     #[inline]
@@ -195,7 +205,7 @@ impl RatPol {
     
     #[inline]
     pub fn get_str_pretty(&self) -> String {
-        let v = CString::new((*self.extra).clone()).unwrap();
+        let v = CString::new((*self.data.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpq_poly::fmpq_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {

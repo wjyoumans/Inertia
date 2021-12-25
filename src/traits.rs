@@ -111,8 +111,6 @@ pub trait Factorizable {
 
 /// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
-    type Data;
-    type Extra;
     type Element: Element;
 
     fn default(&self) -> Self::Element;
@@ -148,7 +146,7 @@ pub trait New<T>: Parent {
 
 /// An generic element of a `Parent`.
 pub trait Element {
-    type Data;
+    type Data: fmt::Debug;
     type Parent: Parent;
 
     fn parent(&self) -> Self::Parent;
@@ -334,13 +332,14 @@ pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 
 
 /// An element of a `Parent`. In cases where the parent holds important context data we use the 
-/// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are dropped.
+/// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are 
+/// dropped.
+#[derive(Debug)] 
 pub struct Elem<T: Parent> {
-    pub ctx: T::Data,
-    pub extra: T::Extra,
     pub data: <T::Element as Element>::Data,
 }
 
+/*
 impl<T: Parent> Drop for Elem<T> {
     default fn drop(&mut self) {}
 }
@@ -350,7 +349,7 @@ impl<T: Parent> fmt::Debug for Elem<T> {
         f.write_str("Debug not implemented.")
     }
 }
-
+*/
 
 /* Changing poly ring defs to this causes compiler crash
 pub struct PolyRing<T: Ring> {}
