@@ -15,19 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! An arbitrary precision rational number.
+pub mod rational;
 
-/// Implementations of arithmetic operations.
-pub mod arith;
+pub mod ratpoly;
 
-/// Conversion implementations.
-pub mod conv;
-
-/// Constructor macros.
-pub mod macros;
-
-/// Definition and general implementation.
-pub mod src;
-
-/// Implementation of traits not involving operations.
-pub mod traits;
+pub mod ratmat;

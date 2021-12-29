@@ -88,31 +88,14 @@ pub mod traits;
 pub mod product;
 
 pub mod integer;
-pub mod intpol;
-pub mod intmat;
-
 pub mod rational;
-pub mod ratpol;
-pub mod ratmat;
-
 pub mod real;
-
 pub mod complex;
-
 pub mod intmod;
-pub mod intmodpol;
-pub mod intmodmat;
-
 pub mod finfld;
-pub mod finfldpol;
-pub mod finfldmat;
-
 pub mod padic;
-
 pub mod qadic;
-
 pub mod ratfunc;
-
 pub mod numfld;
 
 pub mod prelude { 
@@ -123,46 +106,31 @@ pub mod prelude {
 
     pub use crate::product::src::*;
 
-    pub use crate::integer::src::*;
-    pub use super::int;
-    pub use crate::intpol::src::*;
-    pub use super::intpol;
-    pub use crate::intmat::src::*;
-    //pub use super::intmat;
+    pub use crate::integer::integer::src::*;
+    pub use crate::integer::intpoly::src::*;
+    pub use crate::integer::intmat::src::*;
 
-    pub use crate::rational::src::*;
-    pub use super::rat;
-    pub use crate::ratpol::src::*;
-    pub use super::ratpol;
-    pub use crate::ratmat::src::*;
-    //pub use super::ratmat;
+    pub use crate::rational::rational::src::*;
+    pub use crate::rational::ratpoly::src::*;
+    pub use crate::rational::ratmat::src::*;
+
+    pub use crate::real::real::src::*;
     
-    pub use crate::real::src::*;
-    pub use super::real;
-
-    pub use crate::complex::src::*;
-    pub use super::complex;
-
-    pub use crate::intmod::src::*;
-    pub use super::intmod;
-    pub use crate::intmodpol::src::*;
-    //pub use super::intmodpol;
-    pub use crate::intmodmat::src::*;
-    //pub use super::intmodmat;
+    pub use crate::complex::complex::src::*;
     
-    pub use crate::finfld::src::*;
-    pub use super::finfld;
-    pub use crate::finfldpol::src::*;
-    //pub use super::finfldpol;
-    pub use crate::finfldmat::src::*;
-    //pub use super::finfldmat;
-
-    pub use crate::padic::src::*;
+    pub use crate::intmod::intmod::src::*;
+    pub use crate::intmod::intmodpoly::src::*;
+    pub use crate::intmod::intmodmat::src::*;
+    
+    pub use crate::finfld::finfld::src::*;
+    pub use crate::finfld::finfldpoly::src::*;
+    pub use crate::finfld::finfldmat::src::*;
+    
+    pub use crate::padic::padic::src::*;
 
     pub use crate::qadic::src::*;
 
     pub use crate::ratfunc::src::*;
-    //pub use super::ratfunc;
 
     pub use crate::numfld::src::*; 
 }

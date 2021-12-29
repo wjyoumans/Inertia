@@ -19,8 +19,7 @@ use std::hash::Hash;
 
 use rustc_hash::FxHashMap;
 
-use crate::product::src::Product;
-use crate::integer::src::Integer;
+use crate::*;
 
 impl<T> Default for Product<T> where T: Eq + Hash {
     fn default() -> Self {

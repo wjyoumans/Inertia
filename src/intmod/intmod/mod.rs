@@ -15,8 +15,19 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod real;
+//! Integers modulo `n`.
 
-//pub mod realpoly;
+/// Implementations of arithmetic operations.
+//pub mod arith;
 
-//pub mod realmat;
+/// Conversion implementations.
+pub mod conv;
+
+/// Constructor macros.
+pub mod macros;
+
+/// Definition and general implementation.
+pub mod src;
+
+/// Implementation of traits not involving operations.
+pub mod traits;

@@ -19,7 +19,8 @@
 use std::fmt::Debug;
 use std::hash::Hash;
 use rustc_hash::FxHashMap;
-use crate::integer::src::Integer;
+
+use crate::*;
 
 //#[derive(Debug, Clone)]
 #[derive(Clone)]

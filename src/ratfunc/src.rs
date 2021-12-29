@@ -31,6 +31,7 @@ pub struct RatFuncField {
 
 impl Parent for RatFuncField {
     type Element = RatFunc;
+    type Context = ();
     
     #[inline]
     fn default(&self) -> RatFunc {
@@ -78,18 +79,18 @@ impl Field for RatFuncField {
     }
 }
 
-impl Init1<&str> for RatFuncField {
+impl InitParent1<&str> for RatFuncField {
     #[inline]
     fn init(x: &str) -> RatFuncField {
         RatFuncField { x: Arc::new(x.to_owned()) }
     }
 }
 
-impl New<&IntPol> for RatFuncField {
-    fn new(&self, x: &IntPol) -> RatFunc {
+impl NewElement<&IntPoly> for RatFuncField {
+    fn new(&self, x: &IntPoly) -> RatFunc {
         let mut res = self.default();
         let num = ManuallyDrop::new(x.clone());
-        let den = ManuallyDrop::new(IntPol::from(1));
+        let den = ManuallyDrop::new(IntPoly::from(1));
         
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_set(&mut res.data.elem.num, num.as_ptr());
@@ -100,8 +101,8 @@ impl New<&IntPol> for RatFuncField {
     }
 }
 
-impl<T> New<T> for RatFuncField where
-    T: Into<IntPol>
+impl<T> NewElement<T> for RatFuncField where
+    T: Into<IntPoly>
 {
     #[inline]
     fn new(&self, x: T) -> RatFunc {
@@ -200,8 +201,8 @@ impl RatFunc {
     /*
     /// Return the numerator of a rational function as an integer polynomial.
     #[inline]
-    pub fn numerator(&self) -> IntPol {
-        let mut num = IntPol::default();
+    pub fn numerator(&self) -> IntPoly {
+        let mut num = IntPoly::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_set(num.as_mut_ptr(), &self.data.num);
         }
@@ -210,8 +211,8 @@ impl RatFunc {
 
     /// Return the denominator of a rational function as an integer polynomial.
     #[inline]
-    pub fn denominator(&self) -> IntPol {
-        let mut den = IntPol::default();
+    pub fn denominator(&self) -> IntPoly {
+        let mut den = IntPoly::default();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_set(den.as_mut_ptr(), &self.data.den);
         }
@@ -220,13 +221,13 @@ impl RatFunc {
     
     /// Return the numerator and denominator of a rational function as integer polynomials.
     #[inline]
-    pub fn num_den(&self) -> (IntPol, IntPol) {
+    pub fn num_den(&self) -> (IntPoly, IntPoly) {
         (self.numerator(), self.denominator())
     }
     
     /// Set the numerator of a rational function to a given integer polynomial.
     #[inline]
-    pub fn set_numerator(&mut self, num: &IntPol) {
+    pub fn set_numerator(&mut self, num: &IntPoly) {
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_set(&mut self.data.num, num.as_ptr());
         }
@@ -234,7 +235,7 @@ impl RatFunc {
     
     /// Set the denominator of a rational function to a given integer polynomial.
     #[inline]
-    pub fn set_denominator(&mut self, den: &IntPol) {
+    pub fn set_denominator(&mut self, den: &IntPoly) {
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_set(&mut self.data.den, den.as_ptr());
         }

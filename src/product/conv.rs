@@ -19,8 +19,7 @@ use std::hash::Hash;
 
 use rustc_hash::FxHashMap;
 
-use crate::integer::src::Integer;
-use crate::product::src::Product;
+use crate::*;
 
 
 impl<T> From<FxHashMap<T, Integer>> for Product<T> where

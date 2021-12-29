@@ -44,6 +44,7 @@ pub struct NumberField {
 
 impl Parent for NumberField {
     type Element = NumFldElem;
+    type Context = ();
 
     #[inline]
     fn default(&self) -> NumFldElem {
@@ -128,7 +129,7 @@ impl Drop for NumFldElemData {
 
 impl fmt::Debug for NumFldElemData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let rr = RatPolRing::init(&*self.x);
+        let rr = RatPolyRing::init(&*self.x);
         let mut tmp = rr.default();
         unsafe {
             antic_sys::nf_elem_get_fmpq_poly(
@@ -206,13 +207,13 @@ impl NumFldElem {
     /// Return a [String] representation of a number field element.
     #[inline]
     pub fn get_str(&self) -> String {
-        RatPol::from(self).get_str()
+        RatPoly::from(self).get_str()
     }
     
     /// Return a pretty-printed [String] representation of a number field element.
     #[inline]
     pub fn get_str_pretty(&self) -> String {
-        let rr = RatPolRing::init(&*self.data.x);
+        let rr = RatPolyRing::init(&*self.data.x);
         rr.new(self).get_str()
     }
 }

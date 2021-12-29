@@ -18,8 +18,7 @@
 use std::ops::{Mul, MulAssign};
 use std::hash::Hash;
 
-use crate::traits::{Inv, InvAssign};
-use crate::product::src::Product;
+use crate::*;
 
 impl<T> Inv for Product<T> where
     T: Eq + Hash,

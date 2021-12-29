@@ -17,6 +17,7 @@
 
 
 use std::ffi::{CStr, CString};
+use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
@@ -36,6 +37,14 @@ impl Drop for QadicCtx {
     }
 }
 
+// unramified extension of degree d is unique, so hash prime and degree
+impl Hash for QadicCtx {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        unsafe { flint_sys::qadic::qadic_ctx_degree(&self.0).hash(state); }
+        Integer { data: IntegerData { elem: self.0.pctx.p[0] } }.hash(state)
+    }
+}
+
 /// An unramified extension of the p-adic numbers.
 pub struct QadicField {
     ctx: Arc<QadicCtx>,
@@ -43,6 +52,7 @@ pub struct QadicField {
 
 impl Parent for QadicField {
     type Element = QadicElem;
+    type Context = Arc<QadicCtx>;
 
     #[inline]
     fn default(&self) -> QadicElem {
@@ -83,7 +93,7 @@ impl Ring for QadicField {}
 
 impl Field for QadicField {}
 */
-impl<T> Init4<&Integer, T, T, &str> for QadicField where
+impl<T> InitParent4<&Integer, T, T, &str> for QadicField where
     T: TryInto<c_long>
 {
     fn init(p: &Integer, k: T, deg: T, var: &str) -> Self {
@@ -112,7 +122,7 @@ impl<T> Init4<&Integer, T, T, &str> for QadicField where
     }
 }
 
-impl<T, U> Init4<T, U, U, &str> for QadicField where
+impl<T, U> InitParent4<T, U, U, &str> for QadicField where
     T: Into<Integer>,
     U: TryInto<c_long>
 {
@@ -122,8 +132,8 @@ impl<T, U> Init4<T, U, U, &str> for QadicField where
     }
 }
 
-impl New<&IntPol> for QadicField {
-    fn new(&self, x: &IntPol) -> QadicElem {
+impl NewElement<&IntPoly> for QadicField {
+    fn new(&self, x: &IntPoly) -> QadicElem {
         let mut res = self.default();
         unsafe {
             flint_sys::qadic::qadic_set_fmpz_poly(res.as_mut_ptr(), x.as_ptr(), self.as_ptr());
@@ -132,8 +142,8 @@ impl New<&IntPol> for QadicField {
     }
 }
 
-impl<T> New<T> for QadicField where
-    T: Into<IntPol>,
+impl<T> NewElement<T> for QadicField where
+    T: Into<IntPoly>,
 {
     fn new(&self, x: T) -> QadicElem {
         self.new(&x.into())

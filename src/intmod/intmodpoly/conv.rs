@@ -15,8 +15,15 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod real;
 
-//pub mod realpoly;
+use crate::*;
 
-//pub mod realmat;
+
+impl_from! {
+    String, IntModPoly
+    {
+        fn from(x: &IntModPoly) -> String {
+            String::from(IntPoly::from(x))
+        }
+    }
+}

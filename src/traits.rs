@@ -15,7 +15,9 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt;
+use std::fmt::{self, Debug};
+use std::hash::Hash;
+use std::marker::PhantomData;
 use std::sync::Arc;
 
 use libc::c_long;
@@ -112,35 +114,36 @@ pub trait Factorizable {
 /// A generic parent, for example an algebraic structure like a ring.
 pub trait Parent {
     type Element: Element;
+    type Context: Clone + Debug + Hash;
 
     fn default(&self) -> Self::Element;
 }
 
-pub trait Init: Parent {
+pub trait InitParent: Parent {
     fn init() -> Self;
 }
 
-pub trait Init1<A>: Parent {
+pub trait InitParent1<A>: Parent {
     fn init(a: A) -> Self;
 }
 
-pub trait Init2<A, B>: Parent {
+pub trait InitParent2<A, B>: Parent {
     fn init(a: A, b: B) -> Self;
 }
 
-pub trait Init3<A, B, C>: Parent {
+pub trait InitParent3<A, B, C>: Parent {
     fn init(a: A, b: B, c: C) -> Self;
 }
 
-pub trait Init4<A, B, C, D>: Parent {
+pub trait InitParent4<A, B, C, D>: Parent {
     fn init(a: A, b: B, c: C, d: D) -> Self;
 }
 
-pub trait Init5<A, B, C, D, E>: Parent {
+pub trait InitParent5<A, B, C, D, E>: Parent {
     fn init(a: A, b: B, c: C, d: D, e: E) -> Self;
 }
 
-pub trait New<T>: Parent {
+pub trait NewElement<T>: Parent {
     fn new(&self, x: T) -> <Self as Parent>::Element;
 }
 
@@ -329,8 +332,6 @@ pub trait FieldElement: RingElement {
 pub trait NumberField: Field {} // + PolynomialRing (Q[x]/f)
 pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 
-
-
 /// An element of a `Parent`. In cases where the parent holds important context data we use the 
 /// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are 
 /// dropped.
@@ -339,18 +340,62 @@ pub struct Elem<T: Parent> {
     pub data: <T::Element as Element>::Data,
 }
 
-/*
-impl<T: Parent> Drop for Elem<T> {
-    default fn drop(&mut self) {}
+#[derive(Debug, Hash, Clone)]
+pub struct PolyRing<T: Ring + Debug + Hash + Clone> {
+    pub phantom: PhantomData<T>,
+    pub ctx: <T as Parent>::Context,
+    pub var: Arc<String>,
 }
 
-impl<T: Parent> fmt::Debug for Elem<T> {
-    default fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Debug not implemented.")
+/*
+impl<T> PolyRing<T> where
+    T: Ring + Debug + Hash + Clone
+{
+    pub fn new(base_ring: T, var: &str) -> PolyRing<T> {
+        PolyRing { 
+            phantom: PhantomData::<T>, 
+            ctx: Arc::clone(&base_ring.ctx), 
+            var: Arc::new(var.to_owned())
+        }
+    }
+}*/
+
+#[derive(Debug, Hash, Clone)]
+pub struct MPolyRing<T: Ring + Debug + Hash + Clone> {
+    pub phantom: PhantomData<T>,
+    pub vars: Arc<Vec<String>>,
+}
+
+/*
+impl<T> MPolyRing<T> where
+    T: Ring + Debug + Hash + Clone
+{
+    pub fn new(_base_ring: T, vars: &[&str]) -> MPolyRing<T> {
+        let mut vec = Vec::with_capacity(vars.len());
+        for &var in vars.iter() {
+            vec.push(var.to_owned());
+        }
+        MPolyRing { 
+            phantom: PhantomData::<T>,
+            vars: Arc::new(vec)
+        }
+    }
+}*/
+
+#[derive(Debug, Hash, Clone)]
+pub struct MatSpace<T: Ring + Debug + Hash + Clone> {
+    pub phantom: PhantomData<T>,
+    pub nrows: c_long,
+    pub ncols: c_long,
+}
+
+/*
+impl<T> MatSpace<T> where
+    T: Ring + Debug + Hash + Clone
+{
+    pub fn new(_base_ring: T, nrows: c_long, ncols: c_long) -> MatSpace<T> {
+        MatSpace { phantom: PhantomData::<T>, nrows, ncols}
     }
 }
 */
-
-/* Changing poly ring defs to this causes compiler crash
-pub struct PolyRing<T: Ring> {}
-*/
+// quotient, frac field, extension

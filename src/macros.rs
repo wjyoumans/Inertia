@@ -1401,7 +1401,7 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $cast:ident {$($t2:ident)*}
         $func:path
     ) => ($(
-        impl New<&$t2> for $t1 {
+        impl NewElement<&$t2> for $t1 {
             #[inline]
             fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
@@ -1410,7 +1410,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<$t2> for $t1 {
+        impl NewElement<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
@@ -1422,7 +1422,7 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $t2:ident
         $func:path
     ) => (
-        impl New<&$t2> for $t1 {
+        impl NewElement<&$t2> for $t1 {
             #[inline]
             fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
@@ -1431,7 +1431,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<$t2> for $t1 {
+        impl NewElement<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
@@ -1444,7 +1444,7 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $cast:ident {$($t2:ident)*}
         $func:path
     ) => ($(
-        impl New<&$t2> for $t1 {
+        impl NewElement<&$t2> for $t1 {
             #[inline]
             fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
@@ -1453,7 +1453,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<$t2> for $t1 {
+        impl NewElement<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
@@ -1466,7 +1466,7 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $t2:ident
         $func:path
     ) => (
-        impl New<&$t2> for $t1 {
+        impl NewElement<&$t2> for $t1 {
             #[inline]
             fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
@@ -1475,7 +1475,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<$t2> for $t1 {
+        impl NewElement<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
@@ -1488,7 +1488,7 @@ macro_rules! impl_new_unsafe {
         $t1:ident, $t2:ident
         $func:path
     ) => (
-        impl New<&$t2> for $t1 {
+        impl NewElement<&$t2> for $t1 {
             #[inline]
             fn new(&self, x: &$t2) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
@@ -1497,7 +1497,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<$t2> for $t1 {
+        impl NewElement<$t2> for $t1 {
             #[inline]
             fn new(&self, x: $t2) -> <$t1 as Parent>::Element {
                 self.new(&x)
@@ -1509,7 +1509,7 @@ macro_rules! impl_new_unsafe {
         pol
         $t1:ident, {$($t2:ident)*}
     ) => ($(
-        impl New<&[$t2]> for $t1 {
+        impl NewElement<&[$t2]> for $t1 {
             #[inline]
             fn new(&self, src: &[$t2]) -> <$t1 as Parent>::Element {
                 let mut res = self.default();
@@ -1520,7 +1520,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<Vec<$t2>> for $t1 {
+        impl NewElement<Vec<$t2>> for $t1 {
             #[inline]
             fn new(&self, src: Vec<$t2>) -> <$t1 as Parent>::Element {
                 self.new(src.as_slice())
@@ -1533,7 +1533,7 @@ macro_rules! impl_new_unsafe {
         $t1:ident, {$($t2:ident)*}
     ) => ($(
         
-        impl New<&[&[$t2]]> for $t1 {
+        impl NewElement<&[&[$t2]]> for $t1 {
             fn new(&self, mat: &[&[$t2]]) -> <$t1 as Parent>::Element {
                 let m = mat.len() as c_long;
                 let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
@@ -1551,7 +1551,7 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<&[Vec<$t2>]> for $t1 {
+        impl NewElement<&[Vec<$t2>]> for $t1 {
             fn new(&self, mat: &[Vec<$t2>]) -> <$t1 as Parent>::Element {
                 let m = mat.len() as c_long;
                 let n = mat.iter().map(|x| x.len()).max().unwrap() as c_long;
@@ -1569,14 +1569,14 @@ macro_rules! impl_new_unsafe {
             }
         }
         
-        impl New<Vec<&[$t2]>> for $t1 {
+        impl NewElement<Vec<&[$t2]>> for $t1 {
             #[inline]
             fn new(&self, mat: Vec<&[$t2]>) -> <$t1 as Parent>::Element {
                 self.new(mat.as_slice())
             }
         }
        
-        impl New<Vec<Vec<$t2>>> for $t1 {
+        impl NewElement<Vec<Vec<$t2>>> for $t1 {
             #[inline]
             fn new(&self, mat: Vec<Vec<$t2>>) -> <$t1 as Parent>::Element {
                 self.new(mat.as_slice())
