@@ -31,14 +31,6 @@ impl fmt::Display for FinFldMatSpace {
     }
 }
 
-impl Hash for FinFldMatSpace { 
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.nrows().hash(state);
-        self.ncols().hash(state);
-        self.base_ring().hash(state);
-    }
-}
-
 impl Clone for FinFldMat {
     fn clone(&self) -> Self {
         let mut res = self.parent().default();

@@ -84,7 +84,8 @@ impl<T> InitParent2<T, T> for IntMatSpace where
             Ok(rr) =>
                 match c.try_into() {
                     Ok(cc) => IntMatSpace { 
-                        phantom: PhantomData::<IntegerRing>, 
+                        phantom: PhantomData::<IntegerRing>,
+                        ctx: (),
                         nrows: rr, 
                         ncols: cc
                     },
@@ -133,6 +134,7 @@ impl Element for IntMat {
     fn parent(&self) -> IntMatSpace {
         IntMatSpace { 
             phantom: PhantomData::<IntegerRing>, 
+            ctx: (),
             nrows: self.nrows(), 
             ncols: self.ncols() 
         }

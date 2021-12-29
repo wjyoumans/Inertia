@@ -31,13 +31,14 @@ impl fmt::Display for IntModMatSpace {
     }
 }
 
+/*
 impl Hash for IntModMatSpace {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.nrows().hash(state);
         self.ncols().hash(state);
         self.modulus().hash(state)
     }
-}
+}*/
 
 impl Clone for IntModMat {
     fn clone(&self) -> Self {

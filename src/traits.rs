@@ -385,6 +385,7 @@ impl<T> MPolyRing<T> where
 #[derive(Debug, Hash, Clone)]
 pub struct MatSpace<T: Ring + Debug + Hash + Clone> {
     pub phantom: PhantomData<T>,
+    pub ctx: <T as Parent>::Context,
     pub nrows: c_long,
     pub ncols: c_long,
 }

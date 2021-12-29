@@ -24,19 +24,13 @@ use std::sync::Arc;
 use crate::*;
 
 
-impl Hash for FinFldPolRing { 
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.base_ring().hash(state);
-    }
-}
-
-impl fmt::Display for FinFldPolRing {
+impl fmt::Display for FinFldPolyRing {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Univariate polynomial ring over {}", self.base_ring()) 
     }
 }
 
-impl Clone for FinFldPol {
+impl Clone for FinFldPoly {
     fn clone(&self) -> Self {
         let mut res = self.parent().default();
         unsafe { 
@@ -50,13 +44,13 @@ impl Clone for FinFldPol {
     }
 }
 
-impl fmt::Display for FinFldPol {
+impl fmt::Display for FinFldPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
 }
 
-impl Hash for FinFldPol {
+impl Hash for FinFldPoly {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // avoid calling hash on coefficients directly, since they each hash the finite field 
         // context.

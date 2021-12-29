@@ -82,6 +82,7 @@ impl<T> InitParent2<T, T> for RatMatSpace where
                 match c.try_into() {
                     Ok(cc) => RatMatSpace { 
                         phantom: PhantomData::<RationalField>,
+                        ctx: (),
                         nrows: rr, 
                         ncols: cc
                     },
@@ -126,6 +127,7 @@ impl Element for RatMat {
     fn parent(&self) -> RatMatSpace {
         RatMatSpace { 
             phantom: PhantomData::<RationalField>, 
+            ctx: (),
             nrows: self.nrows(), 
             ncols: self.ncols() 
         }

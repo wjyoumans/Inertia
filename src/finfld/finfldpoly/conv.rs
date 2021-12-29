@@ -19,9 +19,9 @@
 use crate::*;
 
 impl_from! {
-    String, FinFldPol
+    String, FinFldPoly
     {
-        fn from(x: &FinFldPol) -> String {
+        fn from(x: &FinFldPoly) -> String {
             x.get_str_pretty()
         }
     }

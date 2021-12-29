@@ -16,7 +16,7 @@
  */
 
 
-use std::ffi::{CStr, CString};
+use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
@@ -28,12 +28,7 @@ use crate::*;
 
 
 /// The vector space of matrices with entries in a finite field.
-#[derive(Debug, Clone)]
-pub struct FinFldMatSpace {
-    rows: c_long,
-    cols: c_long,
-    ctx: Arc<FqCtx>,
-}
+pub type FinFldMatSpace = MatSpace<FiniteField>;
 
 impl Parent for FinFldMatSpace {
     type Element = FinFldMat;
@@ -45,8 +40,8 @@ impl Parent for FinFldMatSpace {
         unsafe {
             flint_sys::fq_default_mat::fq_default_mat_init(
                 z.as_mut_ptr(), 
-                self.rows, 
-                self.cols, 
+                self.nrows, 
+                self.ncols, 
                 self.as_ptr()
             );
             FinFldMat { 
@@ -89,11 +84,11 @@ impl VectorSpace for FinFldMatSpace {
 
 impl MatrixSpace for FinFldMatSpace {
     fn nrows(&self) -> c_long {
-        self.rows
+        self.nrows
     }
     
     fn ncols(&self) -> c_long {
-        self.cols
+        self.ncols
     }
 }
 
@@ -107,8 +102,9 @@ impl<T> InitParent5<T, T, &Integer, T, &str> for FinFldMatSpace where
                 match c.try_into() {
                     Ok(cc) => 
                         FinFldMatSpace { 
-                            rows: rr, 
-                            cols: cc, 
+                            phantom: PhantomData::<FiniteField>,
+                            nrows: rr, 
+                            ncols: cc, 
                             ctx: Arc::clone(&ff.ctx)
                         },
                     Err(_) => panic!("Input cannot be converted into a signed long!"),
@@ -219,7 +215,12 @@ impl Element for FinFldMat {
     
     #[inline]
     fn parent(&self) -> FinFldMatSpace {
-        FinFldMatSpace { rows: self.nrows(), cols: self.ncols(), ctx: Arc::clone(&self.data.ctx) }
+        FinFldMatSpace { 
+            phantom: PhantomData::<FiniteField>,
+            nrows: self.nrows(), 
+            ncols: self.ncols(), 
+            ctx: Arc::clone(&self.data.ctx) 
+        }
     }
 }
 

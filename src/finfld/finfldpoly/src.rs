@@ -19,6 +19,7 @@
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::fmt;
+use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
@@ -30,25 +31,21 @@ use libc::{c_long, c_ulong};
 use crate::*;
 
 /// The ring of polynomials over the finite field with `p^k` elements.
-#[derive(Debug, Clone)]
-pub struct FinFldPolRing {
-    ctx: Arc<FqCtx>,
-    x: Arc<String>,
-}
+pub type FinFldPolyRing = PolyRing<FiniteField>;
 
-impl Parent for FinFldPolRing {
-    type Element = FinFldPol;
+impl Parent for FinFldPolyRing {
+    type Element = FinFldPoly;
     type Context = Arc<FqCtx>;
 
     #[inline]
-    fn default(&self) -> FinFldPol {
+    fn default(&self) -> FinFldPoly {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
-            FinFldPol {
-                data: FinFldPolData {
+            FinFldPoly {
+                data: FinFldPolyData {
                     ctx: Arc::clone(&self.ctx),
-                    x: Arc::clone(&self.x),
+                    x: Arc::clone(&self.var),
                     elem: z.assume_init()
                 }
             }
@@ -56,27 +53,27 @@ impl Parent for FinFldPolRing {
     }
 }
 
-impl Additive for FinFldPolRing {
+impl Additive for FinFldPolyRing {
     #[inline]
-    fn zero(&self) -> FinFldPol {
+    fn zero(&self) -> FinFldPoly {
         self.default()
     }
 }
 
-impl Multiplicative for FinFldPolRing {
+impl Multiplicative for FinFldPolyRing {
     #[inline]
-    fn one(&self) -> FinFldPol {
+    fn one(&self) -> FinFldPoly {
         let mut res = self.default();
         unsafe { flint_sys::fq_default_poly::fq_default_poly_one(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
 }
 
-impl AdditiveGroup for FinFldPolRing {}
+impl AdditiveGroup for FinFldPolyRing {}
 
-impl Ring for FinFldPolRing {}
+impl Ring for FinFldPolyRing {}
 
-impl PolynomialRing for FinFldPolRing {
+impl PolynomialRing for FinFldPolyRing {
     type BaseRing = FiniteField;
 
     #[inline]
@@ -85,12 +82,12 @@ impl PolynomialRing for FinFldPolRing {
     }
 
     #[inline]
-    fn gens(&self) -> Vec<FinFldPol> {
+    fn gens(&self) -> Vec<FinFldPoly> {
         vec!(self.new(vec![0,1].as_slice()))
     }
 }
 
-impl<T> InitParent4<&Integer, T, &str, &str> for FinFldPolRing where 
+impl<T> InitParent4<&Integer, T, &str, &str> for FinFldPolyRing where 
     T: TryInto<c_long>,
 {
     /// Construct the ring of polynomials over the finite field with `p^k` elements.
@@ -110,7 +107,11 @@ impl<T> InitParent4<&Integer, T, &str, &str> for FinFldPolRing where
                         k, 
                         tmp.as_ptr()
                     );
-                    FinFldPolRing { ctx: Arc::new(FqCtx(z.assume_init())), x: Arc::new(x.to_owned()) }
+                    FinFldPolyRing { 
+                        phantom: PhantomData::<FiniteField>,
+                        ctx: Arc::new(FqCtx(z.assume_init())), 
+                        var: Arc::new(x.to_owned()) 
+                    }
                 }
             },
             Err(_) => panic!("Input cannot be converted into a signed long!"),
@@ -118,7 +119,7 @@ impl<T> InitParent4<&Integer, T, &str, &str> for FinFldPolRing where
     }
 }
 
-impl<T, U> InitParent4<T, U, &str, &str> for FinFldPolRing where 
+impl<T, U> InitParent4<T, U, &str, &str> for FinFldPolyRing where 
     T: Into<Integer>,
     U: TryInto<c_long>,
 {
@@ -164,59 +165,59 @@ unsafe fn fq_default_poly_set_fmpz(
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, u64 {u64 u32 u16 u8}
+    FinFldPolyRing, u64 {u64 u32 u16 u8}
     fq_default_poly_set_ui
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, i64 {i64 i32 i16 i8}
+    FinFldPolyRing, i64 {i64 i32 i16 i8}
     fq_default_poly_set_si
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, Integer
+    FinFldPolyRing, Integer
     fq_default_poly_set_fmpz
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, IntMod
+    FinFldPolyRing, IntMod
     fq_default_poly_set_fmpz
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, IntPoly
+    FinFldPolyRing, IntPoly
     flint_sys::fq_default_poly::fq_default_poly_set_fmpz_poly
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, IntModPoly
+    FinFldPolyRing, IntModPoly
     flint_sys::fq_default_poly::fq_default_poly_set_fmpz_mod_poly
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, FinFldElem
+    FinFldPolyRing, FinFldElem
     flint_sys::fq_default_poly::fq_default_poly_set_fq_default
 }
 
 impl_new_unsafe! {
     ctx
-    FinFldPolRing, FinFldPol
+    FinFldPolyRing, FinFldPoly
     flint_sys::fq_default_poly::fq_default_poly_set
 }
 
 impl_new_unsafe! {
     pol
-    FinFldPolRing, {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod IntPoly IntModPoly FinFldElem}
+    FinFldPolyRing, {u64 u32 u16 u8 i64 i32 i16 i8 Integer IntMod IntPoly IntModPoly FinFldElem}
 }
 
 
-impl FinFldPolRing {
+impl FinFldPolyRing {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]
@@ -226,15 +227,15 @@ impl FinFldPolRing {
 }
 
 /// An element of a finite field.
-pub type FinFldPol = Elem<FinFldPolRing>;
+pub type FinFldPoly = Elem<FinFldPolyRing>;
 
-pub struct FinFldPolData {
+pub struct FinFldPolyData {
     pub elem: fq_poly_struct,
     pub ctx: Arc<FqCtx>,
     pub x: Arc<String>,
 }
 
-impl Drop for FinFldPolData {
+impl Drop for FinFldPolyData {
     fn drop(&mut self) {
         unsafe { 
             flint_sys::fq_default_poly::fq_default_poly_clear(&mut self.elem, &self.ctx.0);
@@ -242,7 +243,7 @@ impl Drop for FinFldPolData {
     }
 }
 
-impl fmt::Debug for FinFldPolData {
+impl fmt::Debug for FinFldPolyData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let x = CString::new((*self.x).clone()).unwrap();
         unsafe {
@@ -253,7 +254,7 @@ impl fmt::Debug for FinFldPolData {
             );
             match CStr::from_ptr(s).to_str() {
                 Ok(s) => {
-                    f.debug_struct("FinFldPolData")
+                    f.debug_struct("FinFldPolyData")
                         .field("elem", &s.to_owned())
                         .field("ctx", &self.ctx)
                         .finish()
@@ -264,17 +265,21 @@ impl fmt::Debug for FinFldPolData {
     }
 }
 
-impl Element for FinFldPol {
-    type Data = FinFldPolData;
-    type Parent = FinFldPolRing;
+impl Element for FinFldPoly {
+    type Data = FinFldPolyData;
+    type Parent = FinFldPolyRing;
 
     #[inline]
-    fn parent(&self) -> FinFldPolRing {
-        FinFldPolRing { ctx: Arc::clone(&self.data.ctx), x: Arc::clone(&self.data.x) }
+    fn parent(&self) -> FinFldPolyRing {
+        FinFldPolyRing { 
+            phantom: PhantomData::<FiniteField>,
+            ctx: Arc::clone(&self.data.ctx), 
+            var: Arc::clone(&self.data.x) 
+        }
     }
 }
 
-impl AdditiveElement for FinFldPol {
+impl AdditiveElement for FinFldPoly {
     #[inline]
     fn is_zero(&self) -> bool {
         unsafe { 
@@ -286,7 +291,7 @@ impl AdditiveElement for FinFldPol {
     }
 }
 
-impl MultiplicativeElement for FinFldPol {
+impl MultiplicativeElement for FinFldPoly {
     #[inline]
     fn is_one(&self) -> bool {
         unsafe { 
@@ -298,11 +303,11 @@ impl MultiplicativeElement for FinFldPol {
     }
 }
 
-impl AdditiveGroupElement for FinFldPol {}
+impl AdditiveGroupElement for FinFldPoly {}
 
-impl RingElement for FinFldPol {}
+impl RingElement for FinFldPoly {}
 
-impl PolynomialRingElement for FinFldPol {
+impl PolynomialRingElement for FinFldPoly {
     type BaseRingElement = FinFldElem;
 
     /// Return the length of the polynomial, equivalently, the degree plus one.
@@ -344,7 +349,7 @@ impl PolynomialRingElement for FinFldPol {
     }
 }
 
-impl FinFldPol {
+impl FinFldPoly {
     /// A reference to the underlying FFI struct. This is only needed to interface directly with 
     /// FLINT via the FFI.
     #[inline]

@@ -17,6 +17,7 @@
 
 
 use std::convert::TryInto;
+use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
@@ -28,12 +29,7 @@ use crate::*;
 
 
 /// The vector space of matrices with entries integers mod `n`.
-#[derive(Debug, Clone)]
-pub struct IntModMatSpace {
-    rows: c_long,
-    cols: c_long,
-    ctx: Arc<FmpzModCtx>,
-}
+pub type IntModMatSpace = MatSpace<IntModRing>; 
 
 impl Parent for IntModMatSpace {
     type Element = IntModMat;
@@ -45,8 +41,8 @@ impl Parent for IntModMatSpace {
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(
                 z.as_mut_ptr(), 
-                self.rows, 
-                self.cols, 
+                self.nrows, 
+                self.ncols, 
                 self.modulus().as_ptr()
             );
             IntModMat { 
@@ -90,11 +86,11 @@ impl VectorSpace for IntModMatSpace {
 impl MatrixSpace for IntModMatSpace {
 
     fn nrows(&self) -> c_long {
-        self.rows
+        self.nrows
     }
     
     fn ncols(&self) -> c_long {
-        self.cols
+        self.ncols
     }
 }
 
@@ -107,8 +103,9 @@ impl<T> InitParent3<T, T, &Integer> for IntModMatSpace where
             Ok(rr) =>
                 match c.try_into() {
                     Ok(cc) => IntModMatSpace { 
-                        rows: rr, 
-                        cols: cc, 
+                        phantom: PhantomData::<IntModRing>,
+                        nrows: rr, 
+                        ncols: cc, 
                         ctx: Arc::clone(&IntModRing::init(n).ctx)
                     },
                     Err(_) => panic!("Input cannot be converted into a signed long!"),
@@ -213,7 +210,12 @@ impl Element for IntModMat {
 
     #[inline]
     fn parent(&self) -> IntModMatSpace {
-        IntModMatSpace { rows: self.nrows(), cols: self.ncols(), ctx: Arc::clone(&self.data.ctx) }
+        IntModMatSpace { 
+            phantom: PhantomData::<IntModRing>,
+            nrows: self.nrows(), 
+            ncols: self.ncols(), 
+            ctx: Arc::clone(&self.data.ctx) 
+        }
     }
 }
 
