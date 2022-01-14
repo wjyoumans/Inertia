@@ -5,11 +5,9 @@ Inertia is a computational mathematics library for Rust.
 ## Dependencies
 
 Inertia relies heavily on the C libraries [Flint](https://flintlib.org/doc/),
-[Arb](https://arblib.org/), and [Antic](https://github.com/wbhart/antic). Currently, all three
-libraries must be installed on your machine. On Linux it is recommended to install them in the default location `\usr\local`. See the FFI crates [flint-sys](https://crates.io/crates/flint-sys), 
-[arb-sys](https://crates.io/crates/arb-sys), and [antic-sys](https://crates.io/crates/antic-sys) 
-for details on suggested versions.
-
+[Arb](https://arblib.org/), and [Antic](https://github.com/wbhart/antic). See the FFI crates
+[flint-sys](https://crates.io/crates/flint-sys), [arb-sys](https://crates.io/crates/arb-sys), and 
+[antic-sys](https://crates.io/crates/antic-sys) for details on installation.
 
 ## Features
 
