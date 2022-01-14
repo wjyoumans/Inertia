@@ -65,7 +65,7 @@ impl_from! {
 impl_from_unsafe! {
     ctx
     RatPoly, NumFldElem
-    antic_sys::nf_elem_get_fmpq_poly
+    antic_sys::nf_elem::nf_elem_get_fmpq_poly
 }
 
 impl_from! {

@@ -16,20 +16,22 @@
  */
 
 
+/*
 use std::mem::MaybeUninit;
 use std::ops::*;
 
 use libc::{c_long, c_ulong};
 use rug::ops::*;
-
+*/
 use crate::*;
 
 impl_cmp_unsafe! {
     eq
-    IntMat
-    flint_sys::fmpz_mat::fmpz_mat_equal
+    RatMat
+    flint_sys::fmpq_mat::fmpq_mat_equal
 }
 
+/*
 impl_unop_unsafe! {
     matrix
     IntMat
@@ -37,6 +39,7 @@ impl_unop_unsafe! {
     NegAssign {neg_assign}
     flint_sys::fmpz_mat::fmpz_mat_neg
 }
+*/
 
 /* need RatMat
 impl Inv for IntMat {
@@ -58,6 +61,7 @@ impl Inv for IntMat {
 }
 */
 
+/*
 impl_binop_unsafe! {
     matrix
     IntMat, IntMat, IntMat
@@ -249,4 +253,4 @@ unsafe fn fmpz_mat_scalar_mod_si(
     flint_sys::fmpz::fmpz_init_set_si(z.as_mut_ptr(), g);
     flint_sys::fmpz_mat::fmpz_mat_scalar_mod_fmpz(res, f, z.as_ptr());
     flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
-}
+}*/

@@ -16,8 +16,6 @@
  */
 
 
-use std::ffi::CString;
-
 use num_traits::PrimInt;
 
 use crate::*;

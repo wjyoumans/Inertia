@@ -17,15 +17,14 @@
 
 
 use std::convert::TryInto;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::{Arc, RwLock};
 
 use arb_sys::arb::arb_struct;
-use libc::{c_int, c_long, c_ulong};
-use num_traits::{Zero, PrimInt};
+use libc::c_long;
 
 use crate::*;
 

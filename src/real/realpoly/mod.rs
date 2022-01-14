@@ -16,24 +16,13 @@
  */
 
 
-use std::hash::Hash;
-use rustc_hash::FxHashMap;
+//pub mod arith;
 
-use crate::*;
+pub mod conv;
 
-//#[derive(Debug, Clone)]
-#[derive(Clone)]
-pub struct Product<T: Hash> {
-    pub hashmap: FxHashMap<T, Integer>,
-}
+//pub mod macros;
 
-impl<T> Product<T> where T: Eq + Hash
-{
-    pub fn new() -> Self {
-        Product { hashmap: FxHashMap::<T, Integer>::default() }
-    }
-    
-    pub fn len(&self) -> usize {
-        self.hashmap.len()
-    }
-}
+/// Definition and general implementation.
+pub mod src;
+
+pub mod traits;

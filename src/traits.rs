@@ -273,14 +273,6 @@ pub trait MatrixSpaceElement: VectorSpaceElement {
     // rref, solve, nullspace
 }
 
-/* would work if MatrixSpaceElement<T> etc
-impl<T: MatrixSpaceElement> From<&T> for Vec<<T as VectorSpaceElement>::BaseRingElement> {
-    #[inline]
-    fn from(x: &T) -> Vec<<T as VectorSpaceElement>::BaseRingElement> {
-        x.entries()
-    }
-}*/
-
 pub trait Ring: AdditiveGroup + Multiplicative {}
 pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Display {}
 
@@ -299,6 +291,8 @@ pub trait PolynomialRingElement: RingElement {
 
     fn degree(&self) -> c_long;
 
+    fn var(&self) -> String;
+
     fn get_coeff(&self, i: usize) -> Self::BaseRingElement;
     
     fn set_coeff(&mut self, i: usize, coeff: &Self::BaseRingElement);
@@ -313,6 +307,8 @@ pub trait PolynomialRingElement: RingElement {
         }
         vec
     }
+
+    fn get_str_pretty(&self) -> String;
 }
 
 pub trait Field: Ring {
@@ -347,40 +343,11 @@ pub struct PolyRing<T: Ring + Debug + Hash + Clone> {
     pub var: Arc<String>,
 }
 
-/*
-impl<T> PolyRing<T> where
-    T: Ring + Debug + Hash + Clone
-{
-    pub fn new(base_ring: T, var: &str) -> PolyRing<T> {
-        PolyRing { 
-            phantom: PhantomData::<T>, 
-            ctx: Arc::clone(&base_ring.ctx), 
-            var: Arc::new(var.to_owned())
-        }
-    }
-}*/
-
 #[derive(Debug, Hash, Clone)]
 pub struct MPolyRing<T: Ring + Debug + Hash + Clone> {
     pub phantom: PhantomData<T>,
     pub vars: Arc<Vec<String>>,
 }
-
-/*
-impl<T> MPolyRing<T> where
-    T: Ring + Debug + Hash + Clone
-{
-    pub fn new(_base_ring: T, vars: &[&str]) -> MPolyRing<T> {
-        let mut vec = Vec::with_capacity(vars.len());
-        for &var in vars.iter() {
-            vec.push(var.to_owned());
-        }
-        MPolyRing { 
-            phantom: PhantomData::<T>,
-            vars: Arc::new(vec)
-        }
-    }
-}*/
 
 #[derive(Debug, Hash, Clone)]
 pub struct MatSpace<T: Ring + Debug + Hash + Clone> {
@@ -390,13 +357,4 @@ pub struct MatSpace<T: Ring + Debug + Hash + Clone> {
     pub ncols: c_long,
 }
 
-/*
-impl<T> MatSpace<T> where
-    T: Ring + Debug + Hash + Clone
-{
-    pub fn new(_base_ring: T, nrows: c_long, ncols: c_long) -> MatSpace<T> {
-        MatSpace { phantom: PhantomData::<T>, nrows, ncols}
-    }
-}
-*/
 // quotient, frac field, extension

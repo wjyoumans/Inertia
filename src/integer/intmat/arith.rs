@@ -30,6 +30,16 @@ impl_cmp_unsafe! {
     flint_sys::fmpz_mat::fmpz_mat_equal
 }
 
+impl_cmp! {
+    eq
+    IntMat, RatMat
+    {
+        fn eq(&self, rhs: &RatMat) -> bool {
+            RatMat::from(self).eq(rhs)
+        }
+    }
+}
+
 impl_unop_unsafe! {
     matrix
     IntMat
@@ -38,25 +48,21 @@ impl_unop_unsafe! {
     flint_sys::fmpz_mat::fmpz_mat_neg
 }
 
-/* need RatMat
-impl Inv for IntMat {
-    type Output = Self;
-    fn inv(&self) -> Self::Output {
-        assert!(self.is_square());
-
-        let mut res = IntMat::zero(self.nrows(), self.ncols());
-        let mut den = Integer::default();
-        unsafe { 
-            let x = flint_sys::fmpz_mat::fmpz_mat_inv(res.as_mut_ptr(), den.as_mut_ptr(), self.as_ptr()); 
-            if x == 0 {
-                None
-            } else {
-                Some((res, den))
+impl_unop! {
+    IntMat, RatMat
+    Inv {inv}
+    {
+        fn inv(self) -> RatMat {
+            let rr = RatMatSpace::init(self.nrows(), self.ncols());
+            let mut res = rr.default();
+            unsafe {
+                flint_sys::fmpq_mat::fmpq_mat_set_fmpz_mat(res.as_mut_ptr(), self.as_ptr());
+                flint_sys::fmpq_mat::fmpq_mat_inv(res.as_mut_ptr(), res.as_ptr());
             }
+            res
         }
     }
 }
-*/
 
 impl_binop_unsafe! {
     matrix
@@ -97,16 +103,14 @@ impl_binop_unsafe! {
     flint_sys::fmpz_mat::fmpz_mat_scalar_mod_fmpz;
 }
 
-/* TODO: RatMat
 impl_binop_unsafe! {
     rhs_scalar
     IntMat, Integer, RatMat
 
     Div {div}
-    DivAssign {div_assign}
     AssignDiv {assign_div}
-    fmpz_mat_scalar_div_fmpz;
-}*/
+    flint_sys::fmpq_mat::fmpq_mat_set_fmpz_mat_div_fmpz;
+}
 
 impl_binop_unsafe! {
     lhs_scalar

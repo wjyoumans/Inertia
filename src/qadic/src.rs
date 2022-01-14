@@ -16,7 +16,7 @@
  */
 
 
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 use std::sync::Arc;

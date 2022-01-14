@@ -248,7 +248,11 @@ impl PolynomialRingElement for IntModPoly {
     fn degree(&self) -> c_long {
         unsafe { flint_sys::fmpz_mod_poly::fmpz_mod_poly_degree(self.as_ptr(), self.ctx_as_ptr())}
     }
-    
+   
+    fn var(&self) -> String {
+        (*self.data.x).clone()
+    }
+
     #[inline]
     fn get_coeff(&self, i: usize) -> IntMod {
         let mut res = self.parent().base_ring().default();
@@ -273,6 +277,12 @@ impl PolynomialRingElement for IntModPoly {
                 self.ctx_as_ptr()
             );
         }
+    }
+
+    /// Return a pretty-printed [String] representation of a finite field element.
+    #[inline]
+    fn get_str_pretty(&self) -> String {
+        IntPoly::from(self).get_str_pretty()
     }
 }
 
@@ -311,11 +321,5 @@ impl IntModPoly {
     #[inline]
     pub fn get_str(&self) -> String {
         IntPoly::from(self).get_str()
-    }
-    
-    /// Return a pretty-printed [String] representation of a finite field element.
-    #[inline]
-    pub fn get_str_pretty(&self) -> String {
-        IntPoly::from(self).get_str_pretty()
-    }
+    }    
 }

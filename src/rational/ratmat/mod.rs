@@ -18,7 +18,7 @@
 //! A rational matrix.
 
 ///// Implementations of arithmetic operations.
-//pub mod arith;
+pub mod arith;
 
 /// Conversion implementations.
 pub mod conv;

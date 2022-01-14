@@ -115,6 +115,7 @@ pub mod prelude {
     pub use crate::rational::ratmat::src::*;
 
     pub use crate::real::real::src::*;
+    //pub use crate::real::realpoly::src::*;
     
     pub use crate::complex::complex::src::*;
     

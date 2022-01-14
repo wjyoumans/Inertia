@@ -80,6 +80,7 @@ impl PolynomialRing for IntPolyRing {
     fn gens(&self) -> Vec<IntPoly> {
         vec![IntPoly::from(vec![0,1].as_slice())]
     }
+
 }
 
 impl InitParent1<&str> for IntPolyRing {
@@ -165,7 +166,11 @@ impl PolynomialRingElement for IntPoly {
     fn degree(&self) -> c_long {
         unsafe { flint_sys::fmpz_poly::fmpz_poly_degree(self.as_ptr())}
     }
-    
+   
+    fn var(&self) -> String {
+        (*self.data.x).clone()
+    }
+
     /// Get the i-th coefficient of an integer polynomial.
     #[inline]
     fn get_coeff(&self, i: usize) -> Integer {
@@ -185,6 +190,19 @@ impl PolynomialRingElement for IntPoly {
                 i as c_long, 
                 coeff.as_ptr()
             );
+        }
+    }
+    
+    /// Return a pretty-printed [String] representation of an integer polynomial.
+    #[inline]
+    fn get_str_pretty(&self) -> String {
+        let v = CString::new((*self.data.x).clone()).unwrap();
+        unsafe {
+            let s = flint_sys::fmpz_poly::fmpz_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
         }
     }
 }
@@ -217,19 +235,6 @@ impl IntPoly {
         }
     }
     
-    /// Return a pretty-printed [String] representation of an integer polynomial.
-    #[inline]
-    pub fn get_str_pretty(&self) -> String {
-        let v = CString::new((*self.data.x).clone()).unwrap();
-        unsafe {
-            let s = flint_sys::fmpz_poly::fmpz_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }
-
     /// Return true if the polynomial is invertible as a rational function. False is returned only
     /// if the polynomial is zero.
     #[inline]

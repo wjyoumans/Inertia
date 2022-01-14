@@ -15,9 +15,12 @@ readme = "README.md"
 rustc-hash = "1.0"
 num-traits = "0.2" 
 libc = "0.2" 
-flint-sys = "0.4"
+flint-sys = "0.5"
+#flint-sys = { path = "../flint-rs/flint-sys" }
 arb-sys = "0.2"
-antic-sys = "0.1"
+#arb-sys = { path = "../arb-sys" }
+antic-sys = "0.2"
+#antic-sys = { path = "../antic-sys" }
 
 # Only Assign trait and traits in rug::ops provided
 [dependencies.rug]

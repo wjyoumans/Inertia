@@ -154,12 +154,21 @@ impl PolynomialRingElement for RatPoly {
     fn degree(&self) -> c_long {
         unsafe { flint_sys::fmpq_poly::fmpq_poly_degree(self.as_ptr())}
     }
+
+    #[inline]
+    fn var(&self) -> String {
+        (*self.data.x).clone()
+    }
     
     #[inline]
     fn get_coeff(&self, i: usize) -> Rational {
         let mut res = Rational::default();
         unsafe {
-            flint_sys::fmpq_poly::fmpq_poly_get_coeff_fmpq(res.as_mut_ptr(), self.as_ptr(), i as i64);
+            flint_sys::fmpq_poly::fmpq_poly_get_coeff_fmpq(
+                res.as_mut_ptr(), 
+                self.as_ptr(), 
+                i as i64
+            );
             res
         }
     }
@@ -172,6 +181,18 @@ impl PolynomialRingElement for RatPoly {
                 i as c_long, 
                 coeff.as_ptr()
             );
+        }
+    }
+    
+    #[inline]
+    fn get_str_pretty(&self) -> String {
+        let v = CString::new((*self.data.x).clone()).unwrap();
+        unsafe {
+            let s = flint_sys::fmpq_poly::fmpq_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
         }
     }
 }
@@ -202,18 +223,6 @@ impl RatPoly {
         }
     }
     
-    #[inline]
-    pub fn get_str_pretty(&self) -> String {
-        let v = CString::new((*self.data.x).clone()).unwrap();
-        unsafe {
-            let s = flint_sys::fmpq_poly::fmpq_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }
- 
     #[inline]
     pub fn numerator(&self) -> IntPoly {
         let mut res = IntPoly::default();

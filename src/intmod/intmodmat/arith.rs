@@ -16,10 +16,8 @@
  */
 
 
-use std::mem::MaybeUninit;
 use std::ops::*;
 
-use libc::{c_long, c_ulong};
 use rug::ops::*;
 
 use crate::*;

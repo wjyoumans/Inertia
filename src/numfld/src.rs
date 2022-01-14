@@ -16,13 +16,12 @@
  */
 
 
-use std::ffi::{CStr, CString};
 use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use antic_sys::nf_struct;
-use antic_sys::nf_elem_struct;
+use antic_sys::nf::nf_struct;
+use antic_sys::nf_elem::nf_elem_struct;
 
 use crate::*;
 
@@ -31,7 +30,7 @@ pub struct NfCtx(pub nf_struct);
 
 impl Drop for NfCtx {
     fn drop(&mut self) {
-        unsafe { antic_sys::nf_clear(&mut self.0); }
+        unsafe { antic_sys::nf::nf_clear(&mut self.0); }
     }
 }
 
@@ -50,7 +49,7 @@ impl Parent for NumberField {
     fn default(&self) -> NumFldElem {
         let mut z = MaybeUninit::uninit();
         unsafe { 
-            antic_sys::nf_elem_init(z.as_mut_ptr(), self.as_ptr());
+            antic_sys::nf_elem::nf_elem_init(z.as_mut_ptr(), self.as_ptr());
             NumFldElem { 
                 data: NumFldElemData {
                     ctx: Arc::clone(&self.ctx), 
@@ -75,7 +74,7 @@ impl Multiplicative for NumberField {
     fn one(&self) -> NumFldElem {
         let mut res = self.default();
         unsafe {
-            antic_sys::_nf_elem_set_coeff_num_fmpz(
+            antic_sys::nf_elem::_nf_elem_set_coeff_num_fmpz(
                 res.as_mut_ptr(), 
                 0,
                 Integer::from(1).as_ptr(),
@@ -123,7 +122,7 @@ pub struct NumFldElemData {
 
 impl Drop for NumFldElemData {
     fn drop(&mut self) {
-        unsafe { antic_sys::nf_elem_clear(&mut self.elem, &self.ctx.0);}
+        unsafe { antic_sys::nf_elem::nf_elem_clear(&mut self.elem, &self.ctx.0);}
     }
 }
 
@@ -132,7 +131,7 @@ impl fmt::Debug for NumFldElemData {
         let rr = RatPolyRing::init(&*self.x);
         let mut tmp = rr.default();
         unsafe {
-            antic_sys::nf_elem_get_fmpq_poly(
+            antic_sys::nf_elem::nf_elem_get_fmpq_poly(
                 tmp.as_mut_ptr(),
                 &self.elem,
                 &self.ctx.0

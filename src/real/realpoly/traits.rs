@@ -15,47 +15,38 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-//use std::ffi::{CStr, CString};
 use std::fmt;
-//use std::hash::{Hash, Hasher};
+use std::mem::MaybeUninit;
+use std::sync::{Arc, RwLock};
 
 use crate::*;
 
-impl Clone for PadicElem {
+impl Clone for RealPoly {
     fn clone(&self) -> Self {
         let mut res = self.parent().default();
-        unsafe { 
-            flint_sys::padic::padic_set(
-                res.as_mut_ptr(), 
-                self.as_ptr(),
-                self.ctx_as_ptr()
-            ); 
-        }
+        unsafe { arb_sys::arb_poly::arb_poly_set(res.as_mut_ptr(), self.as_ptr()); }
         res
     }
 }
 
-/*
-impl fmt::Debug for PadicElem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("PadicElem")
-            .field("ctx", &self.ctx)
-            .field("extra", &self.extra)
-            .field("data", &self.data)
-            .finish()
+impl Default for RealPoly {
+    fn default() -> Self {
+        let mut z = MaybeUninit::uninit();
+        unsafe {
+            arb_sys::arb_poly::arb_poly_init(z.as_mut_ptr());
+            RealPoly {
+                data: RealPolyData {
+                    prec: Arc::new(RealCtx(RwLock::new(ARB_DEFAULT_PREC))), 
+                    elem: z.assume_init(),
+                    x: Arc::new("x".to_owned()),
+                }
+            }
+        }
     }
-}*/
+}
 
-impl fmt::Display for PadicElem {
+impl fmt::Display for RealPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", String::from(self))
     }
 }
-
-/*
-impl Hash for PadicElem {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        IntPol::from(self).hash(state);
-    }
-}*/

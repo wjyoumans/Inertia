@@ -20,7 +20,6 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
 
-use flint_sys::fmpz_poly_q::fmpz_poly_q_struct;
 
 use crate::*;
 

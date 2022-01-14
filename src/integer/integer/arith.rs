@@ -619,19 +619,6 @@ unsafe fn fmpz_si_pow(
 }
 
 #[inline]
-unsafe fn fmpz_div_ui(
-    res: *mut flint_sys::fmpq::fmpq,
-    f: *const flint_sys::fmpz::fmpz,
-    g: c_ulong,
-    )
-{
-    let mut z = MaybeUninit::uninit();
-    flint_sys::fmpz::fmpz_set_ui(z.as_mut_ptr(), g);
-    flint_sys::fmpq::fmpq_set_fmpz_frac(res, f, z.as_ptr());
-    flint_sys::fmpz::fmpz_clear(z.as_mut_ptr());
-}
-
-#[inline]
 unsafe fn fmpz_div_si(
     res: *mut flint_sys::fmpq::fmpq,
     f: *const flint_sys::fmpz::fmpz,

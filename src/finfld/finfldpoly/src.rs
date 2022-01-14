@@ -313,15 +313,23 @@ impl PolynomialRingElement for FinFldPoly {
     /// Return the length of the polynomial, equivalently, the degree plus one.
     #[inline]
     fn len(&self) -> c_long {
-        unsafe { flint_sys::fq_default_poly::fq_default_poly_length(self.as_ptr(), self.ctx_as_ptr())}
+        unsafe { 
+            flint_sys::fq_default_poly::fq_default_poly_length(self.as_ptr(), self.ctx_as_ptr())
+        }
     }
     
     /// Return the degree of the polynomial.
     #[inline]
     fn degree(&self) -> c_long {
-        unsafe { flint_sys::fq_default_poly::fq_default_poly_degree(self.as_ptr(), self.ctx_as_ptr())}
+        unsafe { 
+            flint_sys::fq_default_poly::fq_default_poly_degree(self.as_ptr(), self.ctx_as_ptr())
+        }
     }
-    
+
+    fn var(&self) -> String {
+        (*self.data.x).clone()
+    }
+
     #[inline]
     fn get_coeff(&self, i: usize) -> FinFldElem {
         let mut res = self.parent().base_ring().default();
@@ -347,6 +355,24 @@ impl PolynomialRingElement for FinFldPoly {
             );
         }
     }
+
+    /// Return a pretty-printed [String] representation of a polynomial over a finite field.
+    #[inline]
+    fn get_str_pretty(&self) -> String {
+        let x = CString::new((*self.data.x).clone()).unwrap();
+        unsafe {
+            let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
+                self.as_ptr(), 
+                x.as_ptr(),
+                self.ctx_as_ptr()
+            );
+            match CStr::from_ptr(s).to_str() {
+                Ok(s) => s.to_owned(),
+                Err(_) => panic!("Flint returned invalid UTF-8!")
+            }
+        }
+    }
+    
 }
 
 impl FinFldPoly {
@@ -376,23 +402,6 @@ impl FinFldPoly {
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str(
                 self.as_ptr(),
-                self.ctx_as_ptr()
-            );
-            match CStr::from_ptr(s).to_str() {
-                Ok(s) => s.to_owned(),
-                Err(_) => panic!("Flint returned invalid UTF-8!")
-            }
-        }
-    }
-    
-    /// Return a pretty-printed [String] representation of a polynomial over a finite field.
-    #[inline]
-    pub fn get_str_pretty(&self) -> String {
-        let x = CString::new((*self.data.x).clone()).unwrap();
-        unsafe {
-            let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
-                self.as_ptr(), 
-                x.as_ptr(),
                 self.ctx_as_ptr()
             );
             match CStr::from_ptr(s).to_str() {
