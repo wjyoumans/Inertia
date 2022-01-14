@@ -15,6 +15,8 @@ This is a checklist of the main intended features and their current implementati
 Features marked with an asterisk have their basic implementation done but need work on
 additional functions, arithmetic, conversion, etc.
 
+If there is a feature that is missing that would be beneficial to you don't hesitate to open an issue.
+
 - [x] arbitrary precision integers
 - [x] rational numbers
 - [ ] \*real numbers
