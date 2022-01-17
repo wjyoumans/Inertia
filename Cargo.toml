@@ -1,6 +1,6 @@
 [package]
 name = "inertia"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 authors = ["William Youmans <wyoumans@usf.edu>"]
 description = "Inertia"
@@ -15,12 +15,9 @@ readme = "README.md"
 rustc-hash = "1.0"
 num-traits = "0.2" 
 libc = "0.2" 
-flint-sys = "0.5"
-#flint-sys = { path = "../flint-rs/flint-sys" }
-arb-sys = "0.2"
-#arb-sys = { path = "../arb-sys" }
-antic-sys = "0.2"
-#antic-sys = { path = "../antic-sys" }
+flint-sys = {version = "0.6", features = ["disable-make-check"] }
+arb-sys = {version = "0.3", features = ["disable-make-check"] }
+antic-sys = {version = "0.3", features = ["disable-make-check"] }
 
 # Only Assign trait and traits in rug::ops provided
 [dependencies.rug]
