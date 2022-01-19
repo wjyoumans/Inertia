@@ -51,6 +51,20 @@
 //! - [ ] rational functions (currently disabled)
 //! - [ ] \*number fields
 
+// doc additions:
+// Types generally fall in 2 categories - algebraic structures and their elements.
+//
+// "All algebraic structures can be initialized using the `init` function which will take a
+// different number of arguments depending on the structure. The `default` method will always
+// return zero when we have an additive structure, and `new` will always be the standard element
+// constructor."
+//
+// All main types with generics have aliases: Elem<IntegerRing> == Integer, PolyRing<FiniteField>
+// == FinFldPolyRing etc
+//
+// incomplete computation values vs assign_ops
+//
+// focus on effortless and intuitive conversions and intercompatability(?) of types
 
 use libc::{c_long, c_ulong, c_uint};
 

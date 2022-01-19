@@ -174,7 +174,7 @@ impl Rational {
     /// Rounds the rational number up to the nearest [Integer].
     #[inline]
     pub fn ceil(&self) -> Integer {
-        Integer::cdiv(&self.numerator(), &self.denominator())
+        Integer::cdiv_q(&self.numerator(), &self.denominator())
     }
     
     /// Rounds the rational number to the nearest [Integer].

@@ -23,6 +23,12 @@ use std::mem::MaybeUninit;
 use crate::*;
 
 
+impl AsRef<Integer> for Integer {
+    fn as_ref(&self) -> &Integer {
+        self
+    }
+}
+
 impl fmt::Display for IntegerRing {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Integer ring")
@@ -37,14 +43,13 @@ impl Clone for Integer {
     }
 }
 
-/*
 impl fmt::Debug for Integer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Integer")
             .field("data", &self.data)
             .finish()
     }
-}*/
+}
 
 impl Default for Integer {
     fn default() -> Self {

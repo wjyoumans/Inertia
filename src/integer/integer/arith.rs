@@ -25,6 +25,13 @@ use rug::ops::*;
 
 use crate::*;
 
+impl Eq for IntegerRing {}
+impl PartialEq for IntegerRing {
+    fn eq(&self, other: &IntegerRing) -> bool {
+        true
+    }
+}
+
 impl_cmp_unsafe! {
     eq
     Integer

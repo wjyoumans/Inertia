@@ -111,11 +111,17 @@ pub trait Factorizable {
     fn factor(&self) -> Self::Output;
 }
 
-/// A generic parent, for example an algebraic structure like a ring.
+/// A generic "parent" that contains elements, for example an algebraic structure like a ring.
 pub trait Parent {
+    /// The type of the elements. For example `<IntegerRing as Parent>::Element` is `Integer`.
     type Element: Element;
+
+    /// Context data that is unique to the parent and required by elements. For example, the
+    /// modulus of the ring of integers mod n ([IntModRing]). 
     type Context: Clone + Debug + Hash;
 
+    /// Return the default element of an algebraic structure. This defaults to the additive
+    /// identity (zero) when available but will behave differently in other contexts.
     fn default(&self) -> Self::Element;
 }
 
@@ -331,7 +337,8 @@ pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 /// An element of a `Parent`. In cases where the parent holds important context data we use the 
 /// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are 
 /// dropped.
-#[derive(Debug)] 
+//#[derive(Debug)] get "overflow evaluating the requirement Elem<xyz>: Debug". Seems to be a known
+// compiler bug.
 pub struct Elem<T: Parent> {
     pub data: <T::Element as Element>::Data,
 }
