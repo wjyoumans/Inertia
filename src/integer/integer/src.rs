@@ -272,7 +272,14 @@ impl Integer {
         &mut self.data.elem
     }
 
-    /// Convert an [Integer] to a string in base `base`.
+    /// Convert the `Integer` to a string in base `base`.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = Integer::from(1024);
+    /// assert_eq!(x.to_str_radix(2), "10000000000")
+    /// ```
     pub fn to_str_radix(&self, base: u8) -> String {
         unsafe {
             // Extra two bytes are for possible minus sign and null terminator
@@ -303,19 +310,46 @@ impl Integer {
         }
     }
 
-    /// Return true if an [Integer] is even, false otherwise.
+    /// Check if the `Integer` is even.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from(102);
+    /// assert!(z.is_even());
+    /// ```
     #[inline]
     pub fn is_even(&self) -> bool {
         unsafe {flint_sys::fmpz::fmpz_is_even(self.as_ptr()) == 1}
     }
     
-    /// Return true if an [Integer] is odd, false otherwise.
+    /// Check if the `Integer` is odd.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from(103);
+    /// assert!(z.is_odd());
+    /// ```
     #[inline]
     pub fn is_odd(&self) -> bool {
         unsafe {flint_sys::fmpz::fmpz_is_odd(self.as_ptr()) == 1}
     }
     
-    /// Returns -1 an [Integer] is negative, +1 if it is positive, and 0 otherwise.
+    /// Returns -1 if the `Integer` is negative, +1 if the `Integer` is positive, and 0 otherwise.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from(-12);
+    /// assert_eq!(z.sign(), -1);
+    ///
+    /// let z = Integer::from(0);
+    /// assert_eq!(z.sign(), 0);
+    ///
+    /// let z = Integer::from(12);
+    /// assert_eq!(z.sign(), 1);
+    /// ```
     #[inline]
     pub fn sign(&self) -> i32 {
         unsafe {
@@ -323,7 +357,14 @@ impl Integer {
         }
     }
 
-    /// Returns the absolute value of an [Integer].
+    /// Returns the absolute value of an `Integer`.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from(-99);
+    /// assert_eq!(z.abs(), Integer::from(99));
+    /// ```
     #[inline]
     pub fn abs(&self) -> Integer {
         unsafe {
@@ -333,40 +374,82 @@ impl Integer {
         }
     }
    
-    /// Determines the size of the absolute value of an [Integer] in base `base` in terms of number
+    /// Determines the size of the absolute value of an `Integer` in base `base` in terms of number
     /// of digits. The base can be between 2 and 62, inclusive.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from(1000001);
+    /// assert_eq!(8, z.sizeinbase(7));
+    /// ```
     #[inline]
     pub fn sizeinbase(&self, base: u8) -> usize {
         unsafe { flint_sys::fmpz::fmpz_sizeinbase(self.as_ptr(), base as i32) as usize }
     }
    
-    /// Returns the number of limbs required to store the absolute value of an [Integer]. Returns
-    /// zero if the [Integer] is zero.
+    /// Returns the number of limbs required to store the absolute value of an `Integer`. Returns
+    /// zero if the `Integer` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from("18446744073709551616");
+    /// assert_eq!(2, z.size());
+    /// ```
     #[inline]
     pub fn size(&self) -> c_long {
         unsafe { flint_sys::fmpz::fmpz_size(self.as_ptr()) }
     }
    
-    /// Returns the number of bits required to store the absolute value of an [Integer]. Returns zero
-    /// if the [Integer] is zero.
+    /// Returns the number of bits required to store the absolute value of an `Integer`. Returns 
+    /// zero if the `Integer` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = Integer::from(16);
+    /// assert_eq!(x.bits(), 5);
+    /// ```
     #[inline]
     pub fn bits(&self) -> c_ulong {
         unsafe { flint_sys::fmpz::fmpz_bits(self.as_ptr()) }
     }
    
-    /// Determine if the [Integer] fits in a signed long.
+    /// Determine if the `Integer` fits in a signed long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from("18446744073709551616");
+    /// assert_eq!(z.fits_si(), false);
+    /// ```
     #[inline]
     pub fn fits_si(&self) -> bool {
         unsafe { flint_sys::fmpz::fmpz_fits_si(self.as_ptr()) == 1 }
     }
     
-    /// Determine if the absolute value of an [Integer] fits in an unsigned long.
+    /// Determine if the absolute value of an `Integer` fits in an unsigned long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = Integer::from("18446744073709551614");
+    /// assert_eq!(z.abs_fits_ui(), true);
+    /// ```
     #[inline]
     pub fn abs_fits_ui(&self) -> bool {
         unsafe { flint_sys::fmpz::fmpz_abs_fits_ui(self.as_ptr()) == 1 }
     }
    
-    /// If the input [Integer] fits in an signed long we return it in an [Option].
+    /// If the input `Integer` fits in an signed long we return it in an `Option`.
+    ///
+    /// ```
+    /// use inertia::integer::Integer;
+    ///
+    /// let z = Integer::from(-1234);
+    /// assert_eq!(z.get_si().unwrap(), -1234);
+    /// ```
     #[inline]
     pub fn get_si(&self) -> Option<c_long> {
         if self.fits_si() {
@@ -378,7 +461,7 @@ impl Integer {
         }
     }
 
-    /// If the input [Integer] fits in an unsigned long we return it in an [Option].
+    /// If the input `Integer` fits in an unsigned long we return it in an `Option`.
     #[inline]
     pub fn get_ui(&self) -> Option<c_ulong> {
         if self.sign() < 0 {
