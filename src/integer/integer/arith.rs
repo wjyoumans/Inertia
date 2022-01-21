@@ -27,7 +27,7 @@ use crate::*;
 
 impl Eq for IntegerRing {}
 impl PartialEq for IntegerRing {
-    fn eq(&self, other: &IntegerRing) -> bool {
+    fn eq(&self, _: &IntegerRing) -> bool {
         true
     }
 }

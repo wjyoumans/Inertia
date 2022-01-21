@@ -111,6 +111,8 @@ pub mod prelude {
     pub use crate::product::src::*;
 
     pub use crate::integer::integer::src::*;
+    pub use super::int;
+
     pub use crate::integer::intpoly::src::*;
     pub use crate::integer::intmat::src::*;
 
