@@ -168,7 +168,7 @@ impl Rational {
     /// Rounds the rational number down to the nearest [Integer].
     #[inline]
     pub fn floor(&self) -> Integer {
-        Integer::fdiv(&self.numerator(), &self.denominator())
+        Integer::fdiv_q(&self.numerator(), &self.denominator())
     }
 
     /// Rounds the rational number up to the nearest [Integer].
@@ -180,7 +180,7 @@ impl Rational {
     /// Rounds the rational number to the nearest [Integer].
     #[inline]
     pub fn round(&self) -> Integer {
-        Integer::tdiv(&self.numerator(), &self.denominator())
+        Integer::tdiv_q(&self.numerator(), &self.denominator())
     }
     
     /// Returns -1 if the rational number is negative, +1 if it is positive, and 0 otherwise.

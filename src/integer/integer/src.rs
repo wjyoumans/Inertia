@@ -657,6 +657,7 @@ impl Integer {
     /// let f = int!(-1);
     /// assert_eq!(f.mul2_uiui(10, 3), -30);
     /// ```
+    #[inline]
     pub fn mul2_uiui<S>(&self, x: S, y: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug
@@ -680,6 +681,7 @@ impl Integer {
     /// f.mul2_uiui_assign(10, 3);
     /// assert_eq!(f, -30);
     /// ```
+    #[inline]
     pub fn mul2_uiui_assign<S>(&mut self, x: S, y: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug
@@ -700,6 +702,7 @@ impl Integer {
     /// let g = int!(2);
     /// assert_eq!(g.mul_2exp(3), 16);
     /// ```
+    #[inline]
     pub fn mul_2exp<S>(&self, exp: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug
@@ -723,6 +726,7 @@ impl Integer {
     /// g.mul_2exp_assign(3);
     /// assert_eq!(g, 16);
     /// ```
+    #[inline]
     pub fn mul_2exp_assign<S>(&mut self, exp: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug
@@ -742,6 +746,7 @@ impl Integer {
     /// let z = int!(2);
     /// assert_eq!(z.addmul(int!(3), int!(4)), 14);
     /// ```
+    #[inline]
     pub fn addmul<T>(&self, x: T, y: T) -> Integer where 
         T: AsRef<Integer>
     {
@@ -765,6 +770,7 @@ impl Integer {
     /// z.addmul_assign(int!(3), int!(4));
     /// assert_eq!(z, 14);
     /// ```
+    #[inline]
     pub fn addmul_assign<T>(&mut self, x: T, y: T) where 
         T: AsRef<Integer>
     {
@@ -785,6 +791,7 @@ impl Integer {
     /// let z = int!(2);
     /// assert_eq!(z.addmul_ui(int!(3), 4), 14);
     /// ```
+    #[inline]
     pub fn addmul_ui<S, T>(&self, x: T, y: S) -> Integer where 
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -811,6 +818,7 @@ impl Integer {
     /// z.addmul_ui_assign(int!(3), 4);
     /// assert_eq!(z, 14);
     /// ```
+    #[inline]
     pub fn addmul_ui_assign<S, T>(&mut self, x: T, y: S) where 
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -835,6 +843,7 @@ impl Integer {
     /// let z = int!(14);
     /// assert_eq!(z.addmul_si(int!(3), -4), 2);
     /// ```
+    #[inline]
     pub fn addmul_si<S, T>(&self, x: T, y: S) -> Integer where 
         S: TryInto<c_long>,
         S::Error: fmt::Debug,
@@ -861,6 +870,7 @@ impl Integer {
     /// z.addmul_si_assign(int!(3), -4);
     /// assert_eq!(z, 2);
     /// ```
+    #[inline]
     pub fn addmul_si_assign<S, T>(&mut self, x: T, y: S) where 
         S: TryInto<c_long>,
         S::Error: fmt::Debug,
@@ -885,6 +895,7 @@ impl Integer {
     /// let z = int!(14);
     /// assert_eq!(z.submul(int!(3), int!(4)), 2);
     /// ```
+    #[inline]
     pub fn submul<T>(&self, x: T, y: T) -> Integer where 
         T: AsRef<Integer>
     {
@@ -908,6 +919,7 @@ impl Integer {
     /// z.submul_assign(int!(3), int!(4));
     /// assert_eq!(z, 2);
     /// ```
+    #[inline]
     pub fn submul_assign<T>(&mut self, x: T, y: T) where 
         T: AsRef<Integer>
     {
@@ -928,6 +940,7 @@ impl Integer {
     /// let z = int!(14);
     /// assert_eq!(z.submul_ui(int!(3), 4), 2);
     /// ```
+    #[inline]
     pub fn submul_ui<S, T>(&self, x: T, y: S) -> Integer where 
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -954,6 +967,7 @@ impl Integer {
     /// z.submul_ui_assign(int!(3), 4);
     /// assert_eq!(z, 2);
     /// ```
+    #[inline]
     pub fn submul_ui_assign<S, T>(&mut self, x: T, y: S) where 
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1027,6 +1041,7 @@ impl Integer {
     ///
     /// assert_eq!(Integer::fmma(int!(1), int!(2), int!(3), int!(4)), 14);
     /// ```
+    #[inline]
     pub fn fmma<T>(a: T, b: T, c: T, d: T) -> Integer where
         T: AsRef<Integer>
     {
@@ -1052,6 +1067,7 @@ impl Integer {
     /// z.fmma_assign(int!(1), int!(2), int!(3), int!(4));
     /// assert_eq!(z, 14);
     /// ```
+    #[inline]
     pub fn fmma_assign<T>(&mut self, a: T, b: T, c: T, d: T) where
         T: AsRef<Integer>
     {
@@ -1073,6 +1089,7 @@ impl Integer {
     ///
     /// assert_eq!(Integer::fmms(int!(4), int!(3), int!(2), int!(1)), 10);
     /// ```
+    #[inline]
     pub fn fmms<T>(a: T, b: T, c: T, d: T) -> Integer where
         T: AsRef<Integer>
     {
@@ -1098,6 +1115,7 @@ impl Integer {
     /// z.fmms_assign(int!(4), int!(3), int!(2), int!(1));
     /// assert_eq!(z, 10);
     /// ```
+    #[inline]
     pub fn fmms_assign<T>(&mut self, a: T, b: T, c: T, d: T) where
         T: AsRef<Integer>
     {
@@ -1123,6 +1141,7 @@ impl Integer {
     /// assert_eq!(q, 7);
     /// assert_eq!(r, -1);
     /// ```
+    #[inline]
     pub fn cdiv_qr<T>(&self, other: T) -> (Integer, Integer) where
         T: AsRef<Integer>
     {
@@ -1149,6 +1168,7 @@ impl Integer {
     /// let x = int!(11);
     /// assert_eq!(x.cdiv_q(int!(2)), 6);
     /// ```
+    #[inline]
     pub fn cdiv_q<T>(&self, other: T) -> Integer where
         T: AsRef<Integer>
     {
@@ -1171,6 +1191,7 @@ impl Integer {
     /// x.cdiv_q_assign(int!(2));
     /// assert_eq!(x, 6);
     /// ```
+    #[inline]
     pub fn cdiv_q_assign<T>(&mut self, other: T) where
         T: AsRef<Integer>
     {
@@ -1190,6 +1211,7 @@ impl Integer {
     /// let x = int!(11);
     /// assert_eq!(x.cdiv_q_ui(2), 6);
     /// ```
+    #[inline]
     pub fn cdiv_q_ui<S>(&self, other: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1213,6 +1235,7 @@ impl Integer {
     /// x.cdiv_q_ui_assign(2);
     /// assert_eq!(x, 6);
     /// ```
+    #[inline]
     pub fn cdiv_q_ui_assign<S>(&mut self, other: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1233,6 +1256,7 @@ impl Integer {
     /// let x = int!(11);
     /// assert_eq!(x.cdiv_q_si(-2), -5);
     /// ```
+    #[inline]
     pub fn cdiv_q_si<S>(&self, other: S) -> Integer where
         S: TryInto<c_long>,
         S::Error: fmt::Debug,
@@ -1256,6 +1280,7 @@ impl Integer {
     /// x.cdiv_q_si_assign(-2);
     /// assert_eq!(x, -5);
     /// ```
+    #[inline]
     pub fn cdiv_q_si_assign<S>(&mut self, other: S) where
         S: TryInto<c_long>,
         S::Error: fmt::Debug,
@@ -1276,6 +1301,7 @@ impl Integer {
     /// let x = int!(1025);
     /// assert_eq!(x.cdiv_q_2exp(10), 2);
     /// ```
+    #[inline]
     pub fn cdiv_q_2exp<S>(&self, exp: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1298,6 +1324,7 @@ impl Integer {
     /// x.cdiv_q_2exp_assign(10);
     /// assert_eq!(x, 2);
     /// ```
+    #[inline]
     pub fn cdiv_q_2exp_assign<S>(&mut self, exp: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1316,6 +1343,7 @@ impl Integer {
     /// let x = int!(1025);
     /// assert_eq!(x.cdiv_r_2exp(10), -1023);
     /// ```
+    #[inline]
     pub fn cdiv_r_2exp<S>(&self, exp: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1337,6 +1365,7 @@ impl Integer {
     /// x.cdiv_r_2exp_assign(10);
     /// assert_eq!(x, -1023);
     /// ```
+    #[inline]
     pub fn cdiv_r_2exp_assign<S>(&mut self, exp: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1345,40 +1374,6 @@ impl Integer {
         unsafe {
             flint_sys::fmpz::fmpz_cdiv_r_2exp(self.as_mut_ptr(), self.as_ptr(), exp);
         }
-    }
-
-    // TODO: seems incorrect? shouldnt this be -3?
-    /// Returns the negative of the remainder from dividing `self` by `other`, rounding towards
-    /// minus infinity. Panics if `other` is zero.
-    ///
-    /// ```
-    /// use inertia::prelude::*;
-    ///
-    /// let x = int!(12);
-    ///
-    /// assert_eq!(x.cdiv(int!(5)), 3);
-    /// ```
-    #[inline]
-    pub fn cdiv<T>(&self, other: T) -> Integer where
-        T: AsRef<Integer>
-    {
-        self.cdiv_q(other)
-    }
-    
-    /// Compute the quotient `self/other` where the remainder is non-positive.
-    ///
-    /// ```
-    /// use inertia::prelude::*;
-    ///
-    /// let mut x = int!(12);
-    /// x.cdiv_assign(int!(5));
-    /// assert_eq!(x, 3);
-    /// ```
-    #[inline]
-    pub fn cdiv_assign<T>(&mut self, other: T) where
-        T: AsRef<Integer>
-    {
-        self.cdiv_q_assign(other);
     }
 
     /// Returns the negative of the remainder from dividing `self` by `other`, rounding towards
@@ -1391,11 +1386,13 @@ impl Integer {
     ///
     /// assert_eq!(x.cdiv_ui(5), 3);
     /// ```
+    #[inline]
     pub fn cdiv_ui<S>(&self, other: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
     {
         let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
         unsafe {
             Integer::from(flint_sys::fmpz::fmpz_cdiv_ui(self.as_ptr(), other))
         }
@@ -1412,6 +1409,7 @@ impl Integer {
     /// assert_eq!(q, 6);
     /// assert_eq!(r, 1);
     /// ```
+    #[inline]
     pub fn fdiv_qr<T>(&self, other: T) -> (Integer, Integer) where
         T: AsRef<Integer>
     {
@@ -1439,6 +1437,7 @@ impl Integer {
     /// let x = int!(13);
     /// assert_eq!(x.fdiv_q(int!(2)), 6);
     /// ```
+    #[inline]
     pub fn fdiv_q<T>(&self, other: T) -> Integer where
         T: AsRef<Integer>
     {
@@ -1461,6 +1460,7 @@ impl Integer {
     /// x.fdiv_q_assign(int!(2));
     /// assert_eq!(x, 6);
     /// ```
+    #[inline]
     pub fn fdiv_q_assign<T>(&mut self, other: T) where
         T: AsRef<Integer>
     {
@@ -1480,6 +1480,7 @@ impl Integer {
     /// let x = int!(11);
     /// assert_eq!(x.fdiv_q_ui(2), 5);
     /// ```
+    #[inline]
     pub fn fdiv_q_ui<S>(&self, other: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1503,6 +1504,7 @@ impl Integer {
     /// x.fdiv_q_ui_assign(2);
     /// assert_eq!(x, 5);
     /// ```
+    #[inline]
     pub fn fdiv_q_ui_assign<S>(&mut self, other: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1523,6 +1525,7 @@ impl Integer {
     /// let x = int!(11);
     /// assert_eq!(x.fdiv_q_si(-2), -6);
     /// ```
+    #[inline]
     pub fn fdiv_q_si<S>(&self, other: S) -> Integer where
         S: TryInto<c_long>,
         S::Error: fmt::Debug,
@@ -1546,6 +1549,7 @@ impl Integer {
     /// x.fdiv_q_si_assign(-2);
     /// assert_eq!(x, -6);
     /// ```
+    #[inline]
     pub fn fdiv_q_si_assign<S>(&mut self, other: S) where
         S: TryInto<c_long>,
         S::Error: fmt::Debug,
@@ -1566,6 +1570,7 @@ impl Integer {
     /// let x = int!(1025);
     /// assert_eq!(x.fdiv_q_2exp(10), 1);
     /// ```
+    #[inline]
     pub fn fdiv_q_2exp<S>(&self, exp: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1588,6 +1593,7 @@ impl Integer {
     /// x.fdiv_q_2exp_assign(10);
     /// assert_eq!(x, 1);
     /// ```
+    #[inline]
     pub fn fdiv_q_2exp_assign<S>(&mut self, exp: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1606,6 +1612,7 @@ impl Integer {
     /// let x = int!(1025);
     /// assert_eq!(x.fdiv_r_2exp(10), 1);
     /// ```
+    #[inline]
     pub fn fdiv_r_2exp<S>(&self, exp: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1627,6 +1634,7 @@ impl Integer {
     /// x.fdiv_r_2exp_assign(10);
     /// assert_eq!(x, 1);
     /// ```
+    #[inline]
     pub fn fdiv_r_2exp_assign<S>(&mut self, exp: S) where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
@@ -1646,125 +1654,294 @@ impl Integer {
     /// let x = int!(13);
     /// assert_eq!(x.fdiv_ui(2), 1);
     /// ```
+    #[inline]
     pub fn fdiv_ui<S>(&self, other: S) -> Integer where
         S: TryInto<c_ulong>,
         S::Error: fmt::Debug,
     {
         let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
         unsafe {
             Integer::from(flint_sys::fmpz::fmpz_fdiv_ui(self.as_ptr(), other))
         }
     }
 
-    /// Return the quotient `self/other` rounded down towards negative infinity.
+    /// Return the quotient and remainder of `self/other` rounded towards zero.
+    /// Panics if `other` is zero.
     ///
     /// ```
     /// use inertia::prelude::*;
     ///
     /// let x = int!(13);
-    /// assert_eq!(x.fdiv(int!(2)), 6);
+    /// let (q, r) = x.tdiv_qr(int!(2));
+    /// assert_eq!(q, 6);
+    /// assert_eq!(r, 1);
     /// ```
     #[inline]
-    pub fn fdiv<T>(&self, other: T) -> Integer where 
-        T: AsRef<Integer>
-    {
-        self.fdiv_q(other)
-    }
-
-    /// Compute the quotient `self/other` rounded down towards negative infinity in place.
-    ///
-    /// ```
-    /// use inertia::prelude::*;
-    ///
-    /// let mut x = int!(13);
-    /// x.fdiv_assign(int!(2));
-    /// assert_eq!(x, 6);
-    /// ```
-    #[inline]
-    pub fn fdiv_assign<T>(&mut self, other: T) where 
-        T: AsRef<Integer>
-    {
-        self.fdiv_q_assign(other);
-    }
-
-    
-    /// Return the quotient `self/other` rounded to the nearest [Integer].
-    #[inline]
-    pub fn tdiv<T>(&self, other: T) -> Integer where
+    pub fn tdiv_qr<T>(&self, other: T) -> (Integer, Integer) where
         T: AsRef<Integer>
     {
         let other = other.as_ref();
         assert!(!other.is_zero());
+        let mut q = Integer::default();
+        let mut r = Integer::default();
         unsafe {
-            let mut res = Integer::default();
-            flint_sys::fmpz::fmpz_tdiv_q(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
-            res
-        }
-    }
-    
-    /// Return the quotient `self/other` rounded up towards infnewy as well as the remainder.
-    #[inline]
-    pub fn cdivrem<T>(&self, other: T) -> (Integer, Integer) where
-        T: AsRef<Integer>
-    {
-        let other = other.as_ref();
-        assert!(!other.is_zero());
-        unsafe {
-            let mut q = Integer::default();
-            let mut r = Integer::default();
-            flint_sys::fmpz::fmpz_cdiv_qr(
-                q.as_mut_ptr(), 
-                r.as_mut_ptr(), 
-                self.as_ptr(),
-                other.as_ptr()
-            );
-            (q, r)
-        }
-    }
-    
-    /// Return the quotient `self/other` rounded down towards negative infnewy as well as the 
-    /// remainder.
-    #[inline]
-    pub fn fdivrem<T>(&self, other: T) -> (Integer, Integer) where
-        T: AsRef<Integer>
-    {
-        let other = other.as_ref();
-        assert!(!other.is_zero());
-        unsafe {
-            let mut q = Integer::default();
-            let mut r = Integer::default();
-            flint_sys::fmpz::fmpz_fdiv_qr(
-                q.as_mut_ptr(), 
-                r.as_mut_ptr(), 
-                self.as_ptr(), 
-                other.as_ptr()
-            );
-            (q, r)
-        }
-    }
-    
-    /// Return the quotient `self/other` rounded towards zero as well as the remainder.
-    #[inline]
-    pub fn divrem<T>(&self, other: T) -> (Integer, Integer) where
-        T: AsRef<Integer>
-    {
-        let other = other.as_ref();
-        assert!(!other.is_zero());
-        unsafe {
-            let mut q = Integer::default();
-            let mut r = Integer::default();
             flint_sys::fmpz::fmpz_tdiv_qr(
                 q.as_mut_ptr(), 
                 r.as_mut_ptr(), 
                 self.as_ptr(), 
                 other.as_ptr()
-            );
-            (q, r)
+            )
+        }
+        (q, r)
+    }
+
+    /// Return the quotient `self/other` rounded towards zero. Panics if `other` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(13);
+    /// assert_eq!(x.tdiv_q(int!(2)), 6);
+    /// ```
+    #[inline]
+    pub fn tdiv_q<T>(&self, other: T) -> Integer where
+        T: AsRef<Integer>
+    {
+        let other = other.as_ref();
+        assert!(!other.is_zero());
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+        }
+        res
+    }
+    
+    /// Compute the quotient `self/other` in place, rounded towards zero. Panics if `other` 
+    /// is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut x = int!(13);
+    /// x.tdiv_q_assign(int!(2));
+    /// assert_eq!(x, 6);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_assign<T>(&mut self, other: T) where
+        T: AsRef<Integer>
+    {
+        let other = other.as_ref();
+        assert!(!other.is_zero());
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q(self.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+        }
+    }
+
+    /// Return the quotient `self/other` rounded towards zero where `other` can be converted to an 
+    /// unsigned long. Panics if `other` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(11);
+    /// assert_eq!(x.tdiv_q_ui(2), 5);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_ui<S>(&self, other: S) -> Integer where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q_ui(res.as_mut_ptr(), self.as_ptr(), other);
+        }
+        res
+    }
+    
+    /// Compute the quotient `self/other` in place where `other` can be converted to an unsigned 
+    /// long, rounded towards zero. Panics if `other` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut x = int!(11);
+    /// x.tdiv_q_ui_assign(2);
+    /// assert_eq!(x, 5);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_ui_assign<S>(&mut self, other: S) where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q_ui(self.as_mut_ptr(), self.as_ptr(), other);
+        }
+    }
+    
+    /// Return the quotient `self/other` rounded towards zero where `other` can be converted to a 
+    /// signed long. Panics if `other` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(11);
+    /// assert_eq!(x.tdiv_q_si(-2), -5);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_si<S>(&self, other: S) -> Integer where
+        S: TryInto<c_long>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q_si(res.as_mut_ptr(), self.as_ptr(), other);
+        }
+        res
+    }
+    
+    /// Compute the quotient `self/other` in place where `other` can be converted to a signed long, 
+    /// rounded towards zero. Panics if `other` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut x = int!(11);
+    /// x.tdiv_q_si_assign(-2);
+    /// assert_eq!(x, -5);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_si_assign<S>(&mut self, other: S) where
+        S: TryInto<c_long>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q_si(self.as_mut_ptr(), self.as_ptr(), other);
+        }
+    }
+    
+    /// Return the quotient `self/(2^exp)` rounded towards zero where `exp` can be converted to an 
+    /// unsigned long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(1025);
+    /// assert_eq!(x.tdiv_q_2exp(10), 1);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_2exp<S>(&self, exp: S) -> Integer where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let exp = exp.try_into().expect("Input cannot be converted to an unsigned long.");
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q_2exp(res.as_mut_ptr(), self.as_ptr(), exp);
+        }
+        res
+    }
+    
+    /// Compute the quotient `self/(2^exp)` in place where `exp` can be converted to an unsigned 
+    /// long, rounded towards zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut x = int!(1025);
+    /// x.tdiv_q_2exp_assign(10);
+    /// assert_eq!(x, 1);
+    /// ```
+    #[inline]
+    pub fn tdiv_q_2exp_assign<S>(&mut self, exp: S) where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let exp = exp.try_into().expect("Input cannot be converted to an unsigned long.");
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_q_2exp(self.as_mut_ptr(), self.as_ptr(), exp);
+        }
+    }
+    
+    /// Return the remainder of `self/(2^exp)` rounded towards zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(1025);
+    /// assert_eq!(x.tdiv_r_2exp(10), 1);
+    /// ```
+    #[inline]
+    pub fn tdiv_r_2exp<S>(&self, exp: S) -> Integer where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let exp = exp.try_into().expect("Input cannot be converted to an unsigned long.");
+        let mut res = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_r_2exp(res.as_mut_ptr(), self.as_ptr(), exp);
+        }
+        res
+    }
+    
+    /// Compute the remainder of `self/(2^exp)` where the remainder has the same sign as `self`, 
+    /// in place.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut x = int!(1025);
+    /// x.tdiv_r_2exp_assign(10);
+    /// assert_eq!(x, 1);
+    /// ```
+    #[inline]
+    pub fn tdiv_r_2exp_assign<S>(&mut self, exp: S) where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let exp = exp.try_into().expect("Input cannot be converted to an unsigned long.");
+        unsafe {
+            flint_sys::fmpz::fmpz_tdiv_r_2exp(self.as_mut_ptr(), self.as_ptr(), exp);
+        }
+    }
+
+    /// Returns the absolute value of the remainder of `self/other` where `other` can be converted 
+    /// to an unsigned long. Panics if `other` is zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(13);
+    /// assert_eq!(x.tdiv_ui(2), 1);
+    /// ```
+    #[inline]
+    pub fn tdiv_ui<S>(&self, other: S) -> Integer where
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
+        unsafe {
+            Integer::from(flint_sys::fmpz::fmpz_tdiv_ui(self.as_ptr(), other))
         }
     }
    
-    /// Exact division of `self/other`. If the division is not exact the output [Result] will be an
-    /// [Err].
+    /// Exact division of `self/other`.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(8);
+    /// assert_eq!(z.divexact(int!(2)).unwrap(), 4);
+    /// ```
     #[inline]
     pub fn divexact<T>(&self, other: T) -> Result<Integer, ()> where 
         T: AsRef<Integer>
@@ -1775,18 +1952,52 @@ impl Integer {
             Err(())
         } else {
             let mut res = Integer::default();
-            unsafe { flint_sys::fmpz::fmpz_divexact(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());}
+            unsafe { 
+                flint_sys::fmpz::fmpz_divexact(res.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+            }
             Ok(res)
         }
     }
     
-    /// Exact division of `self/other`. If the division is not exact the output [Result] will be an
-    /// [Err].
+    /// Exact division of `self/other` in place.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut z = int!(8);
+    /// z.divexact_assign(int!(2));
+    /// assert_eq!(z, 4);
+    /// ```
+    #[inline]
+    pub fn divexact_assign<T>(&mut self, other: T) ->  Result<(), ()> where 
+        T: AsRef<Integer>
+    {
+        let other = other.as_ref();
+        assert!(!other.is_zero());
+        if (&*self).rem(other) != 0 {
+            Err(())
+        } else {
+            unsafe { 
+                flint_sys::fmpz::fmpz_divexact(self.as_mut_ptr(), self.as_ptr(), other.as_ptr());
+            }
+            Ok(())
+        }
+    }
+    
+    /// Exact division of `self/other` where `other` can be converted to an unsigned long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(8);
+    /// assert_eq!(z.divexact_ui(2).unwrap(), 4);
+    /// ```
     #[inline]
     pub fn divexact_ui<S>(&self, other: S) -> Result<Integer, ()> where
-        S: Into<c_ulong>
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
     {
-        let other = other.into();
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
         assert!(!other.is_zero());
         if self.rem(other) != 0 {
             Err(())
@@ -1797,15 +2008,47 @@ impl Integer {
         }
     }
     
-    /// Exact division of `self/other`. If the division is not exact the output [Result] will be an
-    /// [Err].
+    /// Exact division of `self/other` in place where `other` can be converted to an unsigned 
+    /// long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut z = int!(8);
+    /// z.divexact_ui_assign(2);
+    /// assert_eq!(z, 4);
+    /// ```
+    #[inline]
+    pub fn divexact_ui_assign<S>(&mut self, other: S) -> Result<(), ()> where 
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to an unsigned long.");
+        assert!(!other.is_zero());
+        if (&*self).rem(other) != 0 {
+            Err(())
+        } else {
+            unsafe { flint_sys::fmpz::fmpz_divexact_ui(self.as_mut_ptr(), self.as_ptr(), other);}
+            Ok(())
+        }
+    }
+    
+    /// Exact division of `self/other` where `other` can be converted to a signed long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(8);
+    /// assert_eq!(z.divexact_si(-2).unwrap(), -4);
+    /// ```
     #[inline]
     pub fn divexact_si<S>(&self, other: S) -> Result<Integer, ()> where
-        S: Into<c_long>
+        S: TryInto<c_long>,
+        S::Error: fmt::Debug,
     {
-        let other = other.into();
+        let other = other.try_into().expect("Input cannot be converted to a signed long.");
         assert!(!other.is_zero());
-        if self.rem(other) != 0 {
+        if self.rem(other.abs()) != 0 {
             Err(())
         } else {
             let mut res = Integer::default();
@@ -1813,9 +2056,41 @@ impl Integer {
             Ok(res)
         }
     }
+    
+    /// Exact division of `self/other` in place where `other` can be converted to a signed 
+    /// long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut z = int!(8);
+    /// z.divexact_si_assign(-2);
+    /// assert_eq!(z, -4);
+    /// ```
+    #[inline]
+    pub fn divexact_si_assign<S>(&mut self, other: S) -> Result<(), ()> where 
+        S: TryInto<c_long>,
+        S::Error: fmt::Debug,
+    {
+        let other = other.try_into().expect("Input cannot be converted to a signed long.");
+        assert!(!other.is_zero());
+        if (&*self).rem(other.abs()) != 0 {
+            Err(())
+        } else {
+            unsafe { flint_sys::fmpz::fmpz_divexact_si(self.as_mut_ptr(), self.as_ptr(), other);}
+            Ok(())
+        }
+    }
    
-    /// The symmetric remainder of an [Integer] modulo `n` will be in the range 
+    /// The symmetric remainder of an integer modulo `n` will be in the range 
     /// `[-(n-1)/2, ..., (n-1)/2]` symmetric around zero.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(9);
+    /// assert_eq!(z.srem(int!(11)), -2);
+    /// ```
     #[inline]
     pub fn srem<T>(&self, modulus: T) -> Integer where
         T: AsRef<Integer>
@@ -1828,17 +2103,44 @@ impl Integer {
         }
         res
     }
-   
-    /// Raises an [Integer] to the power `exp` modulo `modulo`. If the exponent is negative and no
-    /// inverse exists then the output [Result] will be an [Err].
+    
+    /// The symmetric remainder of an integer modulo `n` will be in the range 
+    /// `[-(n-1)/2, ..., (n-1)/2]` symmetric around zero. The value is assigned to the input.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut z = int!(9);
+    /// z.srem_assign(int!(11));
+    /// assert_eq!(z, -2);
+    /// ```
     #[inline]
-    pub fn powm<T1, T2>(&self, exp: T1, modulus: T2) -> Result<Integer, ()> where
-        T1: AsRef<Integer>,
-        T2: AsRef<Integer>,
+    pub fn srem_assign<T>(&mut self, modulus: T) where
+        T: AsRef<Integer>
     {
         let modulus = modulus.as_ref();
-        let exp = exp.as_ref();
         assert!(modulus > &0);
+        unsafe {
+            flint_sys::fmpz::fmpz_smod(self.as_mut_ptr(), self.as_ptr(), modulus.as_ptr());
+        }
+    }
+   
+    /// Raises an `Integer` to the power `exp` modulo `modulus`. If the exponent is negative and no
+    /// inverse exists then the result will be an error.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(2);
+    /// assert_eq!(z.powm(int!(3), int!(5)).unwrap(), 3);
+    /// ```
+    #[inline]
+    pub fn powm<T>(&self, exp: T, modulus: T) -> Result<Integer, ()> where
+        T: AsRef<Integer>,
+    {
+        let modulus = modulus.as_ref();
+        assert!(modulus > &0);
+        let exp = exp.as_ref();
         if exp < &0 && !self.is_coprime(modulus) {
             Err(())
         } else {
@@ -1855,16 +2157,23 @@ impl Integer {
         }
     }
 
-    /// Raises an [Integer] to the power `exp` modulo `modulo`, assigning it to the input. If 
-    /// the exponent is negative and no inverse exists then the output [Result] will be an [Err].
+    /// Raises an `Integer` to the power `exp` modulo `modulus`, assigning it to the input. If the 
+    /// exponent is negative and no inverse exists then the result will be an error.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut z = int!(2);
+    /// z.powm_assign(int!(3), int!(5));
+    /// assert_eq!(z, 3);
+    /// ```
     #[inline]
-    pub fn powm_assign<T1, T2>(&mut self, exp: T1, modulus: T2) -> Result<(), ()> where
-        T1: AsRef<Integer>,
-        T2: AsRef<Integer>,
+    pub fn powm_assign<T>(&mut self, exp: T, modulus: T) -> Result<(), ()> where
+        T: AsRef<Integer>,
     {
         let modulus = modulus.as_ref();
-        let exp = exp.as_ref();
         assert!(modulus > &0);
+        let exp = exp.as_ref();
         if exp < &0 && !self.is_coprime(modulus) {
             Err(())
         } else {
@@ -1880,51 +2189,81 @@ impl Integer {
         }
     }
     
-    /// Raises an [Integer] to an unsigned integer `exp` modulo `modulo`.
+    /// Raises an `Integer` to the power `exp` modulo `modulus` where `exp` can be converted
+    /// to an unsigned long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(2);
+    /// assert_eq!(z.powm_ui(3, int!(5)), 3);
+    /// ```
     #[inline]
     pub fn powm_ui<S, T>(&self, exp: S, modulus: T) -> Integer where
-        S: Into<c_ulong>,
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
         T: AsRef<Integer>
     {
         let modulus = modulus.as_ref();
         assert!(modulus > &0);
+        let exp = exp.try_into().expect("Input cannot be converted to an unsigned long.");
         let mut res = Integer::default();
         unsafe {
             flint_sys::fmpz::fmpz_powm_ui(
                 res.as_mut_ptr(), 
                 self.as_ptr(), 
-                exp.into(), 
+                exp, 
                 modulus.as_ptr()
             );
         }
         res
     }
     
-    /// Raises an [Integer] to an unsigned integer `exp` modulo `modulo`, assigning the result to the 
-    /// input.
+    /// Raises an `Integer` to the power `exp` modulo `modulus` in place where `exp` can be 
+    /// converted to an unsigned long.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let mut z = int!(2);
+    /// z.powm_ui_assign(3, int!(5));
+    /// assert_eq!(z, 3);
+    /// ```
     #[inline]
     pub fn powm_ui_assign<S, T>(&mut self, exp: S, modulus: T) where
-        S: Into<c_ulong>,
+        S: TryInto<c_ulong>,
+        S::Error: fmt::Debug,
         T: AsRef<Integer>
     {
         let modulus = modulus.as_ref();
         assert!(modulus > &0);
+        let exp = exp.try_into().expect("Input cannot be converted to an unsigned long.");
         unsafe {
             flint_sys::fmpz::fmpz_powm_ui(
                 self.as_mut_ptr(), 
                 self.as_ptr(), 
-                exp.into(), 
+                exp, 
                 modulus.as_ptr()
             );
         }
     }
     
-    /// Determine whether `self` divides `other`.
+    /// Return true if `self` divides `other`.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(5);
+    /// assert!(z.divides(int!(10)));
+    /// assert!(!z.divides(int!(11)));
+    /// ```
     #[inline]
     pub fn divides<T>(&self, other: T) -> bool where
         T: AsRef<Integer>
     {
-        unsafe { flint_sys::fmpz::fmpz_divisible(other.as_ref().as_ptr(), self.as_ptr()) == 1 }
+        unsafe { 
+            flint_sys::fmpz::fmpz_divisible(other.as_ref().as_ptr(), self.as_ptr()) == 1 
+        }
     }
 
     // TODO: use Real?
