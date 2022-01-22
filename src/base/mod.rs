@@ -15,8 +15,36 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+pub mod integer;
+pub mod intpoly;
+pub mod intmat;
+
+pub mod rational;
+pub mod ratpoly;
+pub mod ratmat;
+
+pub mod intmod;
+pub mod intmodpoly;
+pub mod intmodmat;
+
+pub mod finfld;
+pub mod finfldpoly;
+pub mod finfldmat;
+
+pub mod padic;
+//pub mod padpoly;
+//pub mod patmat;
+
+pub mod qadic;
+
+//pub mod ratfunc;
+
+pub mod numfld;
+
 pub mod real;
-
 //pub mod realpoly;
-
 //pub mod realmat;
+
+pub mod complex;
+//pub mod comppoly;
+//pub mod compmat;

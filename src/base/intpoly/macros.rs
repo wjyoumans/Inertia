@@ -15,8 +15,15 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod finfld;
-
-pub mod finfldpoly;
-
-pub mod finfldmat;
+#[macro_export]
+macro_rules! intpoly {
+    () => (
+        IntPoly::from(0)
+    );
+    ($coeff:expr) => (
+        IntPoly::from($coeff)
+    );
+    ($($coeff:expr),+) => (
+        IntPoly::from(vec![$($coeff),+].as_slice())
+    );
+}

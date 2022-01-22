@@ -15,8 +15,16 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod rational;
+#[macro_export]
+macro_rules! ratpoly {
+    () => (
+        RatPoly::from(0)
+    );
+    ($coeff:expr) => (
+        RatPoly::from($coeff)
+    );
+    ($($coeff:expr),+) => (
+        RatPoly::from(vec![$($coeff),+].as_slice())
+    );
+}
 
-pub mod ratpoly;
-
-pub mod ratmat;

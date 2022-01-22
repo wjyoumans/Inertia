@@ -17,11 +17,8 @@
 
 
 #[macro_export]
-macro_rules! finfld {
-    ($p:expr, $k:expr) => {
-        FiniteField::init($p, $k).new(0)
-    };
-    ($n:expr, $p:expr, $k:expr) => {
-        FiniteField::init($p, $k).new($n)
+macro_rules! intmod {
+    ($n:expr, $modulus:expr) => {
+        IntModRing::init($modulus).new($n)
     };
 }

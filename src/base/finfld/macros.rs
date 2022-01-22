@@ -15,15 +15,10 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
 #[macro_export]
-macro_rules! intpol {
-    () => (
-        IntPol::from(0)
-    );
-    ($coeff:expr) => (
-        IntPol::from($coeff)
-    );
-    ($($coeff:expr),+) => (
-        IntPol::from(vec![$($coeff),+].as_slice())
-    );
+macro_rules! finfld {
+    ($n:expr, $p:expr, $k:expr) => {
+        FiniteField::init($p, $k).new($n)
+    };
 }

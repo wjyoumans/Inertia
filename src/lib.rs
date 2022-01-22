@@ -86,21 +86,9 @@ pub(crate) mod macros;
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
 
-/// Trait definitions for operations and algebraic structures.
 pub mod traits;
-
 pub mod product;
-
-pub mod integer;
-pub mod rational;
-pub mod real;
-pub mod complex;
-pub mod intmod;
-pub mod finfld;
-pub mod padic;
-pub mod qadic;
-pub mod ratfunc;
-pub mod numfld;
+pub mod base;
 
 pub mod prelude { 
     //! A prelude for glob importing.
@@ -110,36 +98,42 @@ pub mod prelude {
 
     pub use crate::product::src::*;
 
-    pub use crate::integer::integer::src::*;
+    pub use crate::base::integer::src::*;
     pub use super::int;
+    pub use crate::base::intpoly::src::*;
+    pub use super::intpoly;
+    pub use crate::base::intmat::src::*;
+    //pub use super::intmat;
 
-    pub use crate::integer::intpoly::src::*;
-    pub use crate::integer::intmat::src::*;
+    pub use crate::base::rational::src::*;
+    pub use super::rat;
+    pub use crate::base::ratpoly::src::*;
+    pub use super::ratpoly;
+    pub use crate::base::ratmat::src::*;
+    //pub use super::ratmat;
 
-    pub use crate::rational::rational::src::*;
-    pub use crate::rational::ratpoly::src::*;
-    pub use crate::rational::ratmat::src::*;
+    pub use crate::base::intmod::src::*;
+    pub use super::intmod;
+    pub use crate::base::intmodpoly::src::*;
+    pub use crate::base::intmodmat::src::*;
+    
+    pub use crate::base::finfld::src::*;
+    pub use super::finfld;
+    pub use crate::base::finfldpoly::src::*;
+    pub use crate::base::finfldmat::src::*;
+    
+    pub use crate::base::padic::src::*;
 
-    pub use crate::real::real::src::*;
+    pub use crate::base::qadic::src::*;
+
+    //pub use crate::base::ratfunc::src::*;
+    
+    pub use crate::base::numfld::src::*; 
+    
+    pub use crate::base::real::src::*;
     //pub use crate::real::realpoly::src::*;
     
-    pub use crate::complex::complex::src::*;
-    
-    pub use crate::intmod::intmod::src::*;
-    pub use crate::intmod::intmodpoly::src::*;
-    pub use crate::intmod::intmodmat::src::*;
-    
-    pub use crate::finfld::finfld::src::*;
-    pub use crate::finfld::finfldpoly::src::*;
-    pub use crate::finfld::finfldmat::src::*;
-    
-    pub use crate::padic::padic::src::*;
-
-    pub use crate::qadic::src::*;
-
-    pub use crate::ratfunc::src::*;
-
-    pub use crate::numfld::src::*; 
+    pub use crate::base::complex::src::*;
 }
 
 pub use prelude::*;
