@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! Finite fields.
+//! Polynomials over finite fields.
 
 /// Implementations of arithmetic operations.
 //pub mod arith;

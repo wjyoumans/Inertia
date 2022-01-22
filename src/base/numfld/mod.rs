@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! Number fields.
+//! Finite extensions of the field of rational numbers.
 
 /// Implementations of arithmetic operations.
 //pub mod arith;

@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! The field of p-adic numbers.
+//! Unramified extensions of p-adic numbers.
 
 /// Implementations of arithmetic operations.
 //pub mod arith;

@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! Polynomials over integers modulo `n`.
+//! Polynomials over the ring of integers modulo `n`.
 
 /// Implementations of arithmetic operations.
 //pub mod arith;

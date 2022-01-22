@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! Polynomials with [Integer][crate::integer::src::Integer] coefficients.
+//! Polynomials over the ring of integers.
 
 /// Implementations of arithmetic operations.
 pub mod arith;

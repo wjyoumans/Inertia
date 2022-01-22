@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! Finite fields.
+//! Finite fields and their elements.
 
 /// Implementations of arithmetic operations.
 //pub mod arith;

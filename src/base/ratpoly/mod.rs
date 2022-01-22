@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! Polynomials with [Rational][crate::rational::src::Rational] coefficients.
+//! Polynomials over the field of rational numbers.
 
 /// Implementations of arithmetic operations.
 pub mod arith;
