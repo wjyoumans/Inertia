@@ -34,3 +34,27 @@ additional functions, arithmetic, conversion, etc.
 - [ ] multivariate polynomials
 - [ ] rational functions (currently disabled)
 - [ ] \*number fields
+
+## Usage
+
+To use Inertia in a Rust crate add it to your crate dependencies.
+```
+[dependencies]
+inertia = "0.1"
+```
+
+Inertia provides a `prelude` module for easy importing. Use
+```
+use inertia::prelude::*;
+```
+to make all of the primary features of Inertia available in the top level scope.
+
+### REPL/Jupyter notebook
+
+It is also possible to use Inertia in a read-eval-print-loop (REPL) or Jupyter notebook for more convenient prototyping or experimentation. 
+Install the [Evcxr](https://github.com/google/evcxr) REPL or Jupyter notebook, open a new REPL/notebook, and add Inertia as a dependency with 
+```
+dep: inertia = "0.1"
+```
+Then import the `prelude` module with `use inertia::prelude::*;`.
+
