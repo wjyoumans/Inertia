@@ -10,5 +10,5 @@ fn main() {
     let m1 = Integer::from(2);
     let r2 = Integer::from(3);
     let m2 = Integer::from(5);
-    println!("{}", Integer::crt(&r1, m1, r2, m2));
+    println!("{}", crt(&r1, m1, r2, m2));
 }
