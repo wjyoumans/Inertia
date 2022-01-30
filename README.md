@@ -2,9 +2,9 @@
 
 Inertia is a computational mathematics library for Rust. 
 
-This crate is currently under heavy development. The features listed below are of primary focus rigt now. Once these features are complete development of Inertia will focus on group theory and field theory, with an emphasis on abelian groups and galois number fields.
+This crate is currently under heavy development. The features listed below are of primary focus right now. Once these features are complete development of Inertia will focus on group theory and field theory, with an emphasis on abelian groups and galois number fields.
 
-Please open an issue if there are any areas of research that would benefit you. The more information you provide, the more likely your request will receive attention.
+Feel free to open an issue or submit a pull request for reasonable features that would benefit you.
 
 ## Features
 
@@ -44,7 +44,7 @@ additional functions, arithmetic, conversion, etc.
 To use Inertia in a Rust crate add it to your crate dependencies.
 ```
 [dependencies]
-inertia = "0.1"
+inertia = "0.2"
 ```
 
 Inertia provides a `prelude` module for easy importing. Use
@@ -58,7 +58,7 @@ to make all of the primary features of Inertia available in the top level scope.
 It is also possible to use Inertia in a read-eval-print-loop (REPL) or Jupyter notebook for more convenient prototyping or experimentation. 
 Install the [Evcxr](https://github.com/google/evcxr) REPL or Jupyter notebook, open a new REPL/notebook, and add Inertia as a dependency with 
 ```
-dep: inertia = "0.1"
+dep: inertia = "0.2"
 ```
 Then import the `prelude` module with `use inertia::prelude::*;`.
 
