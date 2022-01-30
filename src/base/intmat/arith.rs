@@ -24,6 +24,17 @@ use rug::ops::*;
 
 use crate::*;
 
+impl Eq for IntMatSpace {}
+impl PartialEq for IntMatSpace {
+    fn eq(&self, other: &IntMatSpace) -> bool {
+        if self.nrows == other.nrows && self.nrows == other.nrows {
+            true
+        } else {
+            false
+        }
+    }
+}
+
 impl_cmp_unsafe! {
     eq
     IntMat

@@ -21,6 +21,12 @@ use std::mem::MaybeUninit;
 
 use crate::*;
 
+impl AsRef<Rational> for Rational {
+    fn as_ref(&self) -> &Rational {
+        self
+    }
+}
+
 impl fmt::Display for RationalField {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Rational field")
@@ -37,16 +43,13 @@ impl Clone for Rational {
     }
 }
 
-/*
 impl fmt::Debug for Rational {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Rational")
-            .field("ctx", &self.ctx)
-            .field("extra", &self.extra)
             .field("data", &self.data)
             .finish()
     }
-}*/
+}
 
 impl Default for Rational {
     fn default() -> Self {

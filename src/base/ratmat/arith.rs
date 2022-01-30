@@ -25,6 +25,17 @@ use rug::ops::*;
 */
 use crate::*;
 
+impl Eq for RatMatSpace {}
+impl PartialEq for RatMatSpace {
+    fn eq(&self, other: &RatMatSpace) -> bool {
+        if self.nrows == other.nrows && self.nrows == other.nrows {
+            true
+        } else {
+            false
+        }
+    }
+}
+
 impl_cmp_unsafe! {
     eq
     RatMat

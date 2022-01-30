@@ -25,6 +25,13 @@ use crate::*;
 
 // TODO: Pow
 
+impl Eq for RationalField {}
+impl PartialEq for RationalField {
+    fn eq(&self, _: &RationalField) -> bool {
+        true
+    }
+}
+
 impl_cmp_unsafe! {
     eq
     Rational

@@ -23,6 +23,12 @@ use std::sync::Arc;
 use crate::*;
 
 
+impl AsRef<IntPoly> for IntPoly {
+    fn as_ref(&self) -> &IntPoly {
+        self
+    }
+}
+
 impl fmt::Display for IntPolyRing {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Polynomial ring in {} over the integers", self.gens()[0])

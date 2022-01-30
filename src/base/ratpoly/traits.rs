@@ -24,6 +24,12 @@ use std::sync::Arc;
 use crate::*;
 
 
+impl AsRef<RatPoly> for RatPoly {
+    fn as_ref(&self) -> &RatPoly {
+        self
+    }
+}
+
 impl fmt::Display for RatPolyRing {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Polynomial ring in {} over the rationals", self.gens()[0])

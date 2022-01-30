@@ -25,6 +25,13 @@ use crate::*;
 
 // TODO: Rem, Div, Pow
 
+impl Eq for RatPolyRing {}
+impl PartialEq for RatPolyRing {
+    fn eq(&self, _: &RatPolyRing) -> bool {
+        true
+    }
+}
+
 impl_cmp_unsafe! {
     eq
     RatPoly

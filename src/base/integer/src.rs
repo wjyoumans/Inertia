@@ -62,6 +62,15 @@ impl Parent for IntegerRing {
     type Element = Integer;
     type Context = ();
 
+    /// Return the default value of the ring (zero whenever we have an additive structure).
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let zz = Integers::init();
+    /// let z = zz.default();
+    /// assert_eq!(z, 0);
+    /// ```
     #[inline]
     fn default(&self) -> Integer {
         Integer::default()
@@ -516,6 +525,10 @@ impl Integer {
     /// let z = int!(2).pow(65u8);
     /// let v = z.get_ui_vector();
     /// assert!(v == vec![0, 2]);
+    ///
+    /// let mut t = int!();
+    /// t.set_ui_vector(v);
+    /// assert_eq!(z, t);
     /// ```
     #[inline]
     pub fn get_ui_vector(&self) -> Vec<c_ulong> {
@@ -1886,6 +1899,51 @@ impl Integer {
             Integer::from(flint_sys::fmpz::fmpz_tdiv_ui(self.as_ptr(), other))
         }
     }
+    
+    /// Return the quotient and remainder of `self/other` rounded towards the nearest integer.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(-7);
+    /// let (q, r) = x.ndiv_qr(int!(3));
+    /// assert_eq!(q, -2);
+    /// assert_eq!(r, -1);
+    /// ```
+    #[inline]
+    pub fn ndiv_qr<T>(&self, other: T) -> (Integer, Integer) where
+        T: AsRef<Integer>
+    {
+        let other = other.as_ref();
+        assert!(!other.is_zero());
+        let mut q = Integer::default();
+        let mut r = Integer::default();
+        unsafe {
+            flint_sys::fmpz::fmpz_ndiv_qr(
+                q.as_mut_ptr(), 
+                r.as_mut_ptr(), 
+                self.as_ptr(), 
+                other.as_ptr()
+            );
+        }
+        (q, r)
+    }
+    
+    /// Return the quotient of `self/other` rounded towards the nearest integer.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let x = int!(-7);
+    /// assert_eq!(x.ndiv_q(int!(3)), -2);
+    /// ```
+    #[inline]
+    pub fn ndiv_q<T>(&self, other: T) -> Integer where
+        T: AsRef<Integer>
+    {
+        let (q, r) = self.ndiv_qr(other);
+        q
+    }
    
     /// Exact division of `self/other`. Panics if the division is not exact.
     ///
@@ -3029,6 +3087,23 @@ impl Integer {
             flint_sys::fmpz::fmpz_nextprime(self.as_mut_ptr(), self.as_ptr(), 1);
         }
     }
+    
+    /// Outputs the primorial of `n`, the product of all primes less than or equal to `n`.
+    ///
+    /// ```
+    /// use inertia::prelude::*;
+    ///
+    /// let z = int!(13);
+    /// assert_eq!(z.primorial(), 30030);
+    /// ```
+    #[inline]
+    pub fn primorial(&self) -> Integer where 
+    {
+        let n = self.get_ui().expect("Input cannot be converted to an unsigned long.");
+        let mut res = Integer::default();
+        unsafe { flint_sys::fmpz::fmpz_primorial(res.as_mut_ptr(), n);}
+        res
+    }
 
     /// Returns the value of the Euler totient/phi function at an [Integer] `n`, the number of 
     /// positive integers up to `n` inclusive that are coprime to `n`. The input must be greater
@@ -3198,7 +3273,7 @@ pub fn binomial<S1, S2>(n: S1, k: S2) -> Integer where
 /// ```
 /// use inertia::prelude::*;
 ///
-/// assert_eq!(crt(int!(2), int!(7), int!(1), int!(5)), 3);
+/// assert_eq!(crt(int!(2), int!(7), int!(1), int!(5)), 16);
 /// ```
 #[inline]
 pub fn crt<R1, M1, R2, M2>(r1: R1, m1: M1, r2: R2, m2: M2) -> Integer where
@@ -3258,26 +3333,6 @@ pub fn multi_crt<R, M>(r: &[R], m: &[M]) -> Integer where
     res
 }
 
-/*
-/// Outputs the primorial of `n`, the product of all primes less than or equal to `n`.
-///
-/// ```
-/// use inertia::prelude::*;
-///
-/// let z = int!(13);
-/// assert_eq!(z.primorial(), 30030);
-/// ```
-#[inline]
-pub fn primorial<T>(n: T) -> Integer where 
-    T: AsRef<Integer>,    
-{
-    let mut res = Integer::default();
-    unsafe { flint_sys::fmpz::fmpz_primorial(res.as_mut_ptr(), n);}
-    res
-}
-*/
-
-
 impl EvaluateProduct for Product<Integer> {
     type Output = Rational;
     fn evaluate(&self) -> Rational {
@@ -3303,3 +3358,4 @@ impl<T> EvaluateProductMod<T> for Product<Integer> where
         Ok(x)
     }
 }
+
