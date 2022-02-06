@@ -39,7 +39,7 @@ impl Drop for PadicCtx {
 
 impl Hash for PadicCtx {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        Integer { data: IntegerData { elem: self.0.p[0] } }.hash(state)
+        Integer { data: self.0.p[0] }.hash(state)
     }
 }
 
@@ -59,10 +59,8 @@ impl Parent for PadicField {
         unsafe {
             flint_sys::padic::padic_init(z.as_mut_ptr());
             PadicElem { 
-                data: PadicData {
-                    ctx: Arc::clone(&self.ctx), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx), 
             }
         }
     }
@@ -171,29 +169,26 @@ impl PadicField {
 }
 
 /// An element of a p-adic field.
-pub type PadicElem = Elem<PadicField>;
-
 #[derive(Debug)]
-pub struct PadicData {
-    pub elem: padic_struct,
+pub struct PadicElem {
+    pub data: padic_struct,
     pub ctx: Arc<PadicCtx>,
 }
 
-impl Drop for PadicData {
+impl Drop for PadicElem {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::padic::padic_clear(&mut self.elem);
+            flint_sys::padic::padic_clear(&mut self.data);
         }
     }
 }
 
 impl Element for PadicElem {
-    type Data = PadicData;
     type Parent = PadicField;
 
     #[inline]
     fn parent(&self) -> PadicField {
-        PadicField { ctx: Arc::clone(&self.data.ctx) }
+        PadicField { ctx: Arc::clone(&self.ctx) }
     }
 }
 
@@ -224,20 +219,20 @@ impl PadicElem {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &padic_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut padic_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &padic_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
 
     /// Return a [String] representation of a padic number.

@@ -52,10 +52,8 @@ impl Default for Complex {
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
             Complex {
-                data: ComplexData {
-                    prec: Arc::new(ComplexCtx(RwLock::new(ARB_DEFAULT_PREC))), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                prec: Arc::new(ComplexCtx(RwLock::new(ARB_DEFAULT_PREC))), 
             }
         }
     }

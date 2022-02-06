@@ -40,7 +40,7 @@ impl Clone for RatMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init_set(z.as_mut_ptr(), self.as_ptr());
-            RatMat { data: RatMatData { elem: z.assume_init() } }
+            RatMat { data: z.assume_init() }
         }
     }
 }

@@ -39,11 +39,9 @@ impl Parent for IntModPolyRing {
         unsafe { 
             flint_sys::fmpz_mod_poly::fmpz_mod_poly_init(z.as_mut_ptr(), self.as_ptr()); 
             IntModPoly { 
-                data: IntModPolyData {
-                    ctx: Arc::clone(&self.ctx), 
-                    x: Arc::clone(&self.var), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx), 
+                x: Arc::clone(&self.var), 
             }
         }
     }
@@ -181,33 +179,30 @@ impl IntModPolyRing {
 }
 
 /// An element of the ring of integers mod `n`.
-pub type IntModPoly = Elem<IntModPolyRing>;
-
 #[derive(Debug)]
-pub struct IntModPolyData {
-    pub elem: fmpz_mod_poly_struct,
+pub struct IntModPoly {
+    pub data: fmpz_mod_poly_struct,
     pub ctx: Arc<FmpzModCtx>,
     pub x: Arc<String>,
 }
 
-impl Drop for IntModPolyData {
+impl Drop for IntModPoly {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::fmpz_mod_poly::fmpz_mod_poly_clear(&mut self.elem, &self.ctx.0);
+            flint_sys::fmpz_mod_poly::fmpz_mod_poly_clear(&mut self.data, &self.ctx.0);
         }
     }
 }
 
 impl Element for IntModPoly {
-    type Data = IntModPolyData;
     type Parent = IntModPolyRing;
 
     #[inline]
     fn parent(&self) -> IntModPolyRing {
         IntModPolyRing { 
             phantom: PhantomData::<IntModRing>,
-            ctx: Arc::clone(&self.data.ctx), 
-            var: Arc::clone(&self.data.x) 
+            ctx: Arc::clone(&self.ctx), 
+            var: Arc::clone(&self.x) 
         }
     }
 }
@@ -250,7 +245,7 @@ impl PolynomialRingElement for IntModPoly {
     }
    
     fn var(&self) -> String {
-        (*self.data.x).clone()
+        (*self.x).clone()
     }
 
     #[inline]
@@ -291,20 +286,20 @@ impl IntModPoly {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_mod_poly_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_mod_poly_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
    
     /// Return the modulus `n` of the integers mod `n`.

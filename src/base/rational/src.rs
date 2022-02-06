@@ -213,21 +213,18 @@ impl<T> NewElement<T> for RationalField where
 /// let q = rat!(14, 2);
 /// assert_eq!(q, 7);
 /// ```
-pub type Rational = Elem<RationalField>;
-
 #[derive(Debug)]
-pub struct RationalData {
-    pub elem: fmpq,
+pub struct Rational {
+    pub data: fmpq,
 }
 
-impl Drop for RationalData {
+impl Drop for Rational {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpq::fmpq_clear(&mut self.elem); }
+        unsafe { flint_sys::fmpq::fmpq_clear(&mut self.data); }
     }
 }
 
 impl Element for Rational {
-    type Data = RationalData;
     type Parent = RationalField;
 
     /// Return the parent.
@@ -289,14 +286,14 @@ impl Rational {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq {
-        &self.data.elem
+        &self.data
     }
    
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// Returns the numerator of a rational number as an `Integer`.
@@ -309,7 +306,7 @@ impl Rational {
     /// ```
     #[inline]
     pub fn numerator(&self) -> Integer {
-        Integer { data: IntegerData { elem: self.data.elem.num } }
+        Integer { data: self.data.num }
     }
     
     /// Returns the denominator of a rational number as an `Integer`.
@@ -322,7 +319,7 @@ impl Rational {
     /// ```
     #[inline]
     pub fn denominator(&self) -> Integer {
-        Integer { data: IntegerData { elem: self.data.elem.den } }
+        Integer { data: self.data.den }
     }
 
     /// Rounds the rational number down to the nearest `Integer`.

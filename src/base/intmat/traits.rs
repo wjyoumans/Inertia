@@ -40,20 +40,10 @@ impl Clone for IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init_set(z.as_mut_ptr(), self.as_ptr());
-            IntMat { data: IntMatData { elem: z.assume_init() } }
+            IntMat { data: z.assume_init() }
         }
     }
 }
-/*
-impl fmt::Debug for IntMat {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("IntMat")
-            .field("ctx", &self.ctx)
-            .field("extra", &self.extra)
-            .field("data", &self.data)
-            .finish()
-    }
-}*/
 
 impl fmt::Display for IntMat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

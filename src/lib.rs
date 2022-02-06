@@ -116,19 +116,19 @@ pub mod prelude {
     pub use super::intmod;
     pub use crate::base::intmodpoly::src::*;
     pub use crate::base::intmodmat::src::*;
-    
+
     pub use crate::base::finfld::src::*;
     pub use super::finfld;
     pub use crate::base::finfldpoly::src::*;
     pub use crate::base::finfldmat::src::*;
-    
+
     pub use crate::base::padic::src::*;
 
     pub use crate::base::qadic::src::*;
 
     //pub use crate::base::ratfunc::src::*;
     
-    pub use crate::base::numfld::src::*; 
+    //pub use crate::base::numfld::src::*; 
     
     pub use crate::base::real::src::*;
     //pub use crate::real::realpoly::src::*;

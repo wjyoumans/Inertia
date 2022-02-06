@@ -17,7 +17,7 @@
 
 
 use std::fmt;
-use std::hash::{Hash, Hasher};
+//use std::hash::{Hash, Hasher};
 
 use crate::*;
 
@@ -55,9 +55,10 @@ impl fmt::Display for FinFldElem {
     }
 }
 
+/*
 impl Hash for FinFldElem {
     fn hash<H: Hasher>(&self, state: &mut H) {
         IntPoly::from(self).hash(state);
         self.parent().hash(state);
     }
-}
+}*/

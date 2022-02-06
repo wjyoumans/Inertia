@@ -46,20 +46,21 @@ impl Clone for Integer {
     }
 }
 
+/*
 impl fmt::Debug for Integer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Integer")
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for Integer {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz::fmpz_init(z.as_mut_ptr());
-            Integer { data: IntegerData { elem: z.assume_init() } }
+            Integer { data: z.assume_init() }
         }
     }
 }

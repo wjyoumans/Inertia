@@ -113,21 +113,18 @@ impl<T> NewElement<T> for IntMatSpace where
 
 /// A matrix of arbitrary precision [Integer]s. The field `data` is a FLINT
 /// [fmpz_mat_struct][flint_sys::fmpz_mat::fmpz_mat_struct].
-pub type IntMat = Elem<IntMatSpace>;
-
 #[derive(Debug)]
-pub struct IntMatData {
-    pub elem: fmpz_mat_struct,
+pub struct IntMat {
+    pub data: fmpz_mat_struct,
 }
 
-impl Drop for IntMatData {
+impl Drop for IntMat {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mat::fmpz_mat_clear(&mut self.elem); }
+        unsafe { flint_sys::fmpz_mat::fmpz_mat_clear(&mut self.data); }
     }
 }
 
 impl Element for IntMat {
-    type Data = IntMatData;
     type Parent = IntMatSpace;
 
     #[inline]
@@ -202,18 +199,18 @@ impl MatrixSpaceElement for IntMat {
 }
 
 impl IntMat {
-    /// A reference to the underlying FFI struct. This is only needed to interface directly with FLINT
-    /// via the FFI.
+    /// A reference to the underlying FFI struct. This is only needed to interface directly with 
+    /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_mat_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_mat_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// Swap two integer matrices. The dimensions are allowed to be different.
@@ -298,7 +295,7 @@ impl IntMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
-            IntMat { data: IntMatData { elem: z.assume_init() } }
+            IntMat { data: z.assume_init() }
         }
     }
 
@@ -309,7 +306,7 @@ impl IntMat {
         unsafe {
             flint_sys::fmpz_mat::fmpz_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpz_mat::fmpz_mat_one(z.as_mut_ptr());
-            IntMat { data: IntMatData { elem: z.assume_init() } }
+            IntMat { data: z.assume_init() }
         }
     }
 

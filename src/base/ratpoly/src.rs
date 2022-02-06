@@ -25,7 +25,7 @@ use libc::{c_long, c_ulong};
 
 use crate::*;
 
-// RatPoly //
+
 
 pub type RatPolyRing = PolyRing<RationalField>;
 
@@ -99,27 +99,24 @@ impl<T> NewElement<T> for RatPolyRing where
 
 // RatPoly //
 
-pub type RatPoly = Elem<RatPolyRing>;
-
 #[derive(Debug)]
-pub struct RatPolyData {
-    pub elem: fmpq_poly_struct,
+pub struct RatPoly {
+    pub data: fmpq_poly_struct,
     pub x: Arc<String>,
 }
 
-impl Drop for RatPolyData {
+impl Drop for RatPoly {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpq_poly::fmpq_poly_clear(&mut self.elem); }
+        unsafe { flint_sys::fmpq_poly::fmpq_poly_clear(&mut self.data); }
     }
 }
 
 impl Element for RatPoly {
-    type Data = RatPolyData;
     type Parent = RatPolyRing;
 
     #[inline]
     fn parent(&self) -> RatPolyRing {
-        RatPolyRing { phantom: PhantomData::<RationalField>, ctx: (), var: Arc::clone(&self.data.x) }
+        RatPolyRing { phantom: PhantomData::<RationalField>, ctx: (), var: Arc::clone(&self.x) }
     }
 }
 
@@ -157,7 +154,7 @@ impl PolynomialRingElement for RatPoly {
 
     #[inline]
     fn var(&self) -> String {
-        (*self.data.x).clone()
+        (*self.x).clone()
     }
     
     #[inline]
@@ -186,7 +183,7 @@ impl PolynomialRingElement for RatPoly {
     
     #[inline]
     fn get_str_pretty(&self) -> String {
-        let v = CString::new((*self.data.x).clone()).unwrap();
+        let v = CString::new((*self.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpq_poly::fmpq_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {
@@ -202,14 +199,14 @@ impl RatPoly {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq_poly_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_poly_struct {
-        &mut self.data.elem
+        &mut self.data
     }
     
     #[inline]

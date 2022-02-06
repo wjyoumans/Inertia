@@ -58,8 +58,11 @@ impl Parent for IntModRing {
 
     #[inline]
     fn default(&self) -> IntMod {
-        let tmp = Integer::default();
-        IntMod { data: IntModData { ctx: Arc::clone(&self.ctx), elem: tmp.data.elem } }
+        let mut x = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz::fmpz_init(x.as_mut_ptr());
+            IntMod { data: x.assume_init(), ctx: Arc::clone(&self.ctx) }
+        }
     }
 }
 
@@ -73,8 +76,11 @@ impl Additive for IntModRing {
 impl Multiplicative for IntModRing {
     #[inline]
     fn one(&self) -> IntMod {
-        let z = Integer::from(1);
-        IntMod { data: IntModData { ctx: Arc::clone(&self.ctx), elem: z.data.elem } }
+        let mut x = MaybeUninit::uninit();
+        unsafe {
+            flint_sys::fmpz::fmpz_init_set_ui(x.as_mut_ptr(), 1 as c_ulong);
+            IntMod { data: x.assume_init(), ctx: Arc::clone(&self.ctx) }
+        }
     }
 }
 
@@ -144,29 +150,26 @@ impl IntModRing {
 }
 
 /// An element of the ring of integers mod `n`.
-pub type IntMod = Elem<IntModRing>;
-
 #[derive(Debug)]
-pub struct IntModData {
-    pub elem: fmpz,
+pub struct IntMod {
+    pub data: fmpz,
     pub ctx: Arc<FmpzModCtx>,
 }
 
-impl Drop for IntModData {
+impl Drop for IntMod {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::fmpz::fmpz_clear(&mut self.elem);
+            flint_sys::fmpz::fmpz_clear(&mut self.data);
         }
     }
 }
 
 impl Element for IntMod {
-    type Data = IntModData;
     type Parent = IntModRing;
 
     #[inline]
     fn parent(&self) -> IntModRing {
-        IntModRing { ctx: Arc::clone(&self.data.ctx) }
+        IntModRing { ctx: Arc::clone(&self.ctx) }
     }
 }
 
@@ -193,20 +196,20 @@ impl IntMod {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
     
     /// Return the modulus `n` of the integers mod `n`.

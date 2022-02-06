@@ -54,10 +54,8 @@ impl Parent for ComplexField {
         unsafe {
             arb_sys::acb::acb_init(z.as_mut_ptr());
             Complex { 
-                data: ComplexData {
-                    prec: Arc::clone(&self.prec), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                prec: Arc::clone(&self.prec), 
             }
         }
     }
@@ -273,41 +271,39 @@ impl ComplexField {
 
 /// A complex number represented as a pair of [Reals][Real], representing real and imaginary parts
 /// with separate error bounds.
-pub type Complex = Elem<ComplexField>;
-
-pub struct ComplexData {
-    pub elem: acb_struct,
+pub struct Complex {
+    pub data: acb_struct,
     pub prec: Arc<ComplexCtx>,
 }
 
-impl Drop for ComplexData {
+impl Drop for Complex {
     fn drop(&mut self) {
         unsafe { 
-            arb_sys::acb::acb_clear(&mut self.elem);
+            arb_sys::acb::acb_clear(&mut self.data);
         }
     }
 }
 
-impl fmt::Debug for ComplexData {
+impl fmt::Debug for Complex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         unsafe {
             let r = CStr::from_ptr(
                 arb_sys::arb::arb_get_str(
-                    &self.elem.real, 
+                    &self.data.real, 
                     ARB_DEFAULT_NUM_DIGITS, 
                     ARB_DEFAULT_PRINT_MODE
                     )
                 ).to_str();
             let i = CStr::from_ptr(
                 arb_sys::arb::arb_get_str(
-                    &self.elem.imag, 
+                    &self.data.imag, 
                     ARB_DEFAULT_NUM_DIGITS, 
                     ARB_DEFAULT_PRINT_MODE
                     )
                 ).to_str();
             if r.is_ok() && i.is_ok() {
-                f.debug_struct("ComplexData")
-                    .field("elem", &format!("{} + i*{}", r.unwrap(), i.unwrap()))
+                f.debug_struct("Complex")
+                    .field("data", &format!("{} + i*{}", r.unwrap(), i.unwrap()))
                     .field("prec", &self.prec)
                     .finish()
             } else {
@@ -318,12 +314,11 @@ impl fmt::Debug for ComplexData {
 }
 
 impl Element for Complex {
-    type Data = ComplexData;
     type Parent = ComplexField;
 
     #[inline]
     fn parent(&self) -> ComplexField {
-        ComplexField { prec: Arc::clone(&self.data.prec) }
+        ComplexField { prec: Arc::clone(&self.prec) }
     }
 }
 
@@ -354,47 +349,47 @@ impl Complex {
     /// Arb via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &acb_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with Arb via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut acb_struct {
-        &mut self.data.elem
+        &mut self.data
     }
     
     /// A reference to the underlying FFI struct of the real part of a complex number. This is only 
     /// needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn real_as_ptr(&self) -> &arb_struct {
-        &self.data.elem.real
+        &self.data.real
     }
     
     /// A mutable reference to the underlying FFI struct of the real part of a complex number. This is
     /// only needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn real_as_mut_ptr(&mut self) -> &mut arb_struct {
-        &mut self.data.elem.real
+        &mut self.data.real
     }
     
     /// A reference to the underlying FFI struct of the imaginary part of a complex number. This is 
     /// only needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn imag_as_ptr(&self) -> &arb_struct {
-        &self.data.elem.imag
+        &self.data.imag
     }
     
     /// A mutable reference to the underlying FFI struct of the imaginary part of a complex number. 
     /// This is only needed to interface directly with Arb via the FFI.
     #[inline]
     pub fn imag_as_mut_ptr(&mut self) -> &mut arb_struct {
-        &mut self.data.elem.imag
+        &mut self.data.imag
     }
     
     /// Return the default working precision of the complex field.
     pub fn precision(&self) -> c_long {
-        *self.data.prec.0.read().unwrap()
+        *self.prec.0.read().unwrap()
     }
     
     /// Update the default working precision of the complex field. This affects all elements of the
@@ -403,7 +398,7 @@ impl Complex {
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *self.data.prec.0.write().unwrap() = v,
+            Ok(v) => *self.prec.0.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }

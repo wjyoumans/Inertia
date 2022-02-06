@@ -45,10 +45,8 @@ impl Parent for FinFldMatSpace {
                 self.as_ptr()
             );
             FinFldMat { 
-                data: FinFldMatData {
-                    ctx: Arc::clone(&self.ctx), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx),
             }
         }
     }
@@ -193,24 +191,21 @@ impl FinFldMatSpace {
 }
 
 /// An element of the ring of integers mod `n`.
-pub type FinFldMat = Elem<FinFldMatSpace>;
-
 #[derive(Debug)]
-pub struct FinFldMatData {
-    pub elem: fq_default_mat_struct,
+pub struct FinFldMat {
+    pub data: fq_default_mat_struct,
     pub ctx: Arc<FqCtx>,
 }
 
-impl Drop for FinFldMatData {
+impl Drop for FinFldMat {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::fq_default_mat::fq_default_mat_clear(&mut self.elem, &self.ctx.0);
+            flint_sys::fq_default_mat::fq_default_mat_clear(&mut self.data, &self.ctx.0);
         }
     }
 }
 
 impl Element for FinFldMat {
-    type Data = FinFldMatData;
     type Parent = FinFldMatSpace;
     
     #[inline]
@@ -219,7 +214,7 @@ impl Element for FinFldMat {
             phantom: PhantomData::<FiniteField>,
             nrows: self.nrows(), 
             ncols: self.ncols(), 
-            ctx: Arc::clone(&self.data.ctx) 
+            ctx: Arc::clone(&self.ctx) 
         }
     }
 }
@@ -257,20 +252,20 @@ impl FinFldMat {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_default_mat_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_default_mat_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fq_default_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
    
     /*

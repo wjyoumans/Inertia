@@ -207,21 +207,18 @@ impl<T> NewElement<T> for IntegerRing where
 /// let z = int!("123");
 /// assert_eq!(z, 123);
 /// ```
-pub type Integer = Elem<IntegerRing>;
-
 #[derive(Debug)]
-pub struct IntegerData {
-    pub elem: fmpz,
+pub struct Integer {
+    pub data: fmpz,
 }
 
-impl Drop for IntegerData {
+impl Drop for Integer {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpz::fmpz_clear(&mut self.elem);}
+        unsafe { flint_sys::fmpz::fmpz_clear(&mut self.data);}
     }
 }
 
 impl Element for Integer {
-    type Data = IntegerData;
     type Parent = IntegerRing;
 
     /// Return the parent.
@@ -279,14 +276,14 @@ impl Integer {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// Convert the `Integer` to a string in base `base`.
@@ -3159,7 +3156,7 @@ impl Factorizable for Integer {
             
             let mut hashmap = FxHashMap::<Integer, Integer>::default();
             for (p, k) in base.iter().zip(exp) {
-                hashmap.insert(Integer { data: IntegerData { elem: p.clone() }}, Integer::from(k));
+                hashmap.insert(Integer { data: p.clone() }, Integer::from(k));
             }
             
             flint_sys::fmpz_factor::fmpz_factor_clear(&mut fac);

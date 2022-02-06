@@ -43,11 +43,9 @@ impl Parent for FinFldPolyRing {
         unsafe {
             flint_sys::fq_default_poly::fq_default_poly_init(z.as_mut_ptr(), self.as_ptr());
             FinFldPoly {
-                data: FinFldPolyData {
-                    ctx: Arc::clone(&self.ctx),
-                    x: Arc::clone(&self.var),
-                    elem: z.assume_init()
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx),
+                x: Arc::clone(&self.var),
             }
         }
     }
@@ -227,36 +225,35 @@ impl FinFldPolyRing {
 }
 
 /// An element of a finite field.
-pub type FinFldPoly = Elem<FinFldPolyRing>;
-
-pub struct FinFldPolyData {
-    pub elem: fq_poly_struct,
+pub struct FinFldPoly {
+    pub data: fq_poly_struct,
     pub ctx: Arc<FqCtx>,
     pub x: Arc<String>,
 }
 
-impl Drop for FinFldPolyData {
+impl Drop for FinFldPoly {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::fq_default_poly::fq_default_poly_clear(&mut self.elem, &self.ctx.0);
+            flint_sys::fq_default_poly::fq_default_poly_clear(&mut self.data, &self.ctx.0);
         }
     }
 }
 
-impl fmt::Debug for FinFldPolyData {
+impl fmt::Debug for FinFldPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let x = CString::new((*self.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
-                &self.elem, 
+                &self.data, 
                 x.as_ptr(),
                 &self.ctx.0
             );
             match CStr::from_ptr(s).to_str() {
                 Ok(s) => {
-                    f.debug_struct("FinFldPolyData")
-                        .field("elem", &s.to_owned())
+                    f.debug_struct("FinFldPoly")
+                        .field("data", &s.to_owned())
                         .field("ctx", &self.ctx)
+                        .field("x", &self.x)
                         .finish()
                 },
                 Err(_) => panic!("Flint returned invalid UTF-8!")
@@ -266,15 +263,14 @@ impl fmt::Debug for FinFldPolyData {
 }
 
 impl Element for FinFldPoly {
-    type Data = FinFldPolyData;
     type Parent = FinFldPolyRing;
 
     #[inline]
     fn parent(&self) -> FinFldPolyRing {
         FinFldPolyRing { 
             phantom: PhantomData::<FiniteField>,
-            ctx: Arc::clone(&self.data.ctx), 
-            var: Arc::clone(&self.data.x) 
+            ctx: Arc::clone(&self.ctx), 
+            var: Arc::clone(&self.x) 
         }
     }
 }
@@ -327,7 +323,7 @@ impl PolynomialRingElement for FinFldPoly {
     }
 
     fn var(&self) -> String {
-        (*self.data.x).clone()
+        (*self.x).clone()
     }
 
     #[inline]
@@ -359,7 +355,7 @@ impl PolynomialRingElement for FinFldPoly {
     /// Return a pretty-printed [String] representation of a polynomial over a finite field.
     #[inline]
     fn get_str_pretty(&self) -> String {
-        let x = CString::new((*self.data.x).clone()).unwrap();
+        let x = CString::new((*self.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fq_default_poly::fq_default_poly_get_str_pretty(
                 self.as_ptr(), 
@@ -380,20 +376,20 @@ impl FinFldPoly {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_poly_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_poly_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fq_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
     
     /// Return a [String] representation of a polynomial over a finite field.
@@ -434,10 +430,8 @@ impl FinFldPoly {
                 self.ctx_as_ptr()
             );
             FinFldElem { 
-                data: FinFldElemData {
-                    ctx: Arc::clone(&self.data.ctx), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx), 
             }
         }
     }

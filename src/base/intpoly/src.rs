@@ -28,8 +28,6 @@ use libc::{c_int, c_long, c_ulong};
 
 use crate::*;
 
-// IntPoly //
-
 /// The ring of polynomials with [Integer] coefficients that can be used as an integer polynomial
 /// "actory".
 pub type IntPolyRing = PolyRing<IntegerRing>;
@@ -43,7 +41,7 @@ impl Parent for IntPolyRing {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPoly { data: IntPolyData { x: Arc::clone(&self.var), elem: z.assume_init() } }
+            IntPoly { data: z.assume_init(), x: Arc::clone(&self.var)}
         }
     }
 }
@@ -110,27 +108,24 @@ impl<T> NewElement<T> for IntPolyRing where
 
 /// A polynomial with [Integer] coefficients. The field `data` is a FLINT
 /// [fmpz_poly][flint_sys::fmpz_poly::fmpz_poly_struct].
-pub type IntPoly = Elem<IntPolyRing>;
-
 #[derive(Debug)]
-pub struct IntPolyData {
-    pub elem: fmpz_poly_struct,
+pub struct IntPoly {
+    pub data: fmpz_poly_struct,
     pub x: Arc<String>,
 }
 
-impl Drop for IntPolyData {
+impl Drop for IntPoly {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_poly::fmpz_poly_clear(&mut self.elem);}
+        unsafe { flint_sys::fmpz_poly::fmpz_poly_clear(&mut self.data);}
     }
 }
 
 impl Element for IntPoly {
-    type Data = IntPolyData;
     type Parent = IntPolyRing;
 
     #[inline]
     fn parent(&self) -> IntPolyRing {
-        IntPolyRing { phantom: PhantomData::<IntegerRing>, ctx: (), var: Arc::clone(&self.data.x) }
+        IntPolyRing { phantom: PhantomData::<IntegerRing>, ctx: (), var: Arc::clone(&self.x) }
     }
 }
 
@@ -168,7 +163,7 @@ impl PolynomialRingElement for IntPoly {
     }
    
     fn var(&self) -> String {
-        (*self.data.x).clone()
+        (*self.x).clone()
     }
 
     /// Get the i-th coefficient of an integer polynomial.
@@ -196,7 +191,7 @@ impl PolynomialRingElement for IntPoly {
     /// Return a pretty-printed [String] representation of an integer polynomial.
     #[inline]
     fn get_str_pretty(&self) -> String {
-        let v = CString::new((*self.data.x).clone()).unwrap();
+        let v = CString::new((*self.x).clone()).unwrap();
         unsafe {
             let s = flint_sys::fmpz_poly::fmpz_poly_get_str_pretty(self.as_ptr(), v.as_ptr());
             match CStr::from_ptr(s).to_str() {
@@ -213,14 +208,14 @@ impl IntPoly {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_poly_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_poly_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// Return a [String] representation of an integer polynomial.

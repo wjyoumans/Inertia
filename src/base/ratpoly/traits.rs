@@ -62,7 +62,7 @@ impl Default for RatPoly {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_poly::fmpq_poly_init(z.as_mut_ptr());
-            RatPoly { data: RatPolyData { x: Arc::new("x".to_owned()), elem: z.assume_init() } }
+            RatPoly { data: z.assume_init(), x: Arc::new("x".to_owned()) }
         }
     }
 }

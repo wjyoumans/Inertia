@@ -43,20 +43,21 @@ impl Clone for Rational {
     }
 }
 
+/*
 impl fmt::Debug for Rational {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Rational")
             .field("data", &self.data)
             .finish()
     }
-}
+}*/
 
 impl Default for Rational {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq::fmpq_init(z.as_mut_ptr());
-            Rational { data: RationalData { elem: z.assume_init() } }
+            Rational { data: z.assume_init() }
         }
     }
 }

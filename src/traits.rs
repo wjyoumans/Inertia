@@ -112,7 +112,7 @@ pub trait Factorizable {
 }
 
 /// A generic "parent" that contains elements, for example an algebraic structure like a ring.
-pub trait Parent {
+pub trait Parent: Debug + Hash + Clone {
     /// The type of the elements. For example `<IntegerRing as Parent>::Element` is `Integer`.
     type Element: Element;
 
@@ -155,7 +155,6 @@ pub trait NewElement<T>: Parent {
 
 /// An generic element of a `Parent`.
 pub trait Element {
-    type Data: fmt::Debug;
     type Parent: Parent;
 
     fn parent(&self) -> Self::Parent;
@@ -334,30 +333,21 @@ pub trait FieldElement: RingElement {
 pub trait NumberField: Field {} // + PolynomialRing (Q[x]/f)
 pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
 
-/// An element of a `Parent`. In cases where the parent holds important context data we use the 
-/// thread-safe [Arc] reference counter to avoid cleaning up the parent until all elements are 
-/// dropped.
-//#[derive(Debug)] get "overflow evaluating the requirement Elem<xyz>: Debug". Seems to be a known
-// compiler bug.
-pub struct Elem<T: Parent> {
-    pub data: <T::Element as Element>::Data,
-}
-
 #[derive(Debug, Hash, Clone)]
-pub struct PolyRing<T: Ring + Debug + Hash + Clone> {
+pub struct PolyRing<T: Ring> {
     pub phantom: PhantomData<T>,
     pub ctx: <T as Parent>::Context,
     pub var: Arc<String>,
 }
 
 #[derive(Debug, Hash, Clone)]
-pub struct MPolyRing<T: Ring + Debug + Hash + Clone> {
+pub struct MPolyRing<T: Ring> {
     pub phantom: PhantomData<T>,
     pub vars: Arc<Vec<String>>,
 }
 
 #[derive(Debug, Hash, Clone)]
-pub struct MatSpace<T: Ring + Debug + Hash + Clone> {
+pub struct MatSpace<T: Ring> {
     pub phantom: PhantomData<T>,
     pub ctx: <T as Parent>::Context,
     pub nrows: c_long,

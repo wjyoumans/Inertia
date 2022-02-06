@@ -33,13 +33,13 @@ pub mod finfldmat;
 
 pub mod padic;
 //pub mod padpoly;
-//pub mod patmat;
+//pub mod padmat;
 
 pub mod qadic;
 
 //pub mod ratfunc;
 
-pub mod numfld;
+//pub mod numfld;
 
 pub mod real;
 //pub mod realpoly;

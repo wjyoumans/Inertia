@@ -50,7 +50,6 @@ impl Hash for FqCtx {
         unsafe { 
             flint_sys::fq_default::fq_default_ctx_prime(res.as_mut_ptr(), &self.0);
             res.hash(state);
-
             let zp = IntModPolyRing::init(res, "x");
             let mut res = zp.default();
             flint_sys::fq_default::fq_default_ctx_modulus(res.as_mut_ptr(), &self.0);
@@ -69,10 +68,8 @@ impl Parent for FiniteField {
         unsafe {
             flint_sys::fq_default::fq_default_init(z.as_mut_ptr(), self.as_ptr());
             FinFldElem { 
-                data: FinFldElemData { 
-                    ctx: Arc::clone(&self.ctx), 
-                    elem: z.assume_init() 
-                } 
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx), 
             }
         }
     }
@@ -226,29 +223,26 @@ impl FiniteField {
 }
 
 /// An element of a finite field.
-pub type FinFldElem = Elem<FiniteField>;
-
 #[derive(Debug)]
-pub struct FinFldElemData {
-    pub elem: fq_struct,
+pub struct FinFldElem {
+    pub data: fq_struct,
     pub ctx: Arc<FqCtx>,
 }
 
-impl Drop for FinFldElemData {
+impl Drop for FinFldElem {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::fq_default::fq_default_clear(&mut self.elem, &self.ctx.0);
+            flint_sys::fq_default::fq_default_clear(&mut self.data, &self.ctx.0);
         }
     }
 }
 
 impl Element for FinFldElem {
-    type Data = FinFldElemData;
     type Parent = FiniteField;
 
     #[inline]
     fn parent(&self) -> FiniteField {
-        FiniteField { ctx: Arc::clone(&self.data.ctx) }
+        FiniteField { ctx: Arc::clone(&self.ctx) }
     }
 }
 
@@ -283,20 +277,20 @@ impl FinFldElem {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fq_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fq_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fq_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
     
     /// Return a [String] representation of a finite field element.
@@ -330,7 +324,9 @@ impl FinFldElem {
     pub fn modulus(&self) -> IntModPoly {
         let zp = IntModPolyRing::init(self.prime(), "x");
         let mut res = zp.default();
-        unsafe { flint_sys::fq_default::fq_default_ctx_modulus(res.as_mut_ptr(), self.ctx_as_ptr()); }
+        unsafe { 
+            flint_sys::fq_default::fq_default_ctx_modulus(res.as_mut_ptr(), self.ctx_as_ptr()); 
+        }
         res
     }
 

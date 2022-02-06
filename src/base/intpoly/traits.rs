@@ -57,7 +57,7 @@ impl Default for IntPoly {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpz_poly::fmpz_poly_init(z.as_mut_ptr());
-            IntPoly { data: IntPolyData { x: Arc::new("x".to_owned()), elem: z.assume_init() } }
+            IntPoly { data: z.assume_init(), x: Arc::new("x".to_owned()) }
         }
     }
 }

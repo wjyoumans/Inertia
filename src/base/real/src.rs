@@ -54,10 +54,8 @@ impl Parent for RealField {
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
             Real { 
-                data: RealData {
-                    prec: Arc::clone(&self.prec), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                prec: Arc::clone(&self.prec), 
             }
         }
 
@@ -158,33 +156,31 @@ impl RealField {
 /// A real number represented as a ball over the real numbers, that is, an interval `[m +/- r] = 
 /// [m - r, m + r]` where the midpoint `m` and the radius `r` are (extended) real numbers and `r` is 
 /// nonnegative (possibly infinite).
-pub type Real = Elem<RealField>;
-
-pub struct RealData {
-    pub elem: arb_struct,
+pub struct Real {
+    pub data: arb_struct,
     pub prec: Arc<RealCtx>,
 }
 
-impl Drop for RealData {
+impl Drop for Real {
     fn drop(&mut self) {
         unsafe { 
-            arb_sys::arb::arb_clear(&mut self.elem);
+            arb_sys::arb::arb_clear(&mut self.data);
         }
     }
 }
 
-impl fmt::Debug for RealData {
+impl fmt::Debug for Real {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         unsafe {
             let s = arb_sys::arb::arb_get_str(
-                &self.elem, 
+                &self.data, 
                 ARB_DEFAULT_NUM_DIGITS, 
                 ARB_DEFAULT_PRINT_MODE
             );
             match CStr::from_ptr(s).to_str() {
                 Ok(s) => {
-                    f.debug_struct("RealData")
-                        .field("elem", &s.to_owned())
+                    f.debug_struct("Real")
+                        .field("data", &s.to_owned())
                         .field("prec", &self.prec)
                         .finish()
                 },
@@ -195,12 +191,11 @@ impl fmt::Debug for RealData {
 }
 
 impl Element for Real {
-    type Data = RealData;
     type Parent = RealField;
 
     #[inline]
     fn parent(&self) -> RealField {
-        RealField { prec: Arc::clone(&self.data.prec) }
+        RealField { prec: Arc::clone(&self.prec) }
     }
 }
 
@@ -231,19 +226,19 @@ impl Real {
     /// Arb via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &arb_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with Arb via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut arb_struct {
-        &mut self.data.elem
+        &mut self.data
     }
     
     /// Return the default working precision of the real field.
     pub fn precision(&self) -> c_long {
-        *self.data.prec.0.read().unwrap()
+        *self.prec.0.read().unwrap()
     }
     
     /// Update the default working precision of the real field. This affects all elements of the
@@ -252,7 +247,7 @@ impl Real {
         T: TryInto<c_long>
     {
         match prec.try_into() {
-            Ok(v) => *self.data.prec.0.write().unwrap() = v,
+            Ok(v) => *self.prec.0.write().unwrap() = v,
             Err(_) => panic!("Input cannot be converted into a signed long!"),
         }
     }

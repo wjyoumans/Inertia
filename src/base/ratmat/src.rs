@@ -106,21 +106,18 @@ impl_new_unsafe! {
 
 /// A matrix of arbitrary precision [Rationals][Rational]. The field `data` is a FLINT
 /// [fmpq_mat_struct][flint_sys::fmpq_mat::fmpq_mat_struct].
-pub type RatMat = Elem<RatMatSpace>;
-
 #[derive(Debug)]
-pub struct RatMatData {
-    pub elem: fmpq_mat_struct,
+pub struct RatMat {
+    pub data: fmpq_mat_struct,
 }
 
-impl Drop for RatMatData {
+impl Drop for RatMat {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpq_mat::fmpq_mat_clear(&mut self.elem); }
+        unsafe { flint_sys::fmpq_mat::fmpq_mat_clear(&mut self.data); }
     }
 }
 
 impl Element for RatMat {
-    type Data = RatMatData;
     type Parent = RatMatSpace;
 
     #[inline]
@@ -199,14 +196,14 @@ impl RatMat {
     /// via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpq_mat_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpq_mat_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// Return two integer matrices containing the numerator and denominator of each entry of a
@@ -335,7 +332,7 @@ impl RatMat {
         let mut z = MaybeUninit::uninit();
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, n);
-            RatMat { data: RatMatData { elem: z.assume_init() } }
+            RatMat { data: z.assume_init() }
         }
     }
     
@@ -346,7 +343,7 @@ impl RatMat {
         unsafe {
             flint_sys::fmpq_mat::fmpq_mat_init(z.as_mut_ptr(), m, n);
             flint_sys::fmpq_mat::fmpq_mat_one(z.as_mut_ptr());
-            RatMat { data: RatMatData { elem: z.assume_init() } }
+            RatMat { data: z.assume_init() }
         }
     }
  

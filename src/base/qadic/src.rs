@@ -41,11 +41,12 @@ impl Drop for QadicCtx {
 impl Hash for QadicCtx {
     fn hash<H: Hasher>(&self, state: &mut H) {
         unsafe { flint_sys::qadic::qadic_ctx_degree(&self.0).hash(state); }
-        Integer { data: IntegerData { elem: self.0.pctx.p[0] } }.hash(state)
+        Integer { data: self.0.pctx.p[0] }.hash(state)
     }
 }
 
 /// An unramified extension of the p-adic numbers.
+#[derive(Debug, Clone, Hash)]
 pub struct QadicField {
     ctx: Arc<QadicCtx>,
 }
@@ -60,10 +61,8 @@ impl Parent for QadicField {
         unsafe {
             flint_sys::qadic::qadic_init(z.as_mut_ptr());
             QadicElem {
-                data: QadicData {
-                    ctx: Arc::clone(&self.ctx), 
-                    elem: z.assume_init()
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx), 
             }
         }
     }
@@ -160,29 +159,26 @@ impl QadicField {
 }
 
 /// An element of a q-adic field.
-pub type QadicElem = Elem<QadicField>;
-
 #[derive(Debug)]
-pub struct QadicData {
-    pub elem: qadic_struct,
+pub struct QadicElem {
+    pub data: qadic_struct,
     pub ctx: Arc<QadicCtx>,
 }
 
-impl Drop for QadicData {
+impl Drop for QadicElem {
     fn drop(&mut self) {
         unsafe { 
-            flint_sys::qadic::qadic_clear(&mut self.elem);
+            flint_sys::qadic::qadic_clear(&mut self.data);
         }
     }
 }
 
 impl Element for QadicElem {
-    type Data = QadicData;
     type Parent = QadicField;
 
     #[inline]
     fn parent(&self) -> QadicField {
-        QadicField { ctx: Arc::clone(&self.data.ctx) }
+        QadicField { ctx: Arc::clone(&self.ctx) }
     }
 }
 
@@ -215,20 +211,20 @@ impl QadicElem {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &qadic_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut qadic_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &qadic_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
 
     /*

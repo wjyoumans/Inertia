@@ -24,7 +24,7 @@ impl_from! {
     IntMat, IntModMat
     {
         fn from(x: &IntModMat) -> IntMat {
-            IntMat { data: IntMatData { elem: x.data.elem.mat[0].clone() } }
+            IntMat { data: x.data.mat[0].clone() }
         }
     }
 }

@@ -52,10 +52,8 @@ impl Default for Real {
         unsafe {
             arb_sys::arb::arb_init(z.as_mut_ptr());
             Real {
-                data: RealData {
-                    prec: Arc::new(RealCtx(RwLock::new(ARB_DEFAULT_PREC))), 
-                    elem: z.assume_init()
-                }
+                data: z.assume_init(),
+                prec: Arc::new(RealCtx(RwLock::new(ARB_DEFAULT_PREC))), 
             }
         }
     }

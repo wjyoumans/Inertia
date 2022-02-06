@@ -46,10 +46,8 @@ impl Parent for IntModMatSpace {
                 self.modulus().as_ptr()
             );
             IntModMat { 
-                data: IntModMatData { 
-                    ctx: Arc::clone(&self.ctx), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&self.ctx), 
             }
         }
     }
@@ -132,7 +130,7 @@ impl NewElement<&IntModMat> for IntModMatSpace {
                 res.as_mut_ptr(), 
                 self.modulus().as_ptr()
             );
-            IntModMat { data: IntModMatData { ctx: Arc::clone(&self.ctx), elem: res.data.elem } }
+            IntModMat { data: res.data, ctx: Arc::clone(&self.ctx) }
         }
     }
 }
@@ -148,7 +146,7 @@ impl NewElement<&IntMat> for IntModMatSpace {
     #[inline]
     fn new(&self, x: &IntMat) -> IntModMat {
         let mut res = self.default();
-        res.data.elem.mat[0] = x.data.elem;
+        res.data.mat[0] = x.data;
         res
     }
 }
@@ -190,22 +188,19 @@ impl IntModMatSpace {
 }
 
 /// An element of the ring of integers mod `n`.
-pub type IntModMat = Elem<IntModMatSpace>;
-
 #[derive(Debug)]
-pub struct IntModMatData {
+pub struct IntModMat {
+    pub data: fmpz_mod_mat_struct,
     pub ctx: Arc<FmpzModCtx>,
-    pub elem: fmpz_mod_mat_struct,
 }
 
-impl Drop for IntModMatData {
+impl Drop for IntModMat {
     fn drop(&mut self) {
-        unsafe { flint_sys::fmpz_mod_mat::fmpz_mod_mat_clear(&mut self.elem);}
+        unsafe { flint_sys::fmpz_mod_mat::fmpz_mod_mat_clear(&mut self.data);}
     }
 }
 
 impl Element for IntModMat {
-    type Data = IntModMatData;
     type Parent = IntModMatSpace;
 
     #[inline]
@@ -214,7 +209,7 @@ impl Element for IntModMat {
             phantom: PhantomData::<IntModRing>,
             nrows: self.nrows(), 
             ncols: self.ncols(), 
-            ctx: Arc::clone(&self.data.ctx) 
+            ctx: Arc::clone(&self.ctx) 
         }
     }
 }
@@ -293,20 +288,20 @@ impl IntModMat {
     /// FLINT via the FFI.
     #[inline]
     pub fn as_ptr(&self) -> &fmpz_mod_mat_struct {
-        &self.data.elem
+        &self.data
     }
     
     /// A mutable reference to the underlying FFI struct. This is only needed to interface directly 
     /// with FLINT via the FFI.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> &mut fmpz_mod_mat_struct {
-        &mut self.data.elem
+        &mut self.data
     }
 
     /// A reference to the struct holding context information. This is only needed to interface
     /// directly with FLINT via the FFI.
     pub fn ctx_as_ptr(&self) -> &fmpz_mod_ctx_struct {
-        &self.data.ctx.0
+        &self.ctx.0
     }
    
     /// Return the modulus `n` of a matrix with entries in integers mod `n`.
@@ -326,10 +321,8 @@ impl IntModMat {
         unsafe {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
             IntModMat {
-                data: IntModMatData {
-                    ctx: Arc::clone(&IntModRing::init(n).ctx), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&IntModRing::init(n).ctx), 
             }
         }
     }
@@ -342,10 +335,8 @@ impl IntModMat {
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_init(z.as_mut_ptr(), r, c, n.as_ptr());
             flint_sys::fmpz_mod_mat::fmpz_mod_mat_one(z.as_mut_ptr());
             IntModMat {
-                data: IntModMatData {
-                    ctx: Arc::clone(&IntModRing::init(n).ctx), 
-                    elem: z.assume_init() 
-                }
+                data: z.assume_init(),
+                ctx: Arc::clone(&IntModRing::init(n).ctx), 
             }
         }
     }
