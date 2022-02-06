@@ -1941,7 +1941,7 @@ impl Integer {
     pub fn ndiv_q<T>(&self, other: T) -> Integer where
         T: AsRef<Integer>
     {
-        let (q, r) = self.ndiv_qr(other);
+        let (q, _) = self.ndiv_qr(other);
         q
     }
    

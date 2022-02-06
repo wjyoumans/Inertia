@@ -22,16 +22,15 @@ use std::ops::*;
 use libc::{c_long, c_ulong};
 use rug::ops::*;
 
-use crate::traits::*;
-use crate::integer::src::Integer;
-use crate::rational::src::Rational;
+use crate::*;
 
 impl_cmp_unsafe! {
     eq
-    Integer
-    flint_sys::fmpz::fmpz_equal
+    Real
+    arb_sys::arb::arb_equal
 }
 
+/*
 impl_cmp_unsafe! {
     ord
     Integer
@@ -584,7 +583,6 @@ unsafe fn fmpz_pow_si(
     flint_sys::fmpq::fmpq_pow_si(res, res, g);
 }
 
-/*
 #[inline]
 unsafe fn fmpz_ui_pow(
     res: *mut flint_sys::fmpq::fmpq,
