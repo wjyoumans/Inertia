@@ -2,7 +2,8 @@
 
 Inertia is a computational mathematics library for Rust. 
 
-This crate is currently under heavy development. The features listed below are of primary focus right now. Once these features are complete development of Inertia will focus on group theory and field theory, with an emphasis on abelian groups and galois number fields.
+This crate is currently under heavy development and a major refactor of underlying algebraic structures is in the works.
+Following the refactor, the features listed below are of primary focus.
 
 Feel free to open an issue or submit a pull request for reasonable features that would benefit you.
 
