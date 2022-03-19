@@ -82,9 +82,9 @@ const PADIC_DEFAULT_PRINT_MODE: c_uint = PADIC_PRINT_TERSE;
 #[macro_use]
 pub(crate) mod macros;
 
-#[cfg(test)]
-#[macro_use(quickcheck)]
-extern crate quickcheck_macros;
+//#[cfg(test)]
+//#[macro_use(quickcheck)]
+//extern crate quickcheck_macros;
 
 pub mod traits;
 pub mod product;

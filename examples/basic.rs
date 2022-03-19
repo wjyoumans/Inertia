@@ -2,9 +2,9 @@
 use inertia::prelude::*;
 
 fn main() {
-    let rr = RationalField::init();
-    let rx = PolyRing::<RationalField>::init("x");
-    let r = rx.new(1);
+    //let rr = RationalField::init();
+    //let rx = PolyRing::<RationalField>::init("x");
+    //let r = rx.new(1);
 
     let r1 = Integer::from(1);
     let m1 = Integer::from(2);

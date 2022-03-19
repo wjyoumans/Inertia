@@ -526,6 +526,12 @@ impl Integer {
     /// let mut t = int!();
     /// t.set_ui_vector(v);
     /// assert_eq!(z, t);
+    ///
+    /// let x = int!("18446744073709551616");
+    /// let v = x.get_ui_vector();
+    /// let mut t = int!();
+    /// t.set_ui_vector(v);
+    /// assert_eq!(x, t);
     /// ```
     #[inline]
     pub fn get_ui_vector(&self) -> Vec<c_ulong> {

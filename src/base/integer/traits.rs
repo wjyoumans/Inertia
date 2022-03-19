@@ -20,7 +20,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
 
-use serde::ser::{Serialize, Serializer, SerializeSeq};
+//use serde::ser::{Serialize, Serializer, SerializeSeq};
 //use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess};
 
 use crate::*;
@@ -46,15 +46,6 @@ impl Clone for Integer {
     }
 }
 
-/*
-impl fmt::Debug for Integer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Integer")
-            .field("data", &self.data)
-            .finish()
-    }
-}*/
-
 impl Default for Integer {
     fn default() -> Self {
         let mut z = MaybeUninit::uninit();
@@ -77,12 +68,13 @@ impl Hash for Integer {
     }
 }
 
+/*
 impl Serialize for Integer {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
         S: Serializer
     {
         let vec = self.get_ui_vector();
-        println!("{:?}, len = {}", vec, vec.len());
+        println!("printing input vector! {:?}, len = {}", vec, vec.len());
         let mut seq = serializer.serialize_seq(Some(vec.len()))?;
         for e in vec.iter() {
             seq.serialize_element(e)?;
@@ -91,7 +83,6 @@ impl Serialize for Integer {
     }
 }
 
-/*
 impl<'de> Deserialize<'de> for Integer {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where
         D: Deserializer<'de>
@@ -140,7 +131,7 @@ impl<'de> Deserialize<'de> for Integer {
                 while let Some(x) = seq.next_element::<u64>()? {
                     ui_vec.push(x);
                 }
-                //println!("{:?}", ui_vec);
+                println!("{:?}", ui_vec);
                 let mut res = Integer::default();
                 res.set_ui_vector(ui_vec);
                 Ok(res)
@@ -163,5 +154,4 @@ mod tests {
         let y: Integer = bincode::deserialize(&ser).unwrap();
         assert_eq!(x, y);
     }
-}
-*/
+}*/
