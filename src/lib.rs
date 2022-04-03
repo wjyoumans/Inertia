@@ -19,6 +19,7 @@
 use std::io;
 use std::fmt;
 use std::fs::File;
+use std::hash::Hash;
 use serde::{ser, de};
 use thiserror::Error;
 use inertia_core::*;
@@ -64,10 +65,13 @@ trait Build {
     fn build(self) -> Self::Output;
 }
 
-pub trait BaseTrait: Clone + fmt::Debug {}
+// hash, serialize/deserialize, display, Eq, PartialEq
+pub trait BaseTrait: Clone + fmt::Debug + fmt::Display + Eq + Hash {}
 
 pub trait Parent: BaseTrait {
     type Element: BaseTrait;
+
+    fn default(&self) -> Self::Element;
 }
 
 pub trait Element: BaseTrait {
@@ -76,11 +80,22 @@ pub trait Element: BaseTrait {
 
 pub trait Ring: Parent {}
 
+/*TODO: move to poly/mod
 pub trait PolynomialRing: Ring {
     type BaseRing: Ring;
-
     fn test(&self);
-}
+
+    // new should take: T, &[T], Vec<T>?
+    //fn new(&self, x: T) -> Self::Element;
+/*
+    // fn default move to parent
+    // fn new
+    // fn nvars = 1
+    // fn var
+    // fn set_var
+    // fn base_ring
+    // */
+}*/
 
 // Integer impls
 impl BaseTrait for Integer {}
@@ -91,6 +106,11 @@ impl Element for Integer {
 impl BaseTrait for IntegerRing {}
 impl Parent for IntegerRing {
     type Element = Integer;
+    
+    #[inline]
+    fn default(&self) -> Self::Element {
+        self.default()
+    }
 }
 
 impl Ring for IntegerRing {}
@@ -104,6 +124,11 @@ impl Element for Rational {
 impl BaseTrait for RationalField {}
 impl Parent for RationalField {
     type Element = Rational;
+    
+    #[inline]
+    fn default(&self) -> Self::Element {
+        self.default()
+    }
 }
 
 impl Ring for RationalField {}

@@ -15,21 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use inertia_core::{
-    IntegerRing,
-    IntPolyRing
-};
-use crate::{BaseTrait, Parent, Element, Ring, Build, IntPoly, PolynomialRing, PolyRing, PolyRingBuilder};
-
-// Builder for autoref specialization
-impl Build for PolyRingBuilder<'_, IntegerRing> {
-    type Output = PolyRing<IntegerRing>;
-    fn build(self) -> Self::Output {
-        PolyRing::Integer(
-            IntPolyRing::init(&self.var)
-        )
-    }
-}
+use inertia_core::IntPolyRing;
+use crate::{BaseTrait, Parent, Element, Ring, IntPoly};
 
 // Integer polynomials
 impl BaseTrait for IntPoly {}
@@ -43,14 +30,11 @@ impl BaseTrait for IntPolyRing {}
 
 impl Parent for IntPolyRing {
     type Element = IntPoly; 
+    
+    #[inline]
+    fn default(&self) -> Self::Element {
+        self.default()
+    }
 }
 
 impl Ring for IntPolyRing {}
-
-// Integer polynomial ring boilerplate
-impl PolynomialRing for IntPolyRing {
-    type BaseRing = IntegerRing;
-    fn test(&self) {
-        println!("specialized");
-    }
-}

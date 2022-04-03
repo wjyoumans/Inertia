@@ -15,12 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::sync::Arc;
-use inertia_core::{
-    IntPoly,
-    IntPolyRing
-};
-use crate::{BaseTrait, Element, Parent, Ring, PolynomialRing};
+use inertia_core::{IntegerRing, IntPolyRing};
+use crate::{Build, Ring};
 
 mod generic;
 mod intpoly;
@@ -29,46 +25,21 @@ use generic::*;
 
 // Builder does heap allocation and constructs generic PolyRings via autoref specialization
 pub struct PolyRingBuilder<'a, T: Ring> {
-    base_ring: Arc<T>,
+    base_ring: &'a T,
     var: &'a str,
 }
 
-// Generic or specialized polynomials
-#[derive(Clone, Debug)]
-pub enum Poly<T: Ring> {
-    Generic(GenericPoly<T>),
-    Integer(IntPoly),
+impl<T: Ring> Build for &PolyRingBuilder<'_, T> {
+    type Output = GenericPolyRing<T>;
+    fn build(self) -> Self::Output {
+        GenericPolyRing::init(&self.base_ring, &self.var)
+    }
 }
 
-impl<T: Ring> BaseTrait for Poly<T> {}
-
-impl<T: Ring> Element for Poly<T> {
-    type Parent = PolyRing<T>;
-}
-
-// Generic or specialized polynomial rings
-#[derive(Clone, Debug)]
-pub enum PolyRing<T: Ring> {
-    Generic(GenericPolyRing<T>),
-    Integer(IntPolyRing),
-}
-
-impl<T: Ring> BaseTrait for PolyRing<T> {}
-
-impl<T: Ring> Parent for PolyRing<T> {
-    type Element = Poly<T>;
-}
-
-impl<T: Ring> Ring for PolyRing<T> {}
-
-// Polynomial ring boilerplate
-impl<T: Ring> PolynomialRing for PolyRing<T> {
-    type BaseRing = T;
-    fn test(&self) {
-        match self {
-            PolyRing::Generic(ring) => ring.test(),
-            PolyRing::Integer(ring) => ring.test(),
-        }
+impl Build for PolyRingBuilder<'_, IntegerRing> {
+    type Output = IntPolyRing;
+    fn build(self) -> Self::Output {
+        IntPolyRing::init(&self.var)
     }
 }
 
@@ -76,36 +47,35 @@ impl<T: Ring> PolynomialRing for PolyRing<T> {
 #[allow(unused_macros)]
 macro_rules! polynomial_ring {
     (&$ring:expr, $var:expr) => {
-        polynomial_ring!($ring.clone(), $var)
-    };
-    ($ring:expr, $var:expr) => {
         {
             let builder = PolyRingBuilder {
-                base_ring: Arc::new($ring),
+                base_ring: &$ring,
                 var: $var,
             };
             builder.build()
         }
     };
-    (&$ring:expr) => {
-        polynomial_ring!($ring.clone())
+    ($ring:expr, $var:expr) => {
+        polynomial_ring!(&$ring, $var)
     };
-    ($ring:expr) => {
+    (&$ring:expr) => {
         {
             let builder = PolyRingBuilder {
-                base_ring: Arc::new($ring),
+                base_ring: &$ring,
                 var: "x",
             };
             builder.build()
         }
+    };
+    ($ring:expr) => {
+        polynomial_ring!(&$ring)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
     use inertia_core::{IntegerRing, RationalField};
-    use crate::{Build, PolyRingBuilder, PolynomialRing};
+    use crate::{Build, PolyRingBuilder};
 
     #[test]
     fn main() {
