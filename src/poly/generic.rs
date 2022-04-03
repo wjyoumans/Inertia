@@ -22,9 +22,11 @@ use std::sync::{Arc, RwLock};
 use crate::{
     ValOrRef,
     BaseTrait, 
-    Parent, 
     Element, 
+    New,
+    Parent, 
     Ring,
+    RingElement
 };
 
 // Generic polynomial ring implementation
@@ -71,7 +73,28 @@ impl<T: Ring> Parent for GenericPolyRing<T> {
     }
 }
 
-impl<T: Ring> Ring for GenericPolyRing<T> {}
+impl<T: Ring> Ring for GenericPolyRing<T> {
+    #[inline]
+    fn one(&self) -> Self::Element {
+        self.new(self.base_ring().one())
+    }
+}
+
+// Constructors
+
+impl<X, T: Ring> New<X> for GenericPolyRing<T> where
+    X: Into<T::Element>
+{
+    fn new(&self, x: X) -> Self::Element {
+        let mut p = GenericPoly {
+            base_ring: Arc::clone(&self.base_ring),
+            var: Arc::clone(&self.var),
+            coeffs: vec![x.into()]
+        };
+        p.normalize();
+        p
+    }
+}
 
 impl<T: Ring> GenericPolyRing<T> {
     #[inline]
@@ -79,15 +102,6 @@ impl<T: Ring> GenericPolyRing<T> {
         GenericPolyRing {
             base_ring: Arc::new(ring.clone()),
             var: Arc::new(RwLock::new(var.to_string()))
-        }
-    }
-
-    #[inline]
-    pub fn new(&self, x: Vec<T::Element>) -> GenericPoly<T> {
-        GenericPoly {
-            base_ring: Arc::clone(&self.base_ring),
-            var: Arc::clone(&self.var),
-            coeffs: x
         }
     }
     
@@ -133,7 +147,23 @@ impl<T: Ring> PartialEq for GenericPoly<T> {
 impl<T: Ring> fmt::Display for GenericPoly<T> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        //let c = self.get_coeff(0);
+        //assert!(!c.is_zero());
         write!(f, "{:?}", self.coeffs)
+        /*
+        let mut out = vec![];
+        if !c.is_zero() {
+            out.push(format!("{}", c));
+        }
+
+        let c = self.get_coeff(1);
+        if !c.is_zero() {
+            out.push(format!("{}*{}", c, self.var))
+        }
+
+        out.reverse();
+        write!(f, "{}", out.join(" "))
+        */
     }
 }
 
@@ -150,7 +180,32 @@ impl<T: Ring> Element for GenericPoly<T> {
     type Parent = GenericPolyRing<T>;
 }
 
+impl<T: Ring> RingElement for GenericPoly<T> {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        self.coeffs.len() == 1 && self.coeffs[0] == self.base_ring().zero()
+    }
+
+    #[inline]
+    fn is_one(&self) -> bool {
+        self.coeffs.len() == 1 && self.coeffs[0] == self.base_ring().one()
+    }
+}
+
 impl<'a, T: 'a + Ring> GenericPoly<T> {
+    fn normalize(&mut self) {
+        // remove trailing zeros and ensure len >= 1
+        let len = self.len();
+        if len != 1 {
+            let d = self.base_ring().default();
+            if let Some(pos) = self.coeffs.iter().rev().position(|x| x != &d) {
+                self.coeffs.truncate(len - pos);
+            } else {
+                self.coeffs.clear();
+            }
+        }
+    }
+
     #[inline]
     pub fn parent(&self) -> <Self as Element>::Parent {
         GenericPolyRing {
@@ -200,12 +255,14 @@ impl<'a, T: 'a + Ring> GenericPoly<T> {
     pub fn set_coeff<S>(&mut self, i: usize, coeff: S) where
         S: Into<ValOrRef<'a, T::Element>>
     {
-        if let Some(x) = self.coeffs.get_mut(i) {
-            *x = coeff.into().clone();
-        } else {
+        if i >= self.len() {
             let d = self.base_ring().default();
-            self.coeffs.resize_with(i-1, || d.clone());
+            self.coeffs.resize_with(i+1, || d.clone());
+            // pad with zeros
         }
+
+        *self.coeffs.get_mut(i).unwrap() = coeff.into().clone();
+        self.normalize();
     }
 
     #[inline]

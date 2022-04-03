@@ -22,11 +22,9 @@ use std::fs::File;
 use std::hash::Hash;
 use serde::{ser, de};
 use thiserror::Error;
-use inertia_core::*;
 
-
+#[macro_use]
 pub mod poly;
-pub use poly::*;
 
 #[derive(Error, Debug)]
 pub enum InertiaError {
@@ -60,7 +58,7 @@ impl<T> ReadWriteBincode for T where
     }
 }
 
-trait Build {
+pub trait Build {
     type Output;
     fn build(self) -> Self::Output;
 }
@@ -78,7 +76,23 @@ pub trait Element: BaseTrait {
     type Parent: BaseTrait ;
 }
 
-pub trait Ring: Parent {}
+pub trait Ring: Parent {
+    //type Element: BaseTrait + RingElement;
+    fn zero(&self) -> Self::Element {
+        self.default()
+    }
+    fn one(&self) -> Self::Element;
+}
+
+pub trait RingElement: Element {
+    //type Parent: BaseTrait + Ring;
+    fn is_zero(&self) -> bool;
+    fn is_one(&self) -> bool;
+}
+
+pub trait New<T>: Parent {
+    fn new(&self, x: T) -> Self::Element;
+}
 
 /*TODO: move to poly/mod
 pub trait PolynomialRing: Ring {
@@ -98,11 +112,6 @@ pub trait PolynomialRing: Ring {
 }*/
 
 // Integer impls
-impl BaseTrait for Integer {}
-impl Element for Integer {
-    type Parent = IntegerRing;
-}
-
 impl BaseTrait for IntegerRing {}
 impl Parent for IntegerRing {
     type Element = Integer;
@@ -113,12 +122,42 @@ impl Parent for IntegerRing {
     }
 }
 
-impl Ring for IntegerRing {}
+impl Ring for IntegerRing {
+    #[inline]
+    fn one(&self) -> Integer {
+        self.new(1)
+    }
+}
+
+impl BaseTrait for Integer {}
+impl Element for Integer {
+    type Parent = IntegerRing;
+}
+
+impl RingElement for Integer {
+    fn is_zero(&self) -> bool {
+        self.is_zero()
+    }
+    fn is_one(&self) -> bool {
+        self.is_one()
+    }
+}
 
 // Rational impls
 impl BaseTrait for Rational {}
 impl Element for Rational {
     type Parent = RationalField;
+}
+impl RingElement for Rational {
+    #[inline]
+    fn is_zero(&self) -> bool {
+        self == 0
+    }
+
+    #[inline]
+    fn is_one(&self) -> bool {
+        self == 1
+    }
 }
 
 impl BaseTrait for RationalField {}
@@ -131,6 +170,12 @@ impl Parent for RationalField {
     }
 }
 
-impl Ring for RationalField {}
+impl Ring for RationalField {
+    #[inline]
+    fn one(&self) -> Rational {
+        self.new(1)
+    }
+}
 
-
+pub use inertia_core::*;
+pub use poly::*;

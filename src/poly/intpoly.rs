@@ -37,4 +37,9 @@ impl Parent for IntPolyRing {
     }
 }
 
-impl Ring for IntPolyRing {}
+impl Ring for IntPolyRing {
+    #[inline]
+    fn one(&self) -> IntPoly {
+        self.new(1)
+    }
+}

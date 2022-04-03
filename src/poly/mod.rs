@@ -29,6 +29,12 @@ pub struct PolyRingBuilder<'a, T: Ring> {
     var: &'a str,
 }
 
+impl<'a, T: Ring> PolyRingBuilder<'a, T> {
+    pub fn new(base_ring: &'a T, var: &'a str) -> Self {
+        PolyRingBuilder { base_ring, var }
+    }
+}
+
 impl<T: Ring> Build for &PolyRingBuilder<'_, T> {
     type Output = GenericPolyRing<T>;
     fn build(self) -> Self::Output {
@@ -44,28 +50,16 @@ impl Build for PolyRingBuilder<'_, IntegerRing> {
 }
 
 // Constructor macros to hide autoref specialization
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! polynomial_ring {
     (&$ring:expr, $var:expr) => {
-        {
-            let builder = PolyRingBuilder {
-                base_ring: &$ring,
-                var: $var,
-            };
-            builder.build()
-        }
+        PolyRingBuilder::new(&$ring, $var).build()
     };
     ($ring:expr, $var:expr) => {
         polynomial_ring!(&$ring, $var)
     };
     (&$ring:expr) => {
-        {
-            let builder = PolyRingBuilder {
-                base_ring: &$ring,
-                var: "x",
-            };
-            builder.build()
-        }
+        PolyRingBuilder::new(&$ring, "x").build()
     };
     ($ring:expr) => {
         polynomial_ring!(&$ring)
@@ -83,11 +77,9 @@ mod tests {
         let _ = polynomial_ring!(&zz, "y");
         let _ = polynomial_ring!(&zz);
         let zp = polynomial_ring!(zz, "z");
-        zp.test();
 
         
         let rr = RationalField {};
         let zp = polynomial_ring!(rr, "z");
-        zp.test();
     }
 }
