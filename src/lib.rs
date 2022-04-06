@@ -26,6 +26,7 @@ use thiserror::Error;
 #[macro_use]
 pub mod poly;
 pub mod map;
+pub mod prod;
 
 #[derive(Error, Debug)]
 pub enum InertiaError {
@@ -207,3 +208,4 @@ impl Ring for RationalField {}
 
 pub use inertia_core::*;
 pub use poly::*;
+pub use prod::*;
