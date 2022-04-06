@@ -1,5 +1,6 @@
-use inertia_core::ops::Pow;
+use std::str::FromStr;
 use inertia_core::*;
+use inertia::ReadWriteBincode;
 
 macro_rules! test_bincode {
     ($x:ident, $t:ty) => {
@@ -17,10 +18,10 @@ macro_rules! test_bincode {
 }
 
 fn main() {
-    let a = Integer::from("2").pow(10u32);
+    let a = Integer::from_str("2").unwrap().pow(10u32);
     test_bincode!(a, Integer);
 
-    let a = Integer::from("21864736487264827439837428");
+    let a = Integer::from_str("21864736487264827439837428").unwrap();
     test_bincode!(a, Integer);
 
     let a = Rational::from([100, 12]);
