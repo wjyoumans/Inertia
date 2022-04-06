@@ -76,9 +76,9 @@ mod tests {
         let zz = IntegerRing {};
         let _ = polynomial_ring!(&zz, "y");
         let _ = polynomial_ring!(&zz);
-        let zp = polynomial_ring!(zz, "z");
+        let _ = polynomial_ring!(zz, "z");
 
         let rr = RationalField {};
-        let zp = polynomial_ring!(rr, "z");
+        let _ = polynomial_ring!(rr, "z");
     }
 }
