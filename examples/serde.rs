@@ -1,6 +1,6 @@
-use std::str::FromStr;
-use inertia_core::*;
 use inertia::ReadWriteBincode;
+use inertia_core::*;
+use std::str::FromStr;
 
 macro_rules! test_bincode {
     ($x:ident, $t:ty) => {
