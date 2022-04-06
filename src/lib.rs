@@ -16,15 +16,16 @@
  */
 
 #![allow(dead_code)]
-use std::io;
+use serde::{de, ser};
 use std::fmt;
 use std::fs::File;
 use std::hash::Hash;
-use serde::{ser, de};
+use std::io;
 use thiserror::Error;
 
 #[macro_use]
 pub mod poly;
+pub mod map;
 
 #[derive(Error, Debug)]
 pub enum InertiaError {
@@ -44,8 +45,9 @@ pub trait ReadWriteBincode: Sized {
     fn write_bincode(self, filename: &str) -> Result<(), Self::Error>;
 }
 
-impl<T> ReadWriteBincode for T where
-    T: ser::Serialize + for<'de> de::Deserialize<'de>
+impl<T> ReadWriteBincode for T
+where
+    T: ser::Serialize + for<'de> de::Deserialize<'de>,
 {
     type Error = InertiaError;
     fn read_bincode(filename: &str) -> Result<Self, Self::Error> {
@@ -68,26 +70,52 @@ pub trait BaseTrait: Clone + fmt::Debug + fmt::Display + Eq + Hash {}
 
 pub trait Parent: BaseTrait {
     type Element: BaseTrait;
-
     fn default(&self) -> Self::Element;
 }
 
-pub trait Element: BaseTrait {
-    type Parent: BaseTrait ;
+pub trait Monoid: Parent {
+    //fn identity(&self) -> Self::Element;
 }
-
-pub trait Ring: Parent {
-    //type Element: BaseTrait + RingElement;
-    fn zero(&self) -> Self::Element {
-        self.default()
-    }
+/*
+pub trait AdditiveMonoid: Monoid {
+    fn zero(&self) -> Self::Element;
+}
+pub trait MultiplicativeMonoid: Monoid {
     fn one(&self) -> Self::Element;
 }
 
+pub trait AdditiveGroup: Monoid {
+    fn identity(&self) -> Self::Element;
+
+    #[inline]
+    fn one(&self) -> Self::Element {
+        self.identity()
+    }
+}
+
+pub trait MultiplicativeGroup: Monoid {
+    fn identity(&self) -> Self::Element;
+
+    #[inline]
+    fn zero(&self) -> Self::Element {
+        self.identity()
+    }
+}
+*/
+pub trait Group: Monoid {}
+
+pub trait Ring: Group {}
+
+pub trait Element: BaseTrait {
+    type Parent: BaseTrait;
+}
+
 pub trait RingElement: Element {
+    /*
     //type Parent: BaseTrait + Ring;
     fn is_zero(&self) -> bool;
     fn is_one(&self) -> bool;
+    */
 }
 
 pub trait New<T>: Parent {
@@ -115,19 +143,18 @@ pub trait PolynomialRing: Ring {
 impl BaseTrait for IntegerRing {}
 impl Parent for IntegerRing {
     type Element = Integer;
-    
+
     #[inline]
     fn default(&self) -> Self::Element {
         self.default()
     }
 }
 
-impl Ring for IntegerRing {
-    #[inline]
-    fn one(&self) -> Integer {
-        self.new(1)
-    }
-}
+impl Monoid for IntegerRing {}
+
+impl Group for IntegerRing {}
+
+impl Ring for IntegerRing {}
 
 impl BaseTrait for Integer {}
 impl Element for Integer {
@@ -135,12 +162,13 @@ impl Element for Integer {
 }
 
 impl RingElement for Integer {
+    /*
     fn is_zero(&self) -> bool {
         self.is_zero()
     }
     fn is_one(&self) -> bool {
         self.is_one()
-    }
+    }*/
 }
 
 // Rational impls
@@ -149,6 +177,7 @@ impl Element for Rational {
     type Parent = RationalField;
 }
 impl RingElement for Rational {
+    /*
     #[inline]
     fn is_zero(&self) -> bool {
         self == 0
@@ -157,25 +186,24 @@ impl RingElement for Rational {
     #[inline]
     fn is_one(&self) -> bool {
         self == 1
-    }
+    }*/
 }
 
 impl BaseTrait for RationalField {}
 impl Parent for RationalField {
     type Element = Rational;
-    
+
     #[inline]
     fn default(&self) -> Self::Element {
         self.default()
     }
 }
 
-impl Ring for RationalField {
-    #[inline]
-    fn one(&self) -> Rational {
-        self.new(1)
-    }
-}
+impl Monoid for RationalField {}
+
+impl Group for RationalField {}
+
+impl Ring for RationalField {}
 
 pub use inertia_core::*;
 pub use poly::*;

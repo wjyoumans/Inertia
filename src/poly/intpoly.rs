@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use crate::{BaseTrait, Element, Group, IntPoly, Monoid, Parent, Ring};
 use inertia_core::IntPolyRing;
-use crate::{BaseTrait, Parent, Element, Ring, IntPoly};
 
 // Integer polynomials
 impl BaseTrait for IntPoly {}
@@ -29,17 +29,16 @@ impl Element for IntPoly {
 impl BaseTrait for IntPolyRing {}
 
 impl Parent for IntPolyRing {
-    type Element = IntPoly; 
-    
+    type Element = IntPoly;
+
     #[inline]
     fn default(&self) -> Self::Element {
         self.default()
     }
 }
 
-impl Ring for IntPolyRing {
-    #[inline]
-    fn one(&self) -> IntPoly {
-        self.new(1)
-    }
-}
+impl Monoid for IntPolyRing {}
+
+impl Group for IntPolyRing {}
+
+impl Ring for IntPolyRing {}

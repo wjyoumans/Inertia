@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use inertia_core::{IntegerRing, IntPolyRing};
 use crate::{Build, Ring};
+use inertia_core::{IntPolyRing, IntegerRing};
 
 mod generic;
 mod intpoly;
@@ -63,13 +63,13 @@ macro_rules! polynomial_ring {
     };
     ($ring:expr) => {
         polynomial_ring!(&$ring)
-    }
+    };
 }
 
 #[cfg(test)]
 mod tests {
-    use inertia_core::{IntegerRing, RationalField};
     use crate::{Build, PolyRingBuilder};
+    use inertia_core::{IntegerRing, RationalField};
 
     #[test]
     fn main() {
@@ -78,7 +78,6 @@ mod tests {
         let _ = polynomial_ring!(&zz);
         let zp = polynomial_ring!(zz, "z");
 
-        
         let rr = RationalField {};
         let zp = polynomial_ring!(rr, "z");
     }

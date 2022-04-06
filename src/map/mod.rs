@@ -15,16 +15,16 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::rc::Rc;
-use rustc_hash::FxHashMap;
 use crate::Parent;
+use rustc_hash::FxHashMap;
+use std::rc::Rc;
 
 /// A generic map between [Parents](Parent) backed by closures.
 pub struct Map<'a, D: Parent, C: Parent> {
     domain: Rc<D>,
     codomain: Rc<C>,
-    image: Box<dyn 'a + Fn(D::Element) -> Result<C::Element,()>>,
-    preimage: Option<Box<dyn 'a + Fn(C::Element) -> Result<D::Element,()>>>,
+    image: Box<dyn 'a + Fn(D::Element) -> Result<C::Element, ()>>,
+    preimage: Option<Box<dyn 'a + Fn(C::Element) -> Result<D::Element, ()>>>,
 }
 
 impl<'a, D: Parent, C: Parent> Map<'a, D, C> {
@@ -32,8 +32,8 @@ impl<'a, D: Parent, C: Parent> Map<'a, D, C> {
     pub fn new(
         domain: &Rc<D>,
         codomain: &Rc<C>,
-        image: Box<dyn Fn(D::Element) -> Result<C::Element,()>>,
-        preimage: Option<Box<dyn Fn(C::Element) -> Result<D::Element,()>>>,
+        image: Box<dyn Fn(D::Element) -> Result<C::Element, ()>>,
+        preimage: Option<Box<dyn Fn(C::Element) -> Result<D::Element, ()>>>,
     ) -> Self {
         Map {
             domain: Rc::clone(domain),
@@ -47,33 +47,33 @@ impl<'a, D: Parent, C: Parent> Map<'a, D, C> {
     pub fn domain(&self) -> Rc<D> {
         Rc::clone(&self.domain)
     }
-    
+
     #[inline]
     pub fn codomain(&self) -> Rc<C> {
         Rc::clone(&self.codomain)
     }
 
     #[inline]
-    pub fn image(&self, x: D::Element) -> Result<C::Element,()> {
+    pub fn image(&self, x: D::Element) -> Result<C::Element, ()> {
         (self.image)(x)
     }
 
     #[inline]
-    pub fn map(&self, x: D::Element) -> Result<C::Element,()> {
+    pub fn map(&self, x: D::Element) -> Result<C::Element, ()> {
         self.image(x)
     }
 
     #[inline]
-    pub fn preimage(&self, y: C::Element) -> Result<D::Element,()> {
+    pub fn preimage(&self, y: C::Element) -> Result<D::Element, ()> {
         if let Some(ref f) = self.preimage {
             f(y)
         } else {
             Err(())
         }
     }
-    
+
     #[inline]
-    pub fn inv(&self, y: C::Element) -> Result<D::Element,()> {
+    pub fn inv(&self, y: C::Element) -> Result<D::Element, ()> {
         self.preimage(y)
     }
 
@@ -87,8 +87,8 @@ impl<'a, D: Parent, C: Parent> Map<'a, D, C> {
                     domain: Rc::clone(&self.domain),
                     codomain: Rc::clone(&other.codomain),
                     image: Box::new(f),
-                    preimage: Some(Box::new(g))
-                }
+                    preimage: Some(Box::new(g)),
+                };
             }
         }
 
@@ -97,49 +97,41 @@ impl<'a, D: Parent, C: Parent> Map<'a, D, C> {
             domain: Rc::clone(&self.domain),
             codomain: Rc::clone(&other.codomain),
             image: Box::new(f),
-            preimage: None
+            preimage: None,
         }
     }
 }
 
 #[allow(unused_macros)]
 macro_rules! map {
-    ($domain:ident; |$x:ident| $im:expr) => {
-        {
-            let dom = Rc::new($domain.clone());
-            let f = move |$x| { $im };
-            Map::new(&dom, &dom, Box::new(f), None)
-        }
-    };
-    ($domain:ident; |$x:ident| $im:expr; |$y:ident| $pre:expr) => {
-        {
-            let dom = Rc::new($domain.clone());
-            let f = move |$x| { $im };
-            let g = move |$y| { $pre };
-            Map::new(&dom, &dom, Box::new(f), Some(Box::new(g)))
-        }
-    };
-    ($domain:ident -> $codomain:ident; |$x:ident| $im:expr) => {
-        {
-            let dom = Rc::new($domain.clone());
-            let co = Rc::new($codomain.clone());
-            let m = move |$x| { $im };
-            Map::new(&dom, &co, Box::new(m), None)
-        }
-    };
-    ($domain:ident -> $codomain:ident; |$x:ident| $im:expr; |$y:ident| $pre:expr) => {
-        {
-            let dom = Rc::new($domain.clone());
-            let co = Rc::new($codomain.clone());
-            let f = move |$x| { $im };
-            let g = move |$y| { $pre };
-            Map::new(&dom, &co, Box::new(f), Some(Box::new(g)))
-        }
-    }
+    ($domain:ident; |$x:ident| $im:expr) => {{
+        let dom = Rc::new($domain.clone());
+        let f = move |$x| $im;
+        Map::new(&dom, &dom, Box::new(f), None)
+    }};
+    ($domain:ident; |$x:ident| $im:expr; |$y:ident| $pre:expr) => {{
+        let dom = Rc::new($domain.clone());
+        let f = move |$x| $im;
+        let g = move |$y| $pre;
+        Map::new(&dom, &dom, Box::new(f), Some(Box::new(g)))
+    }};
+    ($domain:ident -> $codomain:ident; |$x:ident| $im:expr) => {{
+        let dom = Rc::new($domain.clone());
+        let co = Rc::new($codomain.clone());
+        let m = move |$x| $im;
+        Map::new(&dom, &co, Box::new(m), None)
+    }};
+    ($domain:ident -> $codomain:ident; |$x:ident| $im:expr; |$y:ident| $pre:expr) => {{
+        let dom = Rc::new($domain.clone());
+        let co = Rc::new($codomain.clone());
+        let f = move |$x| $im;
+        let g = move |$y| $pre;
+        Map::new(&dom, &co, Box::new(f), Some(Box::new(g)))
+    }};
 }
 
 // NOTE: We could construct preimage hashmap from image map, or verify preimage map
-/// A generic map between [Parents](Parent) backed by [FxHashMaps](FxHashMap). 
+/// A generic map between [Parents](Parent) backed by [FxHashMaps](FxHashMap).
 pub struct HMap<D: Parent, C: Parent> {
     domain: Rc<D>,
     codomain: Rc<C>,
@@ -150,56 +142,56 @@ pub struct HMap<D: Parent, C: Parent> {
 impl<D: Parent, C: Parent> HMap<D, C> {
     #[inline]
     pub fn new(
-        domain: &Rc<D>, 
-        codomain: &Rc<C>, 
+        domain: &Rc<D>,
+        codomain: &Rc<C>,
         image: FxHashMap<D::Element, C::Element>,
-        preimage: Option<FxHashMap<C::Element, D::Element>>
+        preimage: Option<FxHashMap<C::Element, D::Element>>,
     ) -> Self {
         HMap {
             domain: Rc::clone(domain),
             codomain: Rc::clone(codomain),
             image,
-            preimage
+            preimage,
         }
     }
-    
+
     #[inline]
     pub fn domain(&self) -> Rc<D> {
         Rc::clone(&self.domain)
     }
-    
+
     #[inline]
     pub fn codomain(&self) -> Rc<C> {
         Rc::clone(&self.codomain)
     }
 
     #[inline]
-    pub fn image(&self, x: D::Element) -> Result<C::Element,()> {
+    pub fn image(&self, x: D::Element) -> Result<C::Element, ()> {
         match self.image.get(&x) {
             Some(v) => Ok(v.clone()),
-            None => Err(())
+            None => Err(()),
         }
     }
 
     #[inline]
-    pub fn map(&self, x: D::Element) -> Result<C::Element,()> {
+    pub fn map(&self, x: D::Element) -> Result<C::Element, ()> {
         self.image(x)
     }
 
     #[inline]
-    pub fn preimage(&self, y: C::Element) -> Result<D::Element,()> {
+    pub fn preimage(&self, y: C::Element) -> Result<D::Element, ()> {
         if let Some(ref map) = self.preimage {
             match map.get(&y) {
                 Some(v) => Ok(v.clone()),
-                None => Err(())
+                None => Err(()),
             }
         } else {
             Err(())
         }
     }
-    
+
     #[inline]
-    pub fn inv(&self, y: C::Element) -> Result<D::Element,()> {
+    pub fn inv(&self, y: C::Element) -> Result<D::Element, ()> {
         self.preimage(y)
     }
 
@@ -225,8 +217,8 @@ impl<D: Parent, C: Parent> HMap<D, C> {
                     domain: Rc::clone(&self.domain),
                     codomain: Rc::clone(&other.codomain),
                     image: f,
-                    preimage: Some(g)
-                }
+                    preimage: Some(g),
+                };
             }
         }
 
@@ -234,7 +226,7 @@ impl<D: Parent, C: Parent> HMap<D, C> {
             domain: Rc::clone(&self.domain),
             codomain: Rc::clone(&other.codomain),
             image: f,
-            preimage: None
+            preimage: None,
         }
     }
 }
@@ -250,15 +242,15 @@ macro_rules! hmap {
         }
     };
     (
-        $domain:ident; 
-        [ $(($k1:expr, $v1:expr)),* $(,)? ], 
+        $domain:ident;
+        [ $(($k1:expr, $v1:expr)),* $(,)? ],
         [ $(($k2:expr, $v2:expr)),* $(,)? ]
     ) => {
         {
             let dom = Rc::new($domain.clone());
             let mut f = FxHashMap::default();
             $(f.insert($k1, $v1);)*
-            
+
             let mut g = FxHashMap::default();
             $(g.insert($k2, $v2);)*
             HMap::new(&dom, &dom, f, Some(g))
@@ -274,8 +266,8 @@ macro_rules! hmap {
         }
     };
     (
-        $domain:ident -> $codomain:ident; 
-        [ $(($k1:expr, $v1:expr)),* $(,)? ], 
+        $domain:ident -> $codomain:ident;
+        [ $(($k1:expr, $v1:expr)),* $(,)? ],
         [ $(($k2:expr, $v2:expr)),* $(,)? ]
     ) => {
         {
@@ -283,7 +275,7 @@ macro_rules! hmap {
             let co = Rc::new($codomain.clone());
             let mut f = FxHashMap::default();
             $(f.insert($k1, $v1);)*
-            
+
             let mut g = FxHashMap::default();
             $(g.insert($k2, $v2);)*
             HMap::new(&dom, &co, f, Some(g))
@@ -293,15 +285,15 @@ macro_rules! hmap {
 
 #[cfg(test)]
 mod test {
-    use super::{Map, HMap, FxHashMap};
-    use std::rc::Rc;
+    use super::{FxHashMap, HMap, Map};
     use inertia_core::*;
+    use std::rc::Rc;
 
     #[test]
     fn map() {
         let zz = IntegerRing::init();
         let rr = RationalField::init();
-        
+
         let m1 = map!(zz; |x| Ok(x+5));
         assert_eq!(15, m1.map(zz.new(10)).unwrap());
 
@@ -310,8 +302,8 @@ mod test {
         assert_eq!(0, m2.inv(Integer::from(5)).unwrap());
 
         let m3 = map!(
-            zz -> rr; 
-            |x| Ok(x*rr.new([3,2])); 
+            zz -> rr;
+            |x| Ok(x*rr.new([3,2]));
             |y| {
                 let t = y*rr.new([2,3]);
                 match Integer::try_from(t) {
@@ -320,7 +312,7 @@ mod test {
                 }
             }
         );
-        assert_eq!(rr.new([9,2]), m3.map(Integer::from(3)).unwrap());
+        assert_eq!(rr.new([9, 2]), m3.map(Integer::from(3)).unwrap());
         assert_eq!(8, m3.inv(Rational::from(12)).unwrap());
 
         let m4 = m2.compose(&m3);
@@ -332,14 +324,14 @@ mod test {
     fn hmap() {
         let zz = IntegerRing::init();
         //let rr = RationalField::init();
-        
+
         let m1 = hmap!(zz; [
             (Integer::from(1), Integer::from(2)),
             (Integer::from(2), Integer::from(4))
         ]);
         assert_eq!(2, m1.map(zz.new(1)).unwrap());
-        
-        let m2 = hmap!(zz; 
+
+        let m2 = hmap!(zz;
             [
                 (Integer::from(1), Integer::from(2)),
                 (Integer::from(2), Integer::from(4))

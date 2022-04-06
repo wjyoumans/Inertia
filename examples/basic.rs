@@ -6,7 +6,7 @@ fn main() {
     println!("{}", zp);
     let p = zp.new(1);
     println!("{}", p);
-    
+
     let zz = RationalField::init();
     let zp = polynomial_ring!(zz);
     println!("{}", zp);
