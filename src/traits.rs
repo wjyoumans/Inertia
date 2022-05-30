@@ -34,10 +34,21 @@ pub trait Parent: BaseTrait {
 
 pub trait Ring: Parent {
     type Element: RingElement;
+    type MatrixSpace: MatrixSpace<Self>;
     type PolynomialRing: PolynomialRing<Self>;
     
     fn default(&self) -> <Self as Ring>::Element;
 }
+
+pub trait MatrixSpace<T: Ring>: Parent {
+    type Element: MatrixSpaceElement<T>;
+
+    fn default(&self) -> <Self as MatrixSpace<T>>::Element;
+    fn base_ring(&self) -> T;
+    fn nrows(&self) -> usize;
+    fn ncols(&self) -> usize;
+}
+
 
 pub trait PolynomialRing<T: Ring>: Ring {
     type Element: PolynomialRingElement<T>;
@@ -76,6 +87,15 @@ pub trait RingElement: Element {// + Add + AddAssign + Sub + SubAssign + Mul + M
     fn is_zero(&self) -> bool;
 }
 
+pub trait MatrixSpaceElement<T: Ring>: Element {
+    type Parent: MatrixSpace<T>;
+    
+    fn parent(&self) -> <Self as MatrixSpaceElement<T>>::Parent;
+    fn base_ring(&self) -> T;
+    fn nrows(&self) -> usize;
+    fn ncols(&self) -> usize;
+}
+
 pub trait PolynomialRingElement<T: Ring>: RingElement {
     type Parent: PolynomialRing<T>;
     
@@ -91,3 +111,4 @@ pub trait PolynomialRingElement<T: Ring>: RingElement {
         S: Into<ValOrRef<'a, <T as Ring>::Element>>;
     fn coefficients(&self) -> Vec<<T as Ring>::Element>;
 }
+

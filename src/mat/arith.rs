@@ -15,12 +15,13 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::*;
-use std::ops::{Add, Sub, Mul};
-use std::rc::Rc;
+//use crate::*;
+//use std::ops::{Add, Sub, Mul};
+//use std::rc::Rc;
 
 // TODO: placeholder only, need lots of boilerplate
 
+/*
 type InnerPoly<T> = <<T as Ring>::PolynomialRing as PolynomialRing<T>>::Element;
 
 impl<T> Add for Poly<T> where
@@ -55,4 +56,4 @@ impl<T> Mul for Poly<T> where
         Poly { ctx: Rc::clone(&self.ctx), inner }
     }
 }
-
+*/

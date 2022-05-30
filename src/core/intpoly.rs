@@ -17,41 +17,42 @@
 
 use crate::*;
 
-impl Parent for RatPolyRing {
-    type Element = RatPoly;
+impl Parent for IntPolyRing {
+    type Element = IntPoly;
 
     #[inline]
-    fn default(&self) -> RatPoly {
+    fn default(&self) -> IntPoly {
         self.default()
     }
 }
 
-impl Ring for RatPolyRing {
-    type Element = RatPoly;
+impl Ring for IntPolyRing {
+    type Element = IntPoly;
     type PolynomialRing = GenericPolyRing<Self>;
+    type MatrixSpace = GenericMatSpace<Self>;
     
     #[inline]
-    fn default(&self) -> RatPoly {
+    fn default(&self) -> IntPoly {
         self.default()
     }
 }
 
-impl PolynomialRing<RationalField> for RatPolyRing {
-    type Element = RatPoly;
-    
+impl PolynomialRing<IntegerRing> for IntPolyRing {
+    type Element = IntPoly;
+
     #[inline]
-    fn default(&self) -> RatPoly {
+    fn default(&self) -> IntPoly {
         self.default()
     }
     
     #[inline]
-    fn init(_: &RationalField, var: &str) -> Self {
-        RatPolyRing::init(var)
+    fn init(_: &IntegerRing, var: &str) -> Self {
+        IntPolyRing::init(var)
     }
-
+    
     #[inline]
-    fn base_ring(&self) -> RationalField {
-        RationalField {}
+    fn base_ring(&self) -> IntegerRing {
+        IntegerRing {}
     }
 
     #[inline]
@@ -65,40 +66,40 @@ impl PolynomialRing<RationalField> for RatPolyRing {
     }
 }
 
-impl Element for RatPoly {
-    type Parent = RatPolyRing;
-    
+impl Element for IntPoly {
+    type Parent = IntPolyRing;
+
     #[inline]
-    fn parent(&self) -> Self::Parent {
+    fn parent(&self) -> IntPolyRing {
         self.parent()
     }
 }
 
-impl RingElement for RatPoly {
-    type Parent = RatPolyRing;
-    
+impl RingElement for IntPoly {
+    type Parent = IntPolyRing;
+
     #[inline]
-    fn parent(&self) -> RatPolyRing {
+    fn parent(&self) -> IntPolyRing {
         self.parent()
     }
-    
+
     #[inline]
     fn is_zero(&self) -> bool {
         self.is_zero()
     }
 }
 
-impl PolynomialRingElement<RationalField> for RatPoly {
-    type Parent = RatPolyRing;
-    
+impl PolynomialRingElement<IntegerRing> for IntPoly {
+    type Parent = IntPolyRing;
+
     #[inline]
-    fn parent(&self) -> RatPolyRing {
+    fn parent(&self) -> IntPolyRing {
         self.parent()
     }
     
     #[inline]
-    fn base_ring(&self) -> RationalField {
-        RationalField {}
+    fn base_ring(&self) -> IntegerRing {
+        IntegerRing {}
     }
 
     #[inline]
@@ -122,19 +123,19 @@ impl PolynomialRingElement<RationalField> for RatPoly {
     }
     
     #[inline]
-    fn get_coeff(&self, i: usize) -> Rational {
+    fn get_coeff(&self, i: usize) -> Integer {
         self.get_coeff(i.try_into().unwrap())
     }
     
     #[inline]
     fn set_coeff<'a, S>(&mut self, i: usize, coeff: S) where
-        S: Into<ValOrRef<'a, Rational>>
+        S: Into<ValOrRef<'a, Integer>>
     {
         self.set_coeff(i.try_into().unwrap(), coeff);
     }
 
     #[inline]
-    fn coefficients(&self) -> Vec<Rational> {
+    fn coefficients(&self) -> Vec<Integer> {
         self.coefficients()
     }
 }

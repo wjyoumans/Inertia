@@ -1,0 +1,5 @@
+use inertia::*;
+
+fn main() {
+
+}

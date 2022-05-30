@@ -23,11 +23,12 @@ use std::fs::File;
 use std::io;
 use thiserror::Error;
 
-//#[macro_use]
+pub mod core;
 pub mod traits;
 pub mod map;
 pub mod prod;
 pub mod poly;
+pub mod mat;
 
 #[derive(Error, Debug)]
 pub enum InertiaError {
@@ -62,104 +63,12 @@ where
     }
 }
 
-///////////////////////////////////////////////////////////////////////
-// Integer traits
-///////////////////////////////////////////////////////////////////////
-
-impl Parent for IntegerRing {
-    type Element = Integer;
-
-    #[inline]
-    fn default(&self) -> Self::Element {
-        self.default()
-    }
-}
-
-impl Ring for IntegerRing {
-    type Element = Integer;
-    type PolynomialRing = IntPolyRing;
-    //type PolynomialRingElement = IntPoly;
-    
-    #[inline]
-    fn default(&self) -> <Self as Ring>::Element {
-        self.default()
-    }
-}
-
-impl Element for Integer {
-    type Parent = IntegerRing;
-    
-    #[inline]
-    fn parent(&self) -> Self::Parent {
-        IntegerRing {}
-    }
-}
-
-impl RingElement for Integer {
-    type Parent = IntegerRing;
-    
-    #[inline]
-    fn parent(&self) -> <Self as RingElement>::Parent {
-        IntegerRing {}
-    }
-    
-    #[inline]
-    fn is_zero(&self) -> bool {
-        self == 0
-    }
-}
-
-///////////////////////////////////////////////////////////////////////
-// Rational traits
-///////////////////////////////////////////////////////////////////////
-
-impl Parent for RationalField {
-    type Element = Rational;
-
-    #[inline]
-    fn default(&self) -> Self::Element {
-        self.default()
-    }
-}
-
-impl Ring for RationalField {
-    type Element = Rational;
-    type PolynomialRing = RatPolyRing;
-    
-    #[inline]
-    fn default(&self) -> <Self as Ring>::Element {
-        self.default()
-    }
-}
-
-impl Element for Rational {
-    type Parent = RationalField;
-    
-    #[inline]
-    fn parent(&self) -> Self::Parent {
-        RationalField {}
-    }
-}
-
-impl RingElement for Rational {
-    type Parent = RationalField;
-    
-    #[inline]
-    fn parent(&self) -> <Self as RingElement>::Parent {
-        RationalField {}
-    }
-
-    #[inline]
-    fn is_zero(&self) -> bool {
-        self == 0
-    }
-}
-
-
 // re-exports
 #[doc(no_inline)]
 pub use inertia_core::*;
+pub use crate::core::*;
 pub use traits::*;
 pub use map::*;
 pub use prod::*;
 pub use poly::*;
+pub use mat::*;

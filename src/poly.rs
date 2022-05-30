@@ -31,8 +31,6 @@ use std::fmt;
 use std::rc::Rc;
 
 mod generic;
-mod intpoly;
-mod ratpoly;
 mod arith;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -43,12 +41,14 @@ pub struct PolyRing<T: Ring> {
 impl<T: Ring> fmt::Display for PolyRing<T> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.inner.to_string())
+        /*
         write!(
             f,
             "Univariate polynomial ring in {} over {}",
             self.var(),
             self.base_ring()
-        )
+        )*/
     }
 }
 
@@ -64,6 +64,7 @@ impl<T: Ring> Parent for PolyRing<T> {
 impl<T: Ring> Ring for PolyRing<T> {
     type Element = Poly<T>;
     type PolynomialRing = GenericPolyRing<Self>;
+    type MatrixSpace = GenericMatSpace<Self>;
     
     #[inline]
     fn default(&self) -> <Self as Ring>::Element {

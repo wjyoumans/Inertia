@@ -22,82 +22,67 @@ use std::rc::Rc;
 //use serde::{Serialize, Deserialize};
 use crate::*;
 
-
 ///////////////////////////////////////////////////////////////////////
-// GenericPolyRing
+// GenericMatSpace
 ///////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone)]
-pub struct GenericPolyRing<T: Ring> {
+pub struct GenericMatSpace<T: Ring> {
     base_ring: Rc<T>,
-    var: Rc<RefCell<String>>,
+    nrows: usize,
+    ncols: usize,
 }
 
-impl<T: Ring> Eq for GenericPolyRing<T> {}
+impl<T: Ring> Eq for GenericMatSpace<T> {}
 
-impl<T: Ring> PartialEq for GenericPolyRing<T> {
-    default fn eq(&self, rhs: &GenericPolyRing<T>) -> bool {
-        self.base_ring() == rhs.base_ring()
+impl<T: Ring> PartialEq for GenericMatSpace<T> {
+    default fn eq(&self, rhs: &GenericMatSpace<T>) -> bool {
+        self.base_ring() == rhs.base_ring() && 
+            self.nrows() == rhs.nrows() && self.ncols() == rhs.ncols()
     }
 }
 
-impl<T: Ring> fmt::Display for GenericPolyRing<T> {
+impl<T: Ring> fmt::Display for GenericMatSpace<T> {
     #[inline]
     default fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Univariate polynomial ring in {} over {}",
-            self.var(),
+            "Space of {} by {} matrices over {}",
+            self.nrows(),
+            self.ncols(),
             self.base_ring()
         )
     }
 }
 
-impl<T: Ring> Hash for GenericPolyRing<T> {
+impl<T: Ring> Hash for GenericMatSpace<T> {
     default fn hash<H: Hasher>(&self, state: &mut H) {
         self.base_ring().hash(state);
-        self.nvars().hash(state);
+        self.nrows().hash(state);
+        self.ncols().hash(state);
     }
 }
 
-impl<T: Ring> Parent for GenericPolyRing<T> {
-    type Element = GenericPoly<T>;
+impl<T: Ring> Parent for GenericMatSpace<T> {
+    type Element = GenericMat<T>;
 
     #[inline]
     default fn default(&self) -> Self::Element {
-        PolynomialRing::<T>::default(self)
+        MatrixSpace::<T>::default(self)
     }
 }
 
-impl<T: Ring> Ring for GenericPolyRing<T> {
-    type Element = GenericPoly<T>;
-    type PolynomialRing = GenericPolyRing<Self>;
-    type MatrixSpace = GenericMatSpace<Self>;
-    
-    #[inline]
-    default fn default(&self) -> <Self as Ring>::Element {
-        PolynomialRing::<T>::default(self)
-    }
-}
-
-impl<T: Ring> PolynomialRing<T> for GenericPolyRing<T> {
-    type Element = GenericPoly<T>;
+impl<T: Ring> MatrixSpace<T> for GenericMatSpace<T> {
+    type Element = GenericMat<T>;
 
     #[inline]
-    default fn default(&self) -> <Self as PolynomialRing<T>>::Element {
-        let mut vec = Vec::new();
-        vec.push(Ring::default(&*self.base_ring));
-        GenericPoly {
+    default fn default(&self) -> <Self as MatrixSpace<T>>::Element {
+        let vec = vec![Ring::default(&*self.base_ring); self.nrows*self.ncols];
+        GenericMat {
             base_ring: Rc::clone(&self.base_ring),
-            var: Rc::clone(&self.var),
-            coeffs: RefCell::new(vec)
-        }
-    }
-    
-    default fn init(ring: &T, var: &str) -> Self {
-        GenericPolyRing {
-            base_ring: Rc::new(ring.clone()),
-            var: Rc::new(RefCell::new(var.to_string()))
+            entries: RefCell::new(vec),
+            ncols: self.ncols(),
+            nrows: self.nrows()
         }
     }
     
@@ -105,20 +90,20 @@ impl<T: Ring> PolynomialRing<T> for GenericPolyRing<T> {
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
     }
-    
+
     #[inline]
-    default fn var(&self) -> String {
-        self.var.borrow().to_string()
+    default fn nrows(&self) -> usize {
+        self.nrows
     }
     
     #[inline]
-    default fn set_var<S: AsRef<str>>(&self, var: S) {
-        self.var.replace(var.as_ref().to_string());
+    default fn ncols(&self) -> usize {
+        self.ncols
     }
 }
 
 /*
-impl<'a, X, T: 'a + Ring> New<X> for GenericPolyRing<T>
+impl<'a, X, T: 'a + Ring> New<X> for GenericMatSpace<T>
 where
     X: Into<Self::Element>,
 {
@@ -128,28 +113,31 @@ where
 }*/
 
 ///////////////////////////////////////////////////////////////////////
-// GenericPoly
+// GenericMat
 ///////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone)]
-pub struct GenericPoly<T: Ring> {
+pub struct GenericMat<T: Ring> {
     base_ring: Rc<T>,
-    var: Rc<RefCell<String>>,
-    coeffs: RefCell<Vec<<T as Ring>::Element>>
+    entries: RefCell<Vec<<T as Ring>::Element>>,
+    nrows: usize,
+    ncols: usize
 }
 
-impl<T: Ring> Eq for GenericPoly<T> {}
+impl<T: Ring> Eq for GenericMat<T> {}
 
-impl<T: Ring> PartialEq for GenericPoly<T> {
-    default fn eq(&self, rhs: &GenericPoly<T>) -> bool {
-        let len = self.len();
-        if rhs.len() != len {
+impl<T: Ring> PartialEq for GenericMat<T> {
+    default fn eq(&self, rhs: &GenericMat<T>) -> bool {
+        let m = self.nrows();
+        let n = self.ncols();
+
+        if rhs.nrows() != m || rhs.ncols() != n {
             return false;
         }
 
-        let c1 = self.coeffs.borrow();
-        let c2 = rhs.coeffs.borrow();
-        for i in 0..len {
+        let c1 = self.entries.borrow();
+        let c2 = rhs.entries.borrow();
+        for i in 0..m*n {
             if c1[i] != c2[i] {
                 return false;
             }
@@ -158,8 +146,9 @@ impl<T: Ring> PartialEq for GenericPoly<T> {
     }
 }
 
-impl<T: Ring> fmt::Display for GenericPoly<T> {
+impl<T: Ring> fmt::Display for GenericMat<T> {
     default fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        /*
         let coeffs = self.coeffs.borrow();
         let len = coeffs.len();
         let x = self.var();
@@ -180,59 +169,41 @@ impl<T: Ring> fmt::Display for GenericPoly<T> {
         }
         out.reverse();
         write!(f, "{}", out.join(" + "))
+        */
+        write!(f, "TODO")
     }
 }
 
 // TODO
-impl<T: Ring> Hash for GenericPoly<T> {
+impl<T: Ring> Hash for GenericMat<T> {
     default fn hash<H: Hasher>(&self, state: &mut H) {
-        PolynomialRingElement::parent(self).hash(state);
-        //self.coefficients().hash(state);
+        MatrixSpaceElement::parent(self).hash(state);
+        //self.entries().hash(state);
     }
 }
 
-impl<T: Ring> Element for GenericPoly<T> {
-    type Parent = GenericPolyRing<T>;
+impl<T: Ring> Element for GenericMat<T> {
+    type Parent = GenericMatSpace<T>;
     
     #[inline]
     default fn parent(&self) -> Self::Parent {
-        GenericPolyRing {
+        GenericMatSpace {
             base_ring: Rc::clone(&self.base_ring),
-            var: Rc::clone(&self.var),
+            nrows: self.nrows(),
+            ncols: self.ncols()
         }
     }
 }
 
-impl<T: Ring> RingElement for GenericPoly<T> {
-    type Parent = GenericPolyRing<T>;
+impl<T: Ring> MatrixSpaceElement<T> for GenericMat<T> {
+    type Parent = GenericMatSpace<T>;
     
     #[inline]
-    default fn parent(&self) -> <Self as RingElement>::Parent {
-        GenericPolyRing {
+    default fn parent(&self) -> <Self as MatrixSpaceElement<T>>::Parent {
+        GenericMatSpace {
             base_ring: Rc::clone(&self.base_ring),
-            var: Rc::clone(&self.var),
-        }
-    }
-
-    #[inline]
-    default fn is_zero(&self) -> bool {
-        for c in self.coeffs.borrow().iter() {
-            if !c.is_zero() {
-                return false;
-            }
-        }
-        true
-    }
-}
-
-impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
-    type Parent = GenericPolyRing<T>;
-    
-    #[inline]
-    default fn parent(&self) -> <Self as PolynomialRingElement<T>>::Parent {
-        GenericPolyRing {
-            base_ring: Rc::clone(&self.base_ring),
-            var: Rc::clone(&self.var),
+            nrows: self.nrows(),
+            ncols: self.ncols()
         }
     }
     
@@ -240,55 +211,19 @@ impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
     }
-
+    
     #[inline]
-    default fn var(&self) -> String {
-        self.var.borrow().to_string()
+    default fn nrows(&self) -> usize {
+        self.nrows
     }
     
     #[inline]
-    default fn set_var<S: AsRef<str>>(&self, var: S) {
-        self.var.replace(var.as_ref().to_string());
+    default fn ncols(&self) -> usize {
+        self.ncols
     }
-    
-    #[inline]
-    default fn degree(&self) -> i64 {
-        let d = self.len() - 1;
-        d.try_into().unwrap()
-    }
-    
-    #[inline]
-    default fn len(&self) -> usize {
-        self.coeffs.borrow().len()
-    }
-
-    #[inline]
-    default fn get_coeff(&self, i: usize) -> <T as Ring>::Element {
-        self.coeffs.borrow()[i].clone()
-    }
-    
-    #[inline]
-    default fn set_coeff<'a, S>(&mut self, i: usize, coeff: S) where
-        <T as Ring>::Element: 'a,
-        S: Into<ValOrRef<'a, <T as Ring>::Element>>
-    {
-        let z = Ring::default(&*self.base_ring);
-        let mut coeffs = self.coeffs.borrow_mut();
-        if i + 1 > coeffs.len() {
-            coeffs.resize(i + 1, z);
-        }
-        coeffs.push(coeff.into().clone());
-        coeffs.swap_remove(i);
-        self.normalize();
-    }
-
-    #[inline]
-    default fn coefficients(&self) -> Vec<<T as Ring>::Element> {
-        self.coeffs.borrow().clone()
-    }
-
 }
 
+/*
 impl<T: Ring> GenericPoly<T> {
     // remove trailing zeros and ensure len >= 1
     fn normalize(&self) {    
@@ -304,7 +239,7 @@ impl<T: Ring> GenericPoly<T> {
         }
     }
     
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////
 // Ops
