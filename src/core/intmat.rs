@@ -16,6 +16,7 @@
  */
 
 use crate::*;
+use std::fmt;
 
 impl Parent for IntMatSpace {
     type Element = IntMat;
@@ -32,6 +33,16 @@ impl MatrixSpace<IntegerRing> for IntMatSpace {
     #[inline]
     fn default(&self) -> IntMat {
         self.default()
+    }
+
+    #[inline]
+    fn init<S>(_: &IntegerRing, nrows: S, ncols: S) -> Self where 
+        S: TryInto<usize>,
+        <S as TryInto<usize>>::Error: fmt::Debug,
+    {
+        let m = nrows.try_into().unwrap();
+        let n = ncols.try_into().unwrap();
+        IntMatSpace::init(m.try_into().unwrap(), n.try_into().unwrap())
     }
 
     #[inline]

@@ -44,6 +44,9 @@ pub trait MatrixSpace<T: Ring>: Parent {
     type Element: MatrixSpaceElement<T>;
 
     fn default(&self) -> <Self as MatrixSpace<T>>::Element;
+    fn init<S>(ring: &T, nrows: S, ncols: S) -> Self where 
+        S: TryInto<usize>,
+        <S as TryInto<usize>>::Error: fmt::Debug;
     fn base_ring(&self) -> T;
     fn nrows(&self) -> usize;
     fn ncols(&self) -> usize;

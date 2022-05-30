@@ -16,6 +16,7 @@
  */
 
 use crate::*;
+use std::fmt;
 
 impl Parent for RatMatSpace {
     type Element = RatMat;
@@ -32,6 +33,16 @@ impl MatrixSpace<RationalField> for RatMatSpace {
     #[inline]
     fn default(&self) -> RatMat {
         self.default()
+    }
+    
+    #[inline]
+    fn init<S>(_: &RationalField, nrows: S, ncols: S) -> Self where 
+        S: TryInto<usize>,
+        <S as TryInto<usize>>::Error: fmt::Debug,
+    {
+        let m = nrows.try_into().unwrap();
+        let n = ncols.try_into().unwrap();
+        RatMatSpace::init(m.try_into().unwrap(), n.try_into().unwrap())
     }
 
     #[inline]

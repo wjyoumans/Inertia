@@ -66,6 +66,15 @@ impl<T: Ring> MatrixSpace<T> for MatSpace<T> {
             inner: MatrixSpace::default(&*self.inner) 
         }
     }
+
+    #[inline]
+    fn init<S>(ring: &T, nrows: S, ncols: S) -> Self where 
+            S: TryInto<usize>,
+            <S as TryInto<usize>>::Error: fmt::Debug {
+        MatSpace {
+            inner: Rc::new(T::MatrixSpace::init(ring, nrows, ncols))
+        }
+    }
     
     #[inline]
     fn base_ring(&self) -> T {

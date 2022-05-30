@@ -86,6 +86,17 @@ impl<T: Ring> MatrixSpace<T> for GenericMatSpace<T> {
         }
     }
     
+    default fn init<S>(ring: &T, nrows: S, ncols: S) -> Self where 
+        S: TryInto<usize>,
+        <S as TryInto<usize>>::Error: fmt::Debug,
+    {
+        GenericMatSpace {
+            base_ring: Rc::new(ring.clone()),
+            nrows: nrows.try_into().unwrap(),
+            ncols: ncols.try_into().unwrap()
+        }
+    }
+    
     #[inline]
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
