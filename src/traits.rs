@@ -15,343 +15,79 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt::{self, Debug};
+use crate::ValOrRef;
+use std::fmt;
 use std::hash::Hash;
-use std::marker::PhantomData;
-use std::sync::Arc;
 
-use libc::c_long;
+// hash, serialize/deserialize, display, Eq, PartialEq
+pub trait BaseTrait: Clone + fmt::Debug + fmt::Display + Eq + Hash + PartialEq {}
 
-/// Traits for operations and algebraic structures.
+impl<T> BaseTrait for T where
+    T: Clone + fmt::Debug + fmt::Display + Eq + Hash + PartialEq
+{}
 
+pub trait Parent: BaseTrait {
+    type Element: BaseTrait;
 
-/// Inverse as a unary operation.
-pub trait Inv {
-    type Output;
-    fn inv(self) -> Self::Output;
-}
-
-/// Inverse with assignment.
-pub trait InvAssign {
-    fn inv_assign(&mut self);
-}
-
-/// Bitwise `and` of two items with assignment into a third.
-pub trait AssignBitAnd<T, U> {
-    fn assign_bitand(&mut self, lhs: T, rhs: U);
-}
-
-/// Bitwise `or` of two items with assignment into a third.
-pub trait AssignBitOr<T, U> {
-    fn assign_bitor(&mut self, lhs: T, rhs: U);
-}
-
-/// Bitwise `xor` of two items with assignment into a third.
-pub trait AssignBitXor<T, U> {
-    fn assign_bitxor(&mut self, lhs: T, rhs: U);
-}
-
-/// Addition of two items with assignment into a third.
-pub trait AssignAdd<T, U> {
-    fn assign_add(&mut self, lhs: T, rhs: U);
-}
-
-/// Subtraction of two items with assignment into a third.
-pub trait AssignSub<T, U> {
-    fn assign_sub(&mut self, lhs: T, rhs: U);
-}
-
-/// Multiplication of two items with assignment into a third.
-pub trait AssignMul<T, U> {
-    fn assign_mul(&mut self, lhs: T, rhs: U);
-}
-
-/// Division of two items with assignment into a third.
-pub trait AssignDiv<T, U> {
-    fn assign_div(&mut self, lhs: T, rhs: U);
-}
-
-/// Exponentiation of two items with assignment into a third.
-pub trait AssignPow<T, U> {
-    fn assign_pow(&mut self, lhs: T, rhs: U);
-}
-
-/// Remainder of two items with assignment into a third.
-pub trait AssignRem<T, U> {
-    fn assign_rem(&mut self, lhs: T, rhs: U);
-}
-
-/// Evaluation of an expression at `x`.
-pub trait Evaluate<T> {
-    type Output;
-    fn evaluate(&self, x: T) -> Self::Output;
-}
-
-/// Modular evaluation of an expression at `x`.
-pub trait EvaluateMod<T, U> {
-    type Output;
-    fn evaluate_mod(&self, x: T, modulus: U) -> Self::Output;
-}
-
-/// Evaluation of a `Product`.
-pub trait EvaluateProduct {
-    type Output;
-    fn evaluate(&self) -> Self::Output;
-}
-
-/// Modular evaluation of a `Product`.
-pub trait EvaluateProductMod<T> {
-    type Output;
-    fn evaluate_mod(&self, modulus: T) -> Self::Output;
-}
-
-/// Factorization.
-pub trait Factorizable {
-    type Output;
-    fn factor(&self) -> Self::Output;
-}
-
-/// A generic "parent" that contains elements, for example an algebraic structure like a ring.
-pub trait Parent: Debug + Hash + Clone {
-    /// The type of the elements. For example `<IntegerRing as Parent>::Element` is `Integer`.
-    type Element: Element;
-
-    /// Context data that is unique to the parent and required by elements. For example, the
-    /// modulus of the ring of integers mod n ([IntModRing]). 
-    type Context: Clone + Debug + Hash;
-
-    /// Return the default element of an algebraic structure. This defaults to the additive
-    /// identity (zero) when available but will behave differently in other contexts.
     fn default(&self) -> Self::Element;
 }
 
-pub trait InitParent: Parent {
-    fn init() -> Self;
+pub trait Ring: Parent {
+    type Element: RingElement;
+    type PolynomialRing: PolynomialRing<Self>;
+    
+    fn default(&self) -> <Self as Ring>::Element;
 }
 
-pub trait InitParent1<A>: Parent {
-    fn init(a: A) -> Self;
+pub trait PolynomialRing<T: Ring>: Ring {
+    type Element: PolynomialRingElement<T>;
+
+    fn default(&self) -> <Self as PolynomialRing<T>>::Element;
+    fn init(ring: &T, var: &str) -> Self;
+    fn base_ring(&self) -> T;
+    fn var(&self) -> String;
+    fn set_var<S: AsRef<str>>(&self, var: S);
+
+    #[inline]
+    fn nvars(&self) -> i64 {
+        1
+    }
+    
+    //#[inline]
+    //fn gen(&self) -> <Self as PolynomialRing<T>>::Element {
+    //    let mut p = PolynomialRing::default(self)
+    //}
 }
 
-pub trait InitParent2<A, B>: Parent {
-    fn init(a: A, b: B) -> Self;
+pub trait New<T>: Parent {
+    fn new(&self, x: T) -> Self::Element;
 }
 
-pub trait InitParent3<A, B, C>: Parent {
-    fn init(a: A, b: B, c: C) -> Self;
-}
+////////////////////////////////////////////////////////////////////////
 
-pub trait InitParent4<A, B, C, D>: Parent {
-    fn init(a: A, b: B, c: C, d: D) -> Self;
-}
-
-pub trait InitParent5<A, B, C, D, E>: Parent {
-    fn init(a: A, b: B, c: C, d: D, e: E) -> Self;
-}
-
-pub trait NewElement<T>: Parent {
-    fn new(&self, x: T) -> <Self as Parent>::Element;
-}
-
-/// An generic element of a `Parent`.
-pub trait Element {
-    type Parent: Parent;
-
+pub trait Element: BaseTrait {
+    type Parent: BaseTrait;
     fn parent(&self) -> Self::Parent;
 }
 
-pub trait Additive: Parent {
-    fn zero(&self) -> <Self as Parent>::Element;
-}
-pub trait AdditiveElement: Element {
+pub trait RingElement: Element {// + Add + AddAssign + Sub + SubAssign + Mul + MulAssign {
+    type Parent: Ring;
+    fn parent(&self) -> <Self as RingElement>::Parent;
     fn is_zero(&self) -> bool;
 }
 
-pub trait Multiplicative: Parent {
-    fn one(&self) -> <Self as Parent>::Element;
-}
-pub trait MultiplicativeElement: Element {
-    fn is_one(&self) -> bool;
-}
-
-pub trait AdditiveGroup: Additive {
-    #[inline]
-    fn identity(&self) -> <Self as Parent>::Element {
-        self.zero()
-    }
-}
-pub trait AdditiveGroupElement: AdditiveElement {
-    #[inline]
-    fn is_identity(&self) -> bool {
-        self.is_zero()
-    }
-}
-
-pub trait MultiplicativeGroup: Multiplicative {
-    #[inline]
-    fn identity(&self) -> <Self as Parent>::Element {
-        self.one()
-    }
-}
-pub trait MultiplicativeGroupElement: MultiplicativeElement {
-    #[inline]
-    fn is_identity(&self) -> bool {
-        self.is_one()
-    }
-}
-
-pub trait Module: AdditiveGroup {}
-pub trait ModuleElement: AdditiveGroupElement {}
-
-pub trait VectorSpace: Module {
-    type BaseRing: Ring;
-    fn base_ring(&self) -> Self::BaseRing;
-}
-pub trait VectorSpaceElement: ModuleElement {
-    type BaseRingElement: RingElement;
-}
-
-pub trait MatrixSpace: VectorSpace {
-
-    fn nrows(&self) -> c_long;
+pub trait PolynomialRingElement<T: Ring>: RingElement {
+    type Parent: PolynomialRing<T>;
     
-    fn ncols(&self) -> c_long;
-}
-pub trait MatrixSpaceElement: VectorSpaceElement {
-
-    fn nrows(&self) -> c_long;
-    
-    fn ncols(&self) -> c_long;
-    
-    fn get_entry(&self, i: usize, j: usize) -> <Self as VectorSpaceElement>::BaseRingElement;
-  
-    fn set_entry(&mut self, i: usize, j: usize, e: &<Self as VectorSpaceElement>::BaseRingElement);
-
-    #[inline]
-    fn is_empty(&self) -> bool {
-        self.nrows() == 0 || self.ncols() == 0
-    }
-
-    #[inline]
-    fn is_square(&self) -> bool {
-        self.nrows() == self.ncols()
-    }
-
-    fn get_str(&self) -> String {
-        let r = self.nrows() as usize;
-        let c = self.ncols() as usize;
-        let mut out = Vec::<String>::with_capacity(r);
-
-        for i in 0usize..r {
-            let mut row = Vec::<String>::with_capacity(c+2);
-            row.push("[".to_string());
-            for j in 0usize..c {
-                row.push(format!(" {} ", self.get_entry(i, j)));
-            }
-            if i == r-1 {
-                row.push("]".to_string());
-            } else {
-                row.push("]\n".to_string());
-            }
-            out.push(row.join(""));
-        }
-        out.join("")
-    }
-
-    fn entries(&self) -> Vec<<Self as VectorSpaceElement>::BaseRingElement> {
-        let r = self.nrows() as usize;
-        let c = self.ncols() as usize;
-        let mut out = Vec::<<Self as VectorSpaceElement>::BaseRingElement>::with_capacity(r*c);
-
-        for i in 0usize..r {
-            for j in 0usize..c {
-                out.push(self.get_entry(i, j));
-            }
-        }
-        out
-    }
-
-    // is_invertible
-    // submatrix (derive row/col)
-    // hcat, vcat
-    // trace, det, charpoly, minpoly, rank
-    // rref, solve, nullspace
-}
-
-pub trait Ring: AdditiveGroup + Multiplicative {}
-pub trait RingElement: AdditiveGroupElement + MultiplicativeElement + fmt::Display {}
-
-pub trait PolynomialRing: Ring {
-    type BaseRing: Ring;
-    
-    fn base_ring(&self) -> Self::BaseRing;
-
-    fn gens(&self) -> Vec<<Self as Parent>::Element>;
-}
-
-pub trait PolynomialRingElement: RingElement {
-    type BaseRingElement: RingElement; 
-  
-    fn len(&self) -> c_long;
-
-    fn degree(&self) -> c_long;
-
+    fn parent(&self) -> <Self as PolynomialRingElement<T>>::Parent;
+    fn base_ring(&self) -> T;
     fn var(&self) -> String;
-
-    fn get_coeff(&self, i: usize) -> Self::BaseRingElement;
-    
-    fn set_coeff(&mut self, i: usize, coeff: &Self::BaseRingElement);
-
-    #[inline]
-    fn coefficients(&self) -> Vec<Self::BaseRingElement> {
-        let len = self.len();
-
-        let mut vec = Vec::<Self::BaseRingElement>::default();
-        for i in 0..len {
-            vec.push(self.get_coeff(i as usize));
-        }
-        vec
-    }
-
-    fn get_str_pretty(&self) -> String;
+    fn set_var<S: AsRef<str>>(&self, var: S);
+    fn degree(&self) -> i64;
+    fn len(&self) -> usize;
+    fn get_coeff(&self, i: usize) -> <T as Ring>::Element;
+    fn set_coeff<'a, S>(&mut self, i: usize, coeff: S) where
+        <T as Ring>::Element: 'a,
+        S: Into<ValOrRef<'a, <T as Ring>::Element>>;
+    fn coefficients(&self) -> Vec<<T as Ring>::Element>;
 }
-
-pub trait Field: Ring {
-    type BaseField: Field;
-    
-    fn base_field(&self) -> Self::BaseField;
-
-    // TODO
-    // gen, basis
-}
-pub trait FieldElement: RingElement {
-    // TODO
-    // norm(&self)
-    // trace(&self)
-}
-
-pub trait NumberField: Field {} // + PolynomialRing (Q[x]/f)
-pub trait NumberFieldElement: FieldElement {} // + PolynomialRingElement
-
-#[derive(Debug, Hash, Clone)]
-pub struct PolyRing<T: Ring> {
-    pub phantom: PhantomData<T>,
-    pub ctx: <T as Parent>::Context,
-    pub var: Arc<String>,
-}
-
-#[derive(Debug, Hash, Clone)]
-pub struct MPolyRing<T: Ring> {
-    pub phantom: PhantomData<T>,
-    pub vars: Arc<Vec<String>>,
-}
-
-#[derive(Debug, Hash, Clone)]
-pub struct MatSpace<T: Ring> {
-    pub phantom: PhantomData<T>,
-    pub ctx: <T as Parent>::Context,
-    pub nrows: c_long,
-    pub ncols: c_long,
-}
-
-// quotient, frac field, extension
