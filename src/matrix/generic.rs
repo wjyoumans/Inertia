@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt;
 use std::cell::RefCell;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 //use serde::{Serialize, Deserialize};
@@ -37,8 +37,9 @@ impl<T: Ring> Eq for GenericMatSpace<T> {}
 
 impl<T: Ring> PartialEq for GenericMatSpace<T> {
     default fn eq(&self, rhs: &GenericMatSpace<T>) -> bool {
-        self.base_ring() == rhs.base_ring() && 
-            self.nrows() == rhs.nrows() && self.ncols() == rhs.ncols()
+        self.base_ring() == rhs.base_ring()
+            && self.nrows() == rhs.nrows()
+            && self.ncols() == rhs.ncols()
     }
 }
 
@@ -77,26 +78,27 @@ impl<T: Ring> MatrixSpace<T> for GenericMatSpace<T> {
 
     #[inline]
     default fn default(&self) -> <Self as MatrixSpace<T>>::Element {
-        let vec = vec![Ring::default(&*self.base_ring); self.nrows*self.ncols];
+        let vec = vec![Ring::default(&*self.base_ring); self.nrows * self.ncols];
         GenericMat {
             base_ring: Rc::clone(&self.base_ring),
             entries: RefCell::new(vec),
             ncols: self.ncols(),
-            nrows: self.nrows()
+            nrows: self.nrows(),
         }
     }
-    
-    default fn init<S>(ring: &T, nrows: S, ncols: S) -> Self where 
+
+    default fn init<S>(ring: &T, nrows: S, ncols: S) -> Self
+    where
         S: TryInto<usize>,
         <S as TryInto<usize>>::Error: fmt::Debug,
     {
         GenericMatSpace {
             base_ring: Rc::new(ring.clone()),
             nrows: nrows.try_into().unwrap(),
-            ncols: ncols.try_into().unwrap()
+            ncols: ncols.try_into().unwrap(),
         }
     }
-    
+
     #[inline]
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
@@ -106,22 +108,12 @@ impl<T: Ring> MatrixSpace<T> for GenericMatSpace<T> {
     default fn nrows(&self) -> usize {
         self.nrows
     }
-    
+
     #[inline]
     default fn ncols(&self) -> usize {
         self.ncols
     }
 }
-
-/*
-impl<'a, X, T: 'a + Ring> New<X> for GenericMatSpace<T>
-where
-    X: Into<Self::Element>,
-{
-    fn new(&self, x: X) -> Self::Element {
-        x.into()
-    }
-}*/
 
 ///////////////////////////////////////////////////////////////////////
 // GenericMat
@@ -132,13 +124,17 @@ pub struct GenericMat<T: Ring> {
     base_ring: Rc<T>,
     entries: RefCell<Vec<<T as Ring>::Element>>,
     nrows: usize,
-    ncols: usize
+    ncols: usize,
 }
 
 impl<T: Ring> Eq for GenericMat<T> {}
 
-impl<T: Ring> PartialEq for GenericMat<T> {
-    default fn eq(&self, rhs: &GenericMat<T>) -> bool {
+impl<S, T> PartialEq<GenericMat<S>> for GenericMat<T> where
+    S: Ring,
+    T: Ring,
+    <S as Ring>::Element: PartialEq<<T as Ring>::Element>
+{
+    default fn eq(&self, rhs: &GenericMat<S>) -> bool {
         let m = self.nrows();
         let n = self.ncols();
 
@@ -148,8 +144,8 @@ impl<T: Ring> PartialEq for GenericMat<T> {
 
         let c1 = self.entries.borrow();
         let c2 = rhs.entries.borrow();
-        for i in 0..m*n {
-            if c1[i] != c2[i] {
+        for i in 0..m * n {
+            if c2[i] != c1[i] {
                 return false;
             }
         }
@@ -157,31 +153,50 @@ impl<T: Ring> PartialEq for GenericMat<T> {
     }
 }
 
+impl<S, T> PartialEq<&GenericMat<S>> for GenericMat<T> where
+    S: Ring,
+    T: Ring,
+    <S as Ring>::Element: PartialEq<<T as Ring>::Element>
+{
+    #[inline]
+    default fn eq(&self, rhs: &&GenericMat<S>) -> bool {
+        (&self).eq(rhs)
+    }
+}
+
+impl<S, T> PartialEq<GenericMat<S>> for &GenericMat<T> where
+    S: Ring,
+    T: Ring,
+    <S as Ring>::Element: PartialEq<<T as Ring>::Element>
+{
+    #[inline]
+    default fn eq(&self, rhs: &GenericMat<S>) -> bool {
+        self.eq(&rhs)
+    }
+}
+
 impl<T: Ring> fmt::Display for GenericMat<T> {
     default fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        /*
-        let coeffs = self.coeffs.borrow();
-        let len = coeffs.len();
-        let x = self.var();
+        let entries = self.entries.borrow();
+        let m = self.nrows();
+        let n = self.ncols();
 
-        let mut out = vec![];
-        if len > 0 && !coeffs[0].is_zero() {
-            out.push(format!("({})", coeffs[0]));
-        }
-        if len > 1 && !coeffs[1].is_zero() {
-            out.push(format!("({})*{}", coeffs[1], x));
-        }
-        if len > 2 {
-            for i in 2..len {
-                if !coeffs[i].is_zero() {
-                    out.push(format!("({})*{}^{}", coeffs[i], x, i));
-                }
+        let mut out = Vec::with_capacity(m*n);
+
+        for i in 0..m {
+            let mut row = Vec::with_capacity(n + 2);
+            row.push("[".to_string());
+            for j in 0..n {
+                row.push(format!(" {} ", entries[i*m + j*n]));
             }
+            if i == m - 1 {
+                row.push("]".to_string());
+            } else {
+                row.push("]\n".to_string());
+            }
+            out.push(row.join(""));
         }
-        out.reverse();
-        write!(f, "{}", out.join(" + "))
-        */
-        write!(f, "TODO")
+        write!(f, "{}", out.join(""))
     }
 }
 
@@ -195,49 +210,73 @@ impl<T: Ring> Hash for GenericMat<T> {
 
 impl<T: Ring> Element for GenericMat<T> {
     type Parent = GenericMatSpace<T>;
-    
+
     #[inline]
     default fn parent(&self) -> Self::Parent {
         GenericMatSpace {
             base_ring: Rc::clone(&self.base_ring),
             nrows: self.nrows(),
-            ncols: self.ncols()
+            ncols: self.ncols(),
         }
     }
 }
 
 impl<T: Ring> MatrixSpaceElement<T> for GenericMat<T> {
     type Parent = GenericMatSpace<T>;
-    
+
     #[inline]
     default fn parent(&self) -> <Self as MatrixSpaceElement<T>>::Parent {
         GenericMatSpace {
             base_ring: Rc::clone(&self.base_ring),
             nrows: self.nrows(),
-            ncols: self.ncols()
+            ncols: self.ncols(),
         }
     }
-    
+
     #[inline]
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
     }
-    
+
     #[inline]
     default fn nrows(&self) -> usize {
         self.nrows
     }
-    
+
     #[inline]
     default fn ncols(&self) -> usize {
         self.ncols
     }
+
+    /*
+    #[inline]
+    default fn get_entry(&self, i: usize, j: usize) -> <T as Ring>::Element {
+        let m = self.nrows(); 
+        let n = self.ncols();
+        assert!(i < m);
+        assert!(j < n);
+        self.entries.borrow()[i*m + j*n].clone()
+    }
+
+    #[inline]
+    default fn set_entry<'a, S>(&mut self, i: usize, j: usize, entry: S)
+        where
+            <T as Ring>::Element: 'a,
+            S: Into<ValOrRef<'a, <T as Ring>::Element>> 
+    {
+        let m = self.nrows(); 
+        let n = self.ncols();
+        assert!(i < m);
+        assert!(j < n);
+        let mut entries = self.entries.borrow_mut();
+        std::mem::replace(&mut entries[i*m + j*n], entry.into().clone());
+    }*/
 }
 
 /*
 impl<T: Ring> GenericPoly<T> {
     // remove trailing zeros and ensure len >= 1
-    fn normalize(&self) {    
+    fn normalize(&self) {
         let len = self.len();
         let mut coeffs = self.coeffs.borrow_mut();
         if len != 1 {
@@ -249,7 +288,7 @@ impl<T: Ring> GenericPoly<T> {
             }
         }
     }
-    
+
 }*/
 
 ///////////////////////////////////////////////////////////////////////
@@ -259,7 +298,7 @@ impl<T: Ring> GenericPoly<T> {
 /*
 use std::ops::{Add, AddAssign};
 
-impl<'a, T: Ring> Add for GenericPoly<T> where 
+impl<'a, T: Ring> Add for GenericPoly<T> where
     <T as Ring>::Element: 'a + AddAssign<&'a <T as Ring>::Element>
 {
     type Output = Self;

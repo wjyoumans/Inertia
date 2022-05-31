@@ -22,9 +22,17 @@ use std::hash::Hash;
 // hash, serialize/deserialize, display, Eq, PartialEq
 pub trait BaseTrait: Clone + fmt::Debug + fmt::Display + Eq + Hash + PartialEq {}
 
-impl<T> BaseTrait for T where
-    T: Clone + fmt::Debug + fmt::Display + Eq + Hash + PartialEq
-{}
+impl<T> BaseTrait for T where T: Clone + fmt::Debug + fmt::Display + Eq + Hash + PartialEq {}
+
+pub trait New<A>: Parent {
+    type Output;
+    fn new(&self, x: A) -> Self::Output;
+}
+
+pub trait New2<A, B>: Parent {
+    type Output;
+    fn new(&self, a: A, b: B) -> Self::Output;
+}
 
 pub trait Parent: BaseTrait {
     type Element: BaseTrait;
@@ -36,7 +44,7 @@ pub trait Ring: Parent {
     type Element: RingElement;
     type MatrixSpace: MatrixSpace<Self>;
     type PolynomialRing: PolynomialRing<Self>;
-    
+
     fn default(&self) -> <Self as Ring>::Element;
 }
 
@@ -44,14 +52,14 @@ pub trait MatrixSpace<T: Ring>: Parent {
     type Element: MatrixSpaceElement<T>;
 
     fn default(&self) -> <Self as MatrixSpace<T>>::Element;
-    fn init<S>(ring: &T, nrows: S, ncols: S) -> Self where 
+    fn init<S>(ring: &T, nrows: S, ncols: S) -> Self
+    where
         S: TryInto<usize>,
         <S as TryInto<usize>>::Error: fmt::Debug;
     fn base_ring(&self) -> T;
     fn nrows(&self) -> usize;
     fn ncols(&self) -> usize;
 }
-
 
 pub trait PolynomialRing<T: Ring>: Ring {
     type Element: PolynomialRingElement<T>;
@@ -66,15 +74,11 @@ pub trait PolynomialRing<T: Ring>: Ring {
     fn nvars(&self) -> i64 {
         1
     }
-    
+
     //#[inline]
     //fn gen(&self) -> <Self as PolynomialRing<T>>::Element {
     //    let mut p = PolynomialRing::default(self)
     //}
-}
-
-pub trait New<T>: Parent {
-    fn new(&self, x: T) -> Self::Element;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -84,7 +88,8 @@ pub trait Element: BaseTrait {
     fn parent(&self) -> Self::Parent;
 }
 
-pub trait RingElement: Element {// + Add + AddAssign + Sub + SubAssign + Mul + MulAssign {
+pub trait RingElement: Element {
+    // + Add + AddAssign + Sub + SubAssign + Mul + MulAssign {
     type Parent: Ring;
     fn parent(&self) -> <Self as RingElement>::Parent;
     fn is_zero(&self) -> bool;
@@ -92,16 +97,24 @@ pub trait RingElement: Element {// + Add + AddAssign + Sub + SubAssign + Mul + M
 
 pub trait MatrixSpaceElement<T: Ring>: Element {
     type Parent: MatrixSpace<T>;
-    
+
     fn parent(&self) -> <Self as MatrixSpaceElement<T>>::Parent;
     fn base_ring(&self) -> T;
     fn nrows(&self) -> usize;
     fn ncols(&self) -> usize;
+    /*
+    fn get_entry(&self, i: usize, j: usize) -> <T as Ring>::Element;
+    fn set_entry<'a, S>(&mut self, i: usize, j: usize, entry: S)
+    where
+        <T as Ring>::Element: 'a,
+        S: Into<ValOrRef<'a, <T as Ring>::Element>>;
+    fn entries(&self) -> Vec<<T as Ring>::Element>;
+    */
 }
 
 pub trait PolynomialRingElement<T: Ring>: RingElement {
     type Parent: PolynomialRing<T>;
-    
+
     fn parent(&self) -> <Self as PolynomialRingElement<T>>::Parent;
     fn base_ring(&self) -> T;
     fn var(&self) -> String;
@@ -109,9 +122,9 @@ pub trait PolynomialRingElement<T: Ring>: RingElement {
     fn degree(&self) -> i64;
     fn len(&self) -> usize;
     fn get_coeff(&self, i: usize) -> <T as Ring>::Element;
-    fn set_coeff<'a, S>(&mut self, i: usize, coeff: S) where
+    fn set_coeff<'a, S>(&mut self, i: usize, coeff: S)
+    where
         <T as Ring>::Element: 'a,
         S: Into<ValOrRef<'a, <T as Ring>::Element>>;
     fn coefficients(&self) -> Vec<<T as Ring>::Element>;
 }
-

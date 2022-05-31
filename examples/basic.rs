@@ -1,5 +1,3 @@
 use inertia::*;
 
-fn main() {
-
-}
+fn main() {}

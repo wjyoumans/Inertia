@@ -16,7 +16,6 @@
  */
 
 #![feature(min_specialization)]
-
 #![allow(dead_code)]
 use serde::{de, ser};
 use std::fs::File;
@@ -24,11 +23,12 @@ use std::io;
 use thiserror::Error;
 
 pub mod core;
-pub mod traits;
 pub mod map;
-pub mod prod;
-pub mod poly;
-pub mod mat;
+//pub mod group;
+pub mod matrix;
+pub mod polynomial;
+pub mod product;
+pub mod traits;
 
 #[derive(Error, Debug)]
 pub enum InertiaError {
@@ -67,8 +67,9 @@ where
 #[doc(no_inline)]
 pub use inertia_core::*;
 pub use crate::core::*;
-pub use traits::*;
 pub use map::*;
-pub use prod::*;
-pub use poly::*;
-pub use mat::*;
+//pub use group::*;
+pub use matrix::*;
+pub use polynomial::*;
+pub use product::*;
+pub use traits::*;
