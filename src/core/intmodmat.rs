@@ -29,15 +29,14 @@ impl Parent for IntMatSpace {
 
 impl MatrixSpace<IntegerRing> for IntMatSpace {
     type Element = IntMat;
-
+    
     #[inline]
     fn default(&self) -> IntMat {
         self.default()
     }
 
     #[inline]
-    fn init<S>(_: &IntegerRing, nrows: S, ncols: S) -> Self
-    where
+    fn init<S>(_: &IntegerRing, nrows: S, ncols: S) -> Self where 
         S: TryInto<usize>,
         <S as TryInto<usize>>::Error: fmt::Debug,
     {
@@ -50,12 +49,12 @@ impl MatrixSpace<IntegerRing> for IntMatSpace {
     fn base_ring(&self) -> IntegerRing {
         IntegerRing {}
     }
-
+    
     #[inline]
     fn nrows(&self) -> usize {
         self.nrows().try_into().unwrap()
     }
-
+    
     #[inline]
     fn ncols(&self) -> usize {
         self.ncols().try_into().unwrap()
@@ -88,7 +87,7 @@ impl MatrixSpaceElement<IntegerRing> for IntMat {
     fn nrows(&self) -> usize {
         self.nrows().try_into().unwrap()
     }
-
+    
     #[inline]
     fn ncols(&self) -> usize {
         self.ncols().try_into().unwrap()

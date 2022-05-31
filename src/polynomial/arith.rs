@@ -16,43 +16,54 @@
  */
 
 use crate::*;
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Mul, Sub};
 use std::rc::Rc;
 
 // TODO: placeholder only, need lots of boilerplate
 
 type InnerPoly<T> = <<T as Ring>::PolynomialRing as PolynomialRing<T>>::Element;
 
-impl<T> Add for Poly<T> where
+impl<T> Add for Poly<T>
+where
     T: Ring,
-    InnerPoly<T>: Add<Output = InnerPoly<T>>
+    InnerPoly<T>: Add<Output = InnerPoly<T>>,
 {
     type Output = Poly<T>;
     fn add(self, rhs: Poly<T>) -> Self::Output {
         let inner = self.inner + rhs.inner;
-        Poly { ctx: Rc::clone(&self.ctx), inner }
+        Poly {
+            ctx: Rc::clone(&self.ctx),
+            inner,
+        }
     }
 }
 
-impl<T> Sub for Poly<T> where
+impl<T> Sub for Poly<T>
+where
     T: Ring,
-    InnerPoly<T>: Sub<Output = InnerPoly<T>>
+    InnerPoly<T>: Sub<Output = InnerPoly<T>>,
 {
     type Output = Poly<T>;
     fn sub(self, rhs: Poly<T>) -> Self::Output {
         let inner = self.inner - rhs.inner;
-        Poly { ctx: Rc::clone(&self.ctx), inner }
+        Poly {
+            ctx: Rc::clone(&self.ctx),
+            inner,
+        }
     }
 }
 
-impl<T> Mul for Poly<T> where
+impl<T> Mul for Poly<T>
+where
     T: Ring,
-    InnerPoly<T>: Mul<Output = InnerPoly<T>>
+    InnerPoly<T>: Mul<Output = InnerPoly<T>>,
 {
     type Output = Poly<T>;
     fn mul(self, rhs: Poly<T>) -> Self::Output {
         let inner = self.inner * rhs.inner;
-        Poly { ctx: Rc::clone(&self.ctx), inner }
+        Poly {
+            ctx: Rc::clone(&self.ctx),
+            inner,
+        }
     }
 }
-

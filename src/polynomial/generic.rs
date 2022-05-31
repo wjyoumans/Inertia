@@ -15,13 +15,12 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt;
 use std::cell::RefCell;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 //use serde::{Serialize, Deserialize};
 use crate::*;
-
 
 ///////////////////////////////////////////////////////////////////////
 // GenericPolyRing
@@ -73,7 +72,7 @@ impl<T: Ring> Ring for GenericPolyRing<T> {
     type Element = GenericPoly<T>;
     type PolynomialRing = GenericPolyRing<Self>;
     type MatrixSpace = GenericMatSpace<Self>;
-    
+
     #[inline]
     default fn default(&self) -> <Self as Ring>::Element {
         PolynomialRing::<T>::default(self)
@@ -90,27 +89,27 @@ impl<T: Ring> PolynomialRing<T> for GenericPolyRing<T> {
         GenericPoly {
             base_ring: Rc::clone(&self.base_ring),
             var: Rc::clone(&self.var),
-            coeffs: RefCell::new(vec)
+            coeffs: RefCell::new(vec),
         }
     }
-    
+
     default fn init(ring: &T, var: &str) -> Self {
         GenericPolyRing {
             base_ring: Rc::new(ring.clone()),
-            var: Rc::new(RefCell::new(var.to_string()))
+            var: Rc::new(RefCell::new(var.to_string())),
         }
     }
-    
+
     #[inline]
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
     }
-    
+
     #[inline]
     default fn var(&self) -> String {
         self.var.borrow().to_string()
     }
-    
+
     #[inline]
     default fn set_var<S: AsRef<str>>(&self, var: S) {
         self.var.replace(var.as_ref().to_string());
@@ -135,13 +134,17 @@ where
 pub struct GenericPoly<T: Ring> {
     base_ring: Rc<T>,
     var: Rc<RefCell<String>>,
-    coeffs: RefCell<Vec<<T as Ring>::Element>>
+    coeffs: RefCell<Vec<<T as Ring>::Element>>,
 }
 
 impl<T: Ring> Eq for GenericPoly<T> {}
 
-impl<T: Ring> PartialEq for GenericPoly<T> {
-    default fn eq(&self, rhs: &GenericPoly<T>) -> bool {
+impl<S, T> PartialEq<GenericPoly<S>> for GenericPoly<T> where
+    S: Ring,
+    T: Ring,
+    <S as Ring>::Element: PartialEq<<T as Ring>::Element>
+{
+    default fn eq(&self, rhs: &GenericPoly<S>) -> bool {
         let len = self.len();
         if rhs.len() != len {
             return false;
@@ -150,11 +153,33 @@ impl<T: Ring> PartialEq for GenericPoly<T> {
         let c1 = self.coeffs.borrow();
         let c2 = rhs.coeffs.borrow();
         for i in 0..len {
-            if c1[i] != c2[i] {
+            if c2[i] != c1[i] {
                 return false;
             }
         }
         true
+    }
+}
+
+impl<S, T> PartialEq<&GenericPoly<S>> for GenericPoly<T> where
+    S: Ring,
+    T: Ring,
+    <S as Ring>::Element: PartialEq<<T as Ring>::Element>
+{
+    #[inline]
+    default fn eq(&self, rhs: &&GenericPoly<S>) -> bool {
+        (&self).eq(rhs)
+    }
+}
+
+impl<S, T> PartialEq<GenericPoly<S>> for &GenericPoly<T> where
+    S: Ring,
+    T: Ring,
+    <S as Ring>::Element: PartialEq<<T as Ring>::Element>
+{
+    #[inline]
+    default fn eq(&self, rhs: &GenericPoly<S>) -> bool {
+        self.eq(&rhs)
     }
 }
 
@@ -164,7 +189,7 @@ impl<T: Ring> fmt::Display for GenericPoly<T> {
         let len = coeffs.len();
         let x = self.var();
 
-        let mut out = vec![];
+        let mut out = Vec::with_capacity(len);
         if len > 0 && !coeffs[0].is_zero() {
             out.push(format!("({})", coeffs[0]));
         }
@@ -193,7 +218,7 @@ impl<T: Ring> Hash for GenericPoly<T> {
 
 impl<T: Ring> Element for GenericPoly<T> {
     type Parent = GenericPolyRing<T>;
-    
+
     #[inline]
     default fn parent(&self) -> Self::Parent {
         GenericPolyRing {
@@ -205,7 +230,7 @@ impl<T: Ring> Element for GenericPoly<T> {
 
 impl<T: Ring> RingElement for GenericPoly<T> {
     type Parent = GenericPolyRing<T>;
-    
+
     #[inline]
     default fn parent(&self) -> <Self as RingElement>::Parent {
         GenericPolyRing {
@@ -227,7 +252,7 @@ impl<T: Ring> RingElement for GenericPoly<T> {
 
 impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
     type Parent = GenericPolyRing<T>;
-    
+
     #[inline]
     default fn parent(&self) -> <Self as PolynomialRingElement<T>>::Parent {
         GenericPolyRing {
@@ -235,7 +260,7 @@ impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
             var: Rc::clone(&self.var),
         }
     }
-    
+
     #[inline]
     default fn base_ring(&self) -> T {
         (*self.base_ring).clone()
@@ -245,18 +270,18 @@ impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
     default fn var(&self) -> String {
         self.var.borrow().to_string()
     }
-    
+
     #[inline]
     default fn set_var<S: AsRef<str>>(&self, var: S) {
         self.var.replace(var.as_ref().to_string());
     }
-    
+
     #[inline]
     default fn degree(&self) -> i64 {
         let d = self.len() - 1;
         d.try_into().unwrap()
     }
-    
+
     #[inline]
     default fn len(&self) -> usize {
         self.coeffs.borrow().len()
@@ -266,19 +291,22 @@ impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
     default fn get_coeff(&self, i: usize) -> <T as Ring>::Element {
         self.coeffs.borrow()[i].clone()
     }
-    
+
     #[inline]
-    default fn set_coeff<'a, S>(&mut self, i: usize, coeff: S) where
+    default fn set_coeff<'a, S>(&mut self, i: usize, coeff: S)
+    where
         <T as Ring>::Element: 'a,
-        S: Into<ValOrRef<'a, <T as Ring>::Element>>
+        S: Into<ValOrRef<'a, <T as Ring>::Element>>,
     {
-        let z = Ring::default(&*self.base_ring);
-        let mut coeffs = self.coeffs.borrow_mut();
-        if i + 1 > coeffs.len() {
-            coeffs.resize(i + 1, z);
+        { // scope for mutable borrow
+            let z = Ring::default(&*self.base_ring);
+            let mut coeffs = self.coeffs.borrow_mut();
+            if i + 1 > coeffs.len() {
+                coeffs.resize(i + 1, z);
+            }
+            coeffs.push(coeff.into().into_owned());
+            coeffs.swap_remove(i);
         }
-        coeffs.push(coeff.into().clone());
-        coeffs.swap_remove(i);
         self.normalize();
     }
 
@@ -286,12 +314,11 @@ impl<T: Ring> PolynomialRingElement<T> for GenericPoly<T> {
     default fn coefficients(&self) -> Vec<<T as Ring>::Element> {
         self.coeffs.borrow().clone()
     }
-
 }
 
 impl<T: Ring> GenericPoly<T> {
     // remove trailing zeros and ensure len >= 1
-    fn normalize(&self) {    
+    fn normalize(&self) {
         let len = self.len();
         let mut coeffs = self.coeffs.borrow_mut();
         if len != 1 {
@@ -303,7 +330,6 @@ impl<T: Ring> GenericPoly<T> {
             }
         }
     }
-    
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -313,7 +339,7 @@ impl<T: Ring> GenericPoly<T> {
 /*
 use std::ops::{Add, AddAssign};
 
-impl<'a, T: Ring> Add for GenericPoly<T> where 
+impl<'a, T: Ring> Add for GenericPoly<T> where
     <T as Ring>::Element: 'a + AddAssign<&'a <T as Ring>::Element>
 {
     type Output = Self;
@@ -362,3 +388,34 @@ impl<T: Ring> MulAssign for GenericPoly<T> {
     fn mul_assign(&mut self, rhs: Self) {}
 }
 */
+
+/*
+impl<'a, T, S> New<S> for GenericPolyRing<T> where
+    T: 'a + Ring,
+    S: Into<ValOrRef<'a, <T as Ring>::Element>>
+{
+    fn new(&self, x: S) -> GenericPoly<T> {
+        let vec = vec![x.into()];
+        GenericPoly {
+            base_ring: Rc::clone(&self.base_ring),
+            var: Rc::clone(&self.var),
+            coeffs: RefCell::new(vec)
+        }
+    }
+}*/
+
+impl<'a, T, S> New<&'a [S]> for GenericPolyRing<T>
+where
+    T: 'a + Ring,
+    &'a S: Into<ValOrRef<'a, <T as Ring>::Element>>,
+{
+    type Output = GenericPoly<T>;
+    fn new(&self, x: &'a [S]) -> GenericPoly<T> {
+        let mut res = PolynomialRing::default(self);
+        
+        for (i, coeff) in x.iter().enumerate() {
+            res.set_coeff(i, coeff)
+        }
+        res
+    }
+}

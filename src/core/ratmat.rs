@@ -29,14 +29,15 @@ impl Parent for RatMatSpace {
 
 impl MatrixSpace<RationalField> for RatMatSpace {
     type Element = RatMat;
-    
+
     #[inline]
     fn default(&self) -> RatMat {
         self.default()
     }
-    
+
     #[inline]
-    fn init<S>(_: &RationalField, nrows: S, ncols: S) -> Self where 
+    fn init<S>(_: &RationalField, nrows: S, ncols: S) -> Self
+    where
         S: TryInto<usize>,
         <S as TryInto<usize>>::Error: fmt::Debug,
     {
@@ -49,12 +50,12 @@ impl MatrixSpace<RationalField> for RatMatSpace {
     fn base_ring(&self) -> RationalField {
         RationalField {}
     }
-    
+
     #[inline]
     fn nrows(&self) -> usize {
         self.nrows().try_into().unwrap()
     }
-    
+
     #[inline]
     fn ncols(&self) -> usize {
         self.ncols().try_into().unwrap()
@@ -82,12 +83,12 @@ impl MatrixSpaceElement<RationalField> for RatMat {
     fn base_ring(&self) -> RationalField {
         RationalField {}
     }
-    
+
     #[inline]
     fn nrows(&self) -> usize {
         self.nrows().try_into().unwrap()
     }
-    
+
     #[inline]
     fn ncols(&self) -> usize {
         self.ncols().try_into().unwrap()

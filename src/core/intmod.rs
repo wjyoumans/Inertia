@@ -17,8 +17,8 @@
 
 use crate::*;
 
-impl Parent for RationalField {
-    type Element = Rational;
+impl Parent for IntModRing {
+    type Element = IntMod;
 
     #[inline]
     fn default(&self) -> Self::Element {
@@ -26,10 +26,12 @@ impl Parent for RationalField {
     }
 }
 
-impl Ring for RationalField {
-    type Element = Rational;
-    type PolynomialRing = RatPolyRing;
-    type MatrixSpace = RatMatSpace;
+impl Ring for IntModRing {
+    type Element = IntMod;
+    //type PolynomialRing = IntModPolyRing;
+    type PolynomialRing = GenericPolyRing<Self>;
+    //type MatrixSpace = IntModMatSpace;
+    type MatrixSpace = GenericMatSpace<Self>;
 
     #[inline]
     fn default(&self) -> <Self as Ring>::Element {
@@ -37,47 +39,25 @@ impl Ring for RationalField {
     }
 }
 
-impl Element for Rational {
-    type Parent = RationalField;
+impl Element for IntMod {
+    type Parent = IntModRing;
 
     #[inline]
     fn parent(&self) -> Self::Parent {
-        RationalField {}
+        self.parent()
     }
 }
 
-impl RingElement for Rational {
-    type Parent = RationalField;
+impl RingElement for IntMod {
+    type Parent = IntModRing;
 
     #[inline]
     fn parent(&self) -> <Self as RingElement>::Parent {
-        RationalField {}
+        self.parent()
     }
 
     #[inline]
     fn is_zero(&self) -> bool {
         self == 0
-    }
-}
-
-impl<T> New<T> for RationalField
-where
-    T: Into<Rational>,
-{
-    type Output = Rational;
-    #[inline]
-    fn new(&self, x: T) -> Rational {
-        x.into()
-    }
-}
-
-impl<T> New2<T, T> for RationalField
-where
-    T: Into<Integer>,
-{
-    type Output = Rational;
-    #[inline]
-    fn new(&self, n: T, d: T) -> Rational {
-        Rational::from([n.into(), d.into()])
     }
 }

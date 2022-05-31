@@ -30,7 +30,7 @@ impl Ring for IntegerRing {
     type Element = Integer;
     type PolynomialRing = IntPolyRing;
     type MatrixSpace = IntMatSpace;
-    
+
     #[inline]
     fn default(&self) -> <Self as Ring>::Element {
         self.default()
@@ -39,7 +39,7 @@ impl Ring for IntegerRing {
 
 impl Element for Integer {
     type Parent = IntegerRing;
-    
+
     #[inline]
     fn parent(&self) -> Self::Parent {
         IntegerRing {}
@@ -48,14 +48,25 @@ impl Element for Integer {
 
 impl RingElement for Integer {
     type Parent = IntegerRing;
-    
+
     #[inline]
     fn parent(&self) -> <Self as RingElement>::Parent {
         IntegerRing {}
     }
-    
+
     #[inline]
     fn is_zero(&self) -> bool {
         self == 0
+    }
+}
+
+impl<T> New<T> for IntegerRing
+where
+    T: Into<Integer>,
+{
+    type Output = Integer;
+    #[inline]
+    fn new(&self, x: T) -> Integer {
+        x.into()
     }
 }

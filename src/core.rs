@@ -18,8 +18,9 @@
 //! Implement traits for [inertia_core].
 
 mod integer;
-mod rational;
-mod intpoly;
-mod ratpoly;
 mod intmat;
+mod intmod;
+mod intpoly;
+mod rational;
 mod ratmat;
+mod ratpoly;

@@ -30,7 +30,7 @@ impl Ring for IntPolyRing {
     type Element = IntPoly;
     type PolynomialRing = GenericPolyRing<Self>;
     type MatrixSpace = GenericMatSpace<Self>;
-    
+
     #[inline]
     fn default(&self) -> IntPoly {
         self.default()
@@ -44,12 +44,12 @@ impl PolynomialRing<IntegerRing> for IntPolyRing {
     fn default(&self) -> IntPoly {
         self.default()
     }
-    
+
     #[inline]
     fn init(_: &IntegerRing, var: &str) -> Self {
         IntPolyRing::init(var)
     }
-    
+
     #[inline]
     fn base_ring(&self) -> IntegerRing {
         IntegerRing {}
@@ -59,7 +59,7 @@ impl PolynomialRing<IntegerRing> for IntPolyRing {
     fn var(&self) -> String {
         self.var()
     }
-    
+
     #[inline]
     fn set_var<S: AsRef<str>>(&self, var: S) {
         self.set_var(var);
@@ -96,7 +96,7 @@ impl PolynomialRingElement<IntegerRing> for IntPoly {
     fn parent(&self) -> IntPolyRing {
         self.parent()
     }
-    
+
     #[inline]
     fn base_ring(&self) -> IntegerRing {
         IntegerRing {}
@@ -106,30 +106,31 @@ impl PolynomialRingElement<IntegerRing> for IntPoly {
     fn var(&self) -> String {
         self.var()
     }
-    
+
     #[inline]
     fn set_var<S: AsRef<str>>(&self, var: S) {
         self.set_var(var);
     }
-    
+
     #[inline]
     fn len(&self) -> usize {
         self.len().try_into().unwrap()
     }
-    
+
     #[inline]
     fn degree(&self) -> i64 {
         self.degree()
     }
-    
+
     #[inline]
     fn get_coeff(&self, i: usize) -> Integer {
         self.get_coeff(i.try_into().unwrap())
     }
-    
+
     #[inline]
-    fn set_coeff<'a, S>(&mut self, i: usize, coeff: S) where
-        S: Into<ValOrRef<'a, Integer>>
+    fn set_coeff<'a, S>(&mut self, i: usize, coeff: S)
+    where
+        S: Into<ValOrRef<'a, Integer>>,
     {
         self.set_coeff(i.try_into().unwrap(), coeff);
     }
@@ -137,5 +138,16 @@ impl PolynomialRingElement<IntegerRing> for IntPoly {
     #[inline]
     fn coefficients(&self) -> Vec<Integer> {
         self.coefficients()
+    }
+}
+
+impl<T> New<T> for IntPolyRing
+where
+    T: Into<IntPoly>,
+{
+    type Output = IntPoly;
+    #[inline]
+    fn new(&self, x: T) -> IntPoly {
+        x.into()
     }
 }
