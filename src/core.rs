@@ -17,10 +17,21 @@
 
 //! Implement traits for [inertia_core].
 
-mod integer;
-mod intmat;
-mod intmod;
-mod intpoly;
-mod rational;
-mod ratmat;
-mod ratpoly;
+#[macro_use]
+mod macros;
+
+pub mod integer;
+pub mod intpoly;
+//mod intmat;
+
+//pub mod rational;
+//mod ratpoly;
+//mod ratmat;
+
+//mod intmod;
+//mod intmodpoly;
+//mod intmodmat;
+
+//mod finfld;
+//mod finfldpoly;
+//mod finfldmat;

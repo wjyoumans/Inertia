@@ -1,4 +1,5 @@
-# Inertia
+## inertia
 
-Inertia is a (WIP) computational mathematics library for Rust. 
-At the moment the majority of development is focused on the [inertia-core](https://github.com/wjyoumans/inertia-core) crate which contains high-level wrappers to the [FLINT](https://flintlib.org/doc/), [Arb](https://arblib.org/), and [Antic](https://github.com/wbhart/antic) C libraries.
+Inertia is a computational mathematics library for Rust.
+
+This is a work in progress!

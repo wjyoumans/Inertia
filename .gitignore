@@ -2,3 +2,4 @@ Cargo.lock
 notes
 *.swp
 /target
+src/ignore
