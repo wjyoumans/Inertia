@@ -29,7 +29,9 @@ use inertia_algebra::ops::*;
 use inertia_generic::poly::GenericPolyRing;
 use inertia_generic::mat::GenericMatSpace;
 
-use crate::{Integer, Integers, IntoPolyRing, IntoMatSpace};
+use crate::{Integer, Integers};
+use crate::poly::IntoPolyRing;
+use crate::mat::IntoMatSpace;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -486,3 +488,18 @@ derive_scalar_binops! {
     AssignAdd, assign_add
 }*/
 
+use crate::Poly;
+
+derive_wrapper_binops! {
+    Poly<Integers>, {Integer}
+    
+    Add, add
+    AddAssign, add_assign
+    AddFrom, add_from
+    AssignAdd, assign_add
+    
+    Mul, mul
+    MulAssign, mul_assign
+    MulFrom, mul_from
+    AssignMul, assign_mul
+}

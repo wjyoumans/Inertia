@@ -27,12 +27,10 @@ pub use inertia_generic::mat::*;
 pub mod macros;
 
 pub mod poly;
-pub use self::poly::*;
+pub use self::poly::{Poly, PolyRing};
 
 pub mod mat;
-pub use self::mat::*;
-
-//pub mod generic;
+pub use self::mat::{Mat, MatSpace};
 
 pub mod core;
 pub use self::core::integer::*;

@@ -16,6 +16,9 @@ fn main() {
 
     let f = zx.new([1, 0, 1]);
     println!("{}", &f);
-    println!("{}", &f*f.clone());
+    //println!("{}", &f*f.clone());
     //println!("{}", c * f);
+
+    let g = c*&f;
+    println!("{}", g);
 }

@@ -671,3 +671,143 @@ macro_rules! derive_binop {
     }
 }
 */
+
+// Derive scalar/coefficient binops for wrapper types like Poly, Mat, etc.
+macro_rules! derive_wrapper_binops {
+    (
+        Poly<$ring:ident>, {$($scalar:ident)+}
+        $op:ident, $meth:ident
+        $op_assign:ident, $meth_assign:ident
+        $op_from:ident, $meth_from:ident
+        $assign_op:ident, $assign_meth:ident
+        $($next:tt)*
+    ) => ($(
+        derive_wrapper_binops!{@inner 
+            Poly, $ring, $scalar
+            $op, $meth
+            $op_assign, $meth_assign
+            $op_from, $meth_from
+            $assign_op, $assign_meth
+        })+
+
+        /*
+        derive_wrapper_binops! {
+            Poly<$ring>, {$($scalar)+}
+            $($next)*
+        }
+        */
+    );
+/*
+    (
+        Poly<$ring:ident>, $scalar:ident
+        $(
+            $op:ident, $meth:ident
+            $op_assign:ident, $meth_assign:ident
+            $op_from:ident, $meth_from:ident
+            $assign_op:ident, $assign_meth:ident
+        )*
+    ) => {
+        $(derive_wrapper_binops!{
+            @inner Poly, $ring, $scalar, 
+            $op, $meth
+            $op_assign, $meth_assign
+            $op_from, $meth_from
+            $assign_op, $assign_meth
+        })*
+    };
+    (Mat<$ring:ident>, $scalar:ident, $op:ident, $meth:ident) => {
+        derive_wrapper_binops!{@inner Mat, $ring, $scalar, $op, $meth}
+    };
+*/
+    (@inner 
+        $wrapper:ident, $ring:ident, $scalar:ident
+        $op:ident, $meth:ident
+        $op_assign:ident, $meth_assign:ident
+        $op_from:ident, $meth_from:ident
+        $assign_op:ident, $assign_meth:ident
+    ) => {
+        impl $op<$scalar> for $wrapper<$ring> {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: $scalar) -> Self::Output {
+                $wrapper::from_raw(self.into_inner().$meth(rhs))
+            }
+        }
+        
+        impl $op<$scalar> for &$wrapper<$ring> {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: $scalar) -> Self::Output {
+                $wrapper::from_raw(self.inner().$meth(rhs))
+            }
+        }
+        
+        impl $op<&$scalar> for $wrapper<$ring> {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: &$scalar) -> Self::Output {
+                $wrapper::from_raw(self.into_inner().$meth(rhs))
+            }
+        }
+        
+        impl $op<&$scalar> for &$wrapper<$ring> {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: &$scalar) -> Self::Output {
+                $wrapper::from_raw(self.inner().$meth(rhs))
+            }
+        }
+        
+        impl $op<$wrapper<$ring>> for $scalar {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: $wrapper<$ring>) -> Self::Output {
+                $wrapper::from_raw(self.$meth(rhs.into_inner()))
+            }
+        }
+        
+        impl $op<$wrapper<$ring>> for &$scalar {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: $wrapper<$ring>) -> Self::Output {
+                $wrapper::from_raw(self.$meth(rhs.into_inner()))
+            }
+        }
+        
+        impl $op<&$wrapper<$ring>> for $scalar {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: &$wrapper<$ring>) -> Self::Output {
+                $wrapper::from_raw(self.$meth(rhs.inner()))
+            }
+        }
+        
+        impl $op<&$wrapper<$ring>> for &$scalar {
+            type Output = $wrapper<$ring>;
+            fn $meth(self, rhs: &$wrapper<$ring>) -> Self::Output {
+                $wrapper::from_raw(self.$meth(rhs.inner()))
+            }
+        }
+
+        impl $op_assign<$scalar> for $wrapper<$ring> {
+            #[inline]
+            fn $meth_assign(&mut self, rhs: $scalar) {
+                self.inner_mut().$meth_assign(rhs);
+            }
+        }
+        
+        impl $op_assign<&$scalar> for $wrapper<$ring> {
+            #[inline]
+            fn $meth_assign(&mut self, rhs: &$scalar) {
+                self.inner_mut().$meth_assign(rhs);
+            }
+        }
+        
+        impl $op_from<$scalar> for $wrapper<$ring> {
+            #[inline]
+            fn $meth_from(&mut self, lhs: $scalar) {
+                self.inner_mut().$meth_from(lhs);
+            }
+        }
+        
+        impl $op_from<&$scalar> for $wrapper<$ring> {
+            #[inline]
+            fn $meth_from(&mut self, lhs: &$scalar) {
+                self.inner_mut().$meth_from(lhs);
+            }
+        }
+    }
+}

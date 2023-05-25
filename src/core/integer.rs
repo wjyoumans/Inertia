@@ -25,7 +25,9 @@ use inertia_algebra::*;
 use inertia_algebra::ops::*;
 use inertia_generic::mat::GenericMatSpace;
 
-use crate::{IntPolyRing, IntoPolyRing, IntoMatSpace};
+use crate::core::intpoly::IntPolyRing;
+use crate::poly::IntoPolyRing;
+use crate::mat::IntoMatSpace;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
